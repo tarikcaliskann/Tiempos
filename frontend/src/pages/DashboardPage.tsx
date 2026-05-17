@@ -3,7 +3,14 @@ import type { PageType } from "../App";
 import { StatCard } from "../components/dashboard/StatCard";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Clock, TrendingUp, BookOpen, Award, Plus } from "lucide-react";
+import {
+  Clock,
+  TrendingUp,
+  BookOpen,
+  Award,
+  Plus,
+  CreditCard,
+} from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { formatTemplate } from "../language";
@@ -251,6 +258,14 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
                   {d.browseSkills}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => onNavigate?.("buy-credits")}
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  {d.buyTimeCredits}
                 </Button>
                 <Button
                   variant="outline"

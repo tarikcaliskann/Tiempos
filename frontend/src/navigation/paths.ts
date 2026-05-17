@@ -29,6 +29,9 @@ export const PATHS = {
   policyCancellation: "/policies/cancellation",
   instructorGuide: "/instructor-guide",
   faq: "/faq",
+  buyCredits: "/buy-credits",
+  payment: "/payment",
+  paymentReturn: "/payment/return",
 } as const;
 
 const PAGE_PATH: Record<
@@ -59,6 +62,8 @@ const PAGE_PATH: Record<
   "policy-cancellation": PATHS.policyCancellation,
   "instructor-guide": PATHS.instructorGuide,
   faq: PATHS.faq,
+  "buy-credits": PATHS.buyCredits,
+  payment: PATHS.payment,
 };
 
 export function pageToPath(

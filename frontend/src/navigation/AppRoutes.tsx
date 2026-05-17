@@ -23,6 +23,9 @@ import { ForgotPasswordPage } from "../pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "../pages/ResetPasswordPage";
 import { SkillDetailPage } from "../pages/SkillDetailPage";
 import { NotificationsPage } from "../pages/NotificationsPage";
+import { BuyCreditsPage } from "../pages/BuyCreditsPage";
+import { PaymentPage } from "../pages/PaymentPage";
+import { PaymentReturnPage } from "../pages/PaymentReturnPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { AboutPage } from "../pages/AboutPage";
 import { ContactPage } from "../pages/ContactPage";
@@ -244,6 +247,30 @@ function AppRoutesContent() {
         element={
           <ProtectedRoute>
             <NotificationsPage onNavigate={onPage} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PATHS.buyCredits}
+        element={
+          <ProtectedRoute>
+            <BuyCreditsPage onNavigate={onPage} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PATHS.payment}
+        element={
+          <ProtectedRoute>
+            <PaymentPage onNavigate={onPage} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PATHS.paymentReturn}
+        element={
+          <ProtectedRoute>
+            <PaymentReturnPage onNavigate={onPage} />
           </ProtectedRoute>
         }
       />

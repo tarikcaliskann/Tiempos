@@ -1,0 +1,391 @@
+/* Buy credits — paket seçim sayfası */
+
+.buy-credits-page {
+  background-color: var(--bc-page-bg);
+  --bc-primary: #4f46e5;
+  --bc-primary-light: #6366f1;
+  --bc-primary-soft: #eef2ff;
+  --bc-primary-border: #818cf8;
+  --bc-text: #0f172a;
+  --bc-muted: #64748b;
+  --bc-divider: #e2e8f0;
+  --bc-surface: #ffffff;
+  --bc-page-bg: #eef1f8;
+  --bc-shadow: 0 2px 14px rgba(15, 23, 42, 0.07);
+  --bc-shadow-hover: 0 8px 28px rgba(79, 70, 229, 0.12);
+  --bc-shadow-selected: 0 8px 32px rgba(99, 102, 241, 0.18);
+}
+
+.dark .buy-credits-page {
+  --bc-primary-soft: rgba(99, 102, 241, 0.12);
+  --bc-text: var(--foreground);
+  --bc-muted: var(--muted-foreground);
+  --bc-divider: var(--border);
+  --bc-surface: var(--card);
+  --bc-page-bg: var(--background);
+}
+
+/* Üst mavi başlık */
+.buy-credits-hero {
+  padding-top: 6rem;
+  padding-bottom: 4.5rem;
+  background: linear-gradient(90deg, #2563eb 0%, #4f46e5 50%, #4338ca 100%);
+}
+
+@media (min-width: 640px) {
+  .buy-credits-hero {
+    padding-bottom: 5.5rem;
+  }
+}
+
+.buy-credits-hero__icon {
+  width: 4.25rem;
+  height: 4.25rem;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+}
+
+.buy-credits-hero__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.buy-credits-hero__subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+@media (min-width: 640px) {
+  .buy-credits-hero__title {
+    font-size: 2rem;
+  }
+  .buy-credits-hero__subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* Ana içerik — hero ile kampanya arasında net boşluk */
+.buy-credits-main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 4rem;
+}
+
+@media (min-width: 640px) {
+  .buy-credits-main {
+    padding: 3rem 1.5rem 5rem;
+  }
+}
+
+/* Kampanya bandı */
+.buy-credits-campaign {
+  display: flex;
+  gap: 0.875rem;
+  margin-bottom: 2.75rem;
+  padding: 1.125rem 1.25rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #3b82f6 0%, #4f46e5 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+}
+
+@media (min-width: 640px) {
+  .buy-credits-campaign {
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 3rem;
+  }
+}
+
+.buy-credits-campaign__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.buy-credits-campaign__text {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+@media (min-width: 640px) {
+  .buy-credits-campaign__title {
+    font-size: 1rem;
+  }
+  .buy-credits-campaign__text {
+    font-size: 0.875rem;
+  }
+}
+
+/* Paket kartları grid */
+.buy-credits-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  .buy-credits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .buy-credits-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Tek paket kartı */
+.buy-credits-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 1.25rem 1.125rem 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--bc-divider);
+  background: var(--bc-surface);
+  box-shadow: var(--bc-shadow);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+  outline: none;
+}
+
+.buy-credits-card:hover:not(.buy-credits-card--selected) {
+  border-color: #c7d2fe;
+  box-shadow: var(--bc-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.buy-credits-card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+
+/* Seçili kart — Figma: mor çerçeve + açık mor arka plan */
+.buy-credits-card--selected {
+  border: 3px solid var(--bc-primary-border);
+  background: var(--bc-primary-soft);
+  box-shadow: var(--bc-shadow-selected);
+  transform: none;
+}
+
+.buy-credits-card--selected:hover {
+  border-color: var(--bc-primary-light);
+}
+
+.buy-credits-card__badge {
+  position: absolute;
+  top: -0.65rem;
+  right: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  white-space: nowrap;
+}
+
+.buy-credits-card__title {
+  margin: 0 0 1rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--bc-text);
+}
+
+.buy-credits-card__pricing {
+  padding-bottom: 1rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--bc-divider);
+}
+
+.buy-credits-card--selected .buy-credits-card__pricing {
+  border-bottom-color: rgba(129, 140, 248, 0.35);
+}
+
+.buy-credits-card__price-old {
+  margin: 0 0 0.2rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.buy-credits-card__price {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #5b21b6;
+}
+
+.dark .buy-credits-card__price {
+  color: #a78bfa;
+}
+
+.buy-credits-card__price-currency {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.buy-credits-card__discount {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.buy-credits-card__features {
+  flex: 1;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.buy-credits-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--bc-muted);
+}
+
+.buy-credits-card__feature:last-child {
+  margin-bottom: 0;
+}
+
+.buy-credits-card__check {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: 0.15rem;
+  color: #22c55e;
+}
+
+.buy-credits-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bc-divider);
+}
+
+.buy-credits-card--selected .buy-credits-card__footer {
+  border-top-color: rgba(129, 140, 248, 0.35);
+}
+
+.buy-credits-card__radio {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 9999px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.buy-credits-card__radio--on {
+  border: 2px solid var(--bc-primary-light);
+  background: var(--bc-primary-light);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.buy-credits-card__select-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--bc-muted);
+}
+
+.buy-credits-card__select-label--on {
+  color: var(--bc-primary);
+  font-weight: 600;
+}
+
+.dark .buy-credits-card__select-label--on {
+  color: #a5b4fc;
+}
+
+/* Ödeme butonu alanı */
+.buy-credits-checkout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3.5rem;
+  padding-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .buy-credits-checkout {
+    margin-top: 4rem;
+  }
+}
+
+.buy-credits-checkout__btn {
+  min-width: 17.5rem;
+  height: 3rem;
+  padding: 0 2.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.buy-credits-checkout__btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+}
+
+.buy-credits-checkout__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.buy-credits-checkout__hint,
+.buy-credits-checkout__security {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--bc-muted);
+  text-align: center;
+}
+
+.buy-credits-checkout__security {
+  max-width: 28rem;
+  font-size: 0.75rem;
+}

@@ -30,7 +30,9 @@ export type PageType =
   | "privacy"
   | "policy-cancellation"
   | "instructor-guide"
-  | "faq";
+  | "faq"
+  | "buy-credits"
+  | "payment";
 
 export default function App() {
   const { resolvedTheme } = useTheme();
