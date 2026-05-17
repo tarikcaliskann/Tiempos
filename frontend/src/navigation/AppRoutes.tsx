@@ -44,6 +44,7 @@ import type { PageType } from "../App";
 import { pageToPath, PATHS } from "./paths";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { ScrollToTop } from "./ScrollToTop";
+import { AnalyticsPageView } from "./AnalyticsPageView";
 
 function SkillWithLogin({ onPage }: { onPage: (p: PageType) => void }) {
   const loc = useLocation();
@@ -292,6 +293,7 @@ export function AppRoutes() {
   return (
     <>
       <ScrollToTop />
+      <AnalyticsPageView />
       <AppRoutesContent />
     </>
   );
