@@ -12,7 +12,11 @@ export class ApiError extends Error {
   }
 }
 
-export type ApiFetchOptions = RequestInit & { token?: string | null };
+export type ApiFetchOptions = RequestInit & {
+  token?: string | null;
+  /** Varsayılan: sınırsız. Render cold start için auth çağrılarında kullanın. */
+  timeoutMs?: number;
+};
 
 /** Boş veya anlamsız API mesajlarında yerelleştirilmiş fallback kullanın. */
 export function apiErrorDisplayMessage(err: unknown, fallback: string): string {
@@ -34,7 +38,7 @@ export async function apiFetch<T>(
   path: string,
   opts: ApiFetchOptions = {},
 ): Promise<T> {
-  const { token, headers, ...rest } = opts;
+  const { token, timeoutMs, headers, signal: callerSignal, ...rest } = opts;
   const base = getApiBaseUrl();
   const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
 
@@ -50,11 +54,44 @@ export async function apiFetch<T>(
     h.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(url, {
-    ...rest,
-    headers: h,
-    cache: "no-store",
-  });
+  const controller = new AbortController();
+  const timeout =
+    timeoutMs != null && timeoutMs > 0
+      ? window.setTimeout(() => controller.abort(), timeoutMs)
+      : undefined;
+  if (callerSignal) {
+    if (callerSignal.aborted) {
+      controller.abort();
+    } else {
+      callerSignal.addEventListener("abort", () => controller.abort(), {
+        once: true,
+      });
+    }
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...rest,
+      headers: h,
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new ApiError(
+        timeoutMs != null && timeoutMs > 0
+          ? "Sunucu yanıt vermedi. Birkaç saniye sonra tekrar deneyin."
+          : "İstek iptal edildi.",
+        0,
+      );
+    }
+    throw err;
+  } finally {
+    if (timeout != null) {
+      window.clearTimeout(timeout);
+    }
+  }
   const text = await res.text();
   let data: unknown = null;
   if (text) {

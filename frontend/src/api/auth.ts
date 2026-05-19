@@ -89,7 +89,9 @@ export type GoogleAuthConfig = {
 };
 
 export async function fetchGoogleAuthConfig(): Promise<GoogleAuthConfig> {
-  return apiFetch<GoogleAuthConfig>("/api/auth/google-config");
+  return apiFetch<GoogleAuthConfig>("/api/auth/google-config", {
+    timeoutMs: 12_000,
+  });
 }
 
 export async function socialLoginRequest(body: {
@@ -100,5 +102,6 @@ export async function socialLoginRequest(body: {
   return apiFetch<LoginResponse>("/api/auth/social-login", {
     method: "POST",
     body: JSON.stringify(body),
+    timeoutMs: 45_000,
   });
 }

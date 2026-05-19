@@ -9,6 +9,9 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         value: https://tiempos-backend-w26e.onrender.com
+      # Google OAuth Web client (public) — Google Console authorized origins: www.tiempos.site
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: 793509542213-2uce3cqll9shf9o0b3agv9eb637haio1.apps.googleusercontent.com
     routes:
       - type: rewrite
         source: /api/*

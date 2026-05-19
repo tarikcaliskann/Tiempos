@@ -107,7 +107,15 @@ export async function resolveGoogleClientId(): Promise<string | null> {
         return fromEnv;
       }
       try {
-        const cfg = await fetchGoogleAuthConfig();
+        const cfg = await Promise.race([
+          fetchGoogleAuthConfig(),
+          new Promise<never>((_, reject) => {
+            window.setTimeout(
+              () => reject(new Error("GOOGLE_CONFIG_TIMEOUT")),
+              12_000,
+            );
+          }),
+        ]);
         const id = cfg.clientId?.trim();
         return id ? id : null;
       } catch {

@@ -78,6 +78,7 @@ export function GoogleSignInButton({
         });
       } catch (err) {
         if (err instanceof Error && err.message === "GOOGLE_CANCELLED") {
+          setLoading(false);
           return;
         }
         onError(apiErrorDisplayMessage(err, a.errorGoogleFailed));
@@ -91,14 +92,27 @@ export function GoogleSignInButton({
   useEffect(() => {
     let cancelled = false;
     setBootstrapping(true);
-    void resolveGoogleClientId().then((id) => {
-      if (cancelled) return;
-      setClientId(id);
-      setUseFallbackButton(!id);
-      setBootstrapping(false);
-    });
+    const safetyTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        setBootstrapping(false);
+        setUseFallbackButton(true);
+      }
+    }, 12_000);
+    void resolveGoogleClientId()
+      .then((id) => {
+        if (cancelled) return;
+        setClientId(id);
+        setUseFallbackButton(!id);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setBootstrapping(false);
+        }
+        window.clearTimeout(safetyTimer);
+      });
     return () => {
       cancelled = true;
+      window.clearTimeout(safetyTimer);
     };
   }, []);
 
@@ -140,6 +154,7 @@ export function GoogleSignInButton({
       await completeSocialLogin({ accessToken });
     } catch (err) {
       if (err instanceof Error && err.message === "GOOGLE_CANCELLED") {
+        setLoading(false);
         return;
       }
       onError(apiErrorDisplayMessage(err, a.errorGoogleFailed));
