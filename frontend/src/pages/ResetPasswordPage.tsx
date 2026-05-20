@@ -15,7 +15,7 @@ interface ResetPasswordPageProps {
 
 export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
   const [email, setEmail] = useState(
-    () => sessionStorage.getItem("timelink_reset_email") ?? "",
+    () => sessionStorage.getItem("tiempos_reset_email") ?? "",
   );
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +35,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
     setLoading(true);
     try {
       await resetPasswordRequest({ email, token: code, newPassword: password });
-      sessionStorage.removeItem("timelink_reset_email");
+      sessionStorage.removeItem("tiempos_reset_email");
       setPasswordReset(true);
     } catch (err) {
       setError(apiErrorDisplayMessage(err, a.pwdMismatch));
@@ -58,7 +58,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
             <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
               <BrandLogo className="h-full w-full object-cover" />
             </div>
-            <span className="text-2xl text-white">Tiempo</span>
+            <span className="text-2xl text-white">Tiempos</span>
           </button>
           <h1 className="text-3xl text-white mb-2">
             {passwordReset ? a.titleDone : a.title}

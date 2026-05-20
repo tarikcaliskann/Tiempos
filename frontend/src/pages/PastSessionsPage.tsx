@@ -151,7 +151,7 @@ export function PastSessionsPage({ onNavigate }: PastSessionsPageProps) {
 
   const goProfileLearningToRate = () => {
     try {
-      sessionStorage.setItem("timelink_profile_tab", "learning");
+      sessionStorage.setItem("tiempos_profile_tab", "learning");
     } catch {
       /* ignore */
     }

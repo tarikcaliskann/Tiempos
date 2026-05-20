@@ -100,7 +100,7 @@ export const tr: Translation = {
     support: "Destek",
     cancellationPolicy: "İptal ve no-show",
     copyright:
-      "Tiempo. Tüm hakları saklıdır. Öğrenmeye tutkuyla.",
+      "Tiempos. Tüm hakları saklıdır. Öğrenmeye tutkuyla.",
   },
   landing: {
     hero: {
@@ -117,7 +117,7 @@ export const tr: Translation = {
       statHours: "Programına göre öğren",
     },
     features: {
-      title: "Tiempo nasıl çalışır",
+      title: "Tiempos nasıl çalışır",
       subtitle:
         "Beceri takasına başlamak ve topluluğunuzu oluşturmak için üç basit adım",
       items: [
@@ -645,7 +645,7 @@ export const tr: Translation = {
     reviewsSummary: "{{rating}} ortalama · {{count}} yorum",
   },
   howItWorks: {
-    heroTitle: "Tiempo nasıl çalışır",
+    heroTitle: "Tiempos nasıl çalışır",
     heroSubtitle:
       "Beceri takası ve topluluk oluşturmak için basit ve adil bir yol",
     getStartedFree: "Ücretsiz başla",
@@ -679,7 +679,7 @@ export const tr: Translation = {
     ],
     creditsTitle: "Zaman kredilerini anlamak",
     creditsIntro:
-      "Zaman kredileri Tiempo'in para birimidir. Sistem son derece basit:",
+      "Zaman kredileri Tiempos'un para birimidir. Sistem son derece basit:",
     teachHour: "1 saat öğretim = 1 zaman kredisi",
     teachHourSub: "Bilgini paylaşarak kredi kazan",
     learnHour: "1 zaman kredisi = 1 saat öğrenme",
@@ -689,7 +689,7 @@ export const tr: Translation = {
     bonusDesc:
       "Yeni üyeler 1 zaman kredisiyle (1 saat öğrenme) başlar. Hemen başla — önce öğretmen olmana gerek yok.",
     claimBonus: "Bonusunu al",
-    whyTitle: "Neden Tiempo?",
+    whyTitle: "Neden Tiempos?",
     benefits: [
       "Para gerekmez — zamanı zamana takas et",
       "Topluluğundaki tutkulu uzmanlardan öğren",
@@ -706,14 +706,14 @@ export const tr: Translation = {
       },
       {
         q: "Öğretecek becerim yoksa?",
-        a: "Herkesin paylaşacak bir şeyi vardır! Yemek, bahçecilik, konuştuğun bir dil veya mesleki uzmanlık — Tiempo'te tüm beceriler değerlidir.",
+        a: "Herkesin paylaşacak bir şeyi vardır! Yemek, bahçecilik, konuştuğun bir dil veya mesleki uzmanlık — Tiempos'ta tüm beceriler değerlidir.",
       },
       {
         q: "Hem öğrenip hem öğretebilir miyim?",
         a: "Kesinlikle! Üyelerimizin çoğu hem öğretmen hem öğrenci. Öğretirken aynı anda yeni şeyler öğrenebilirsin.",
       },
       {
-        q: "Tiempo ücretsiz mi?",
+        q: "Tiempos ücretsiz mi?",
         a: "Evet! Hesap oluşturmak ve beceri takası tamamen ücretsiz. Öğrenmeyi herkes için erişilebilir kılmayı hedefliyoruz.",
       },
       {
@@ -761,6 +761,8 @@ export const tr: Translation = {
     successText:
       "İletişime geçtiğiniz için teşekkürler. En kısa sürede size döneceğiz.",
     errorSend: "Mesaj gönderilemedi. Lütfen tekrar deneyin veya doğrudan e-posta yazın.",
+    errorSendAuth:
+      "Sunucu isteği reddetti (hesap girişi ile ilgili değil). Frontend’i kendiniz barındırıyorsanız VITE_API_BASE_URL yalnızca API ana makinesi olmalı (sonunda /api olmamalı) veya barındırıcıda /api trafiğinin backend’e yönlendirildiğinden emin olun. Yine de aşağıdaki e-posta adresine yazabilirsiniz.",
     errorUnavailable:
       "Şu an siteden e-posta gönderilemiyor (SMTP hazır değil veya gönderim hatası). Render’da SPRING_MAIL_* ve APP_MAIL_FROM ayarlarını kontrol edin. Yine de tiempos.site@gmail.com adresine yazabilirsiniz.",
     faqSectionTitle: "Hızlı cevaplar mı arıyorsunuz?",
@@ -772,7 +774,7 @@ export const tr: Translation = {
   addSkill: {
     title: "Yeni beceri ekle",
     editTitle: "Beceriyi düzenle",
-    subtitle: "Uzmanlığını Tiempo topluluğuyla paylaş",
+    subtitle: "Uzmanlığını Tiempos topluluğuyla paylaş",
     editSubtitle: "Beceri ilanının bilgilerini güncelle",
     skillTitle: "Beceri başlığı *",
     skillTitlePh: "örn. Başlangıç gitar dersleri",
@@ -955,12 +957,12 @@ export const tr: Translation = {
   },
   staticSite: {
     about: {
-      heroTitle: "Tiempo hakkında",
+      heroTitle: "Tiempos hakkında",
       heroSubtitle:
         "Zamanın para birimi, becerilerin özgürce paylaşıldığı bir topluluk kuruyoruz",
       missionTitle: "Misyonumuz",
       missionP1:
-        "Tiempo güçlü ama basit bir fikirden doğdu: herkesin öğretebileceği bir şey ve öğrenmek istediği bir şey var. Bilginin maddi engellerin arkasında kilitli olmaması gerektiğine inanıyoruz.",
+        "Tiempos güçlü ama basit bir fikirden doğdu: herkesin öğretebileceği bir şey ve öğrenmek istediği bir şey var. Bilginin maddi engellerin arkasında kilitli olmaması gerektiğine inanıyoruz.",
       missionP2:
         "Platformumuzda beceriler zaman para birimiyle takas edilir. Bir saat öğretmenlik, başka birinden bir saat öğrenmeye eşittir. Adil, sade ve gerçek bağlar kurar.",
       stats: {
@@ -998,10 +1000,10 @@ export const tr: Translation = {
       ],
       storyTitle: "Hikayemiz",
       storyParagraphs: [
-        "Tiempo, 2024’te eğitimciler ve geliştiricilerin ortak bir vizyonla bir araya gelmesiyle başladı: öğrenmenin maddi durumdan bağımsız olarak herkese erişilebilir olduğu bir dünya.",
+        "Tiempos, 2024’te eğitimciler ve geliştiricilerin ortak bir vizyonla bir araya gelmesiyle başladı: öğrenmenin maddi durumdan bağımsız olarak herkese erişilebilir olduğu bir dünya.",
         "Geleneksel eğitim platformlarının, öğrenmek isteyen ama ücreti karşılayamayan insanları dışarıda bıraktığını gördük. Öte yandan birçok yetenekli insan bilgisini paylaşmak istiyor ama nereden başlayacağını bilmiyor.",
         "Zamanı para birimi olarak kullanarak gerçekten eşitlikçi bir platform oluşturduk. İster ileri düzey programlama ister başlangıç seviyesi yemek pişirme öğretin—saatiniz aynı değerde. Bu ilke, hayatın her alanından öğrenci ve eğitmenlerden oluşan çeşitli ve aktif bir topluluk kurmamıza yardımcı oldu.",
-        "Bugün Tiempo büyümeye devam ediyor; dünya çapında binlerce insanı bir araya getiriyor, anlamlı bağlar kuruyor ve bilgi ile topluluk gibi hayattaki en iyi şeylerin etiket gerektirmediğini gösteriyor.",
+        "Bugün Tiempos büyümeye devam ediyor; dünya çapında binlerce insanı bir araya getiriyor, anlamlı bağlar kuruyor ve bilgi ile topluluk gibi hayattaki en iyi şeylerin etiket gerektirmediğini gösteriyor.",
       ],
       ctaTitle: "Topluluğumuza katılmaya hazır mısınız?",
       ctaSubtitle:
@@ -1014,23 +1016,23 @@ export const tr: Translation = {
     },
     contact: {
       title: "İletişim",
-      body: "Tüm mesajları okuyoruz. İş birliği, basın veya hesap desteği için Destek sayfasındaki e-posta adresini kullanın. Ortalama dönüş: birkaç iş günü.\n\nE-posta: support@timelink.local (canlıya alırken güncelleyin).",
+      body: "Tüm mesajları okuyoruz. İş birliği, basın veya hesap desteği için Destek sayfasındaki e-posta adresini kullanın. Ortalama dönüş: birkaç iş günü.\n\nE-posta: support@tiempos.local (canlıya alırken güncelleyin).",
     },
     support: {
       title: "Destek ve yardım",
-      body: "Yardıma mı ihtiyacınız var? Önce Nasıl çalışır, İptal ve no-show politikası ve Eğitmen rehberi sayfalarına bakın. Takıldıysanız support@timelink.local adresine hesap e-postanızı ve kısa açıklamayı yazın.\n\nHer anlaşmazlığa arabuluculuk yapamayız; ancak kötüye kullanım ve tekrarlayan no-show modellerini ciddiye alır, topluluğu korumak için hesap kısıtlayabiliriz.",
+      body: "Yardıma mı ihtiyacınız var? Önce Nasıl çalışır, İptal ve no-show politikası ve Eğitmen rehberi sayfalarına bakın. Takıldıysanız support@tiempos.local adresine hesap e-postanızı ve kısa açıklamayı yazın.\n\nHer anlaşmazlığa arabuluculuk yapamayız; ancak kötüye kullanım ve tekrarlayan no-show modellerini ciddiye alır, topluluğu korumak için hesap kısıtlayabiliriz.",
     },
     terms: {
       title: "Kullanım şartları",
       heroSubtitle:
-        "Tiempo’i adil ve güvenli kullanma kuralları: profil, davranış ve zaman kredileri.",
-      body: "Tiempo’te hesap oluşturup hizmeti kullanarak, platformu iyi niyetle kullanmayı kabul edersiniz. Profil bilgilerinizi doğru tutar, diğer üyelere saygılı davranır ve yürürlükteki yasalara uyarsınız.\n\nZaman kredileri yasal para değildir, nakde çevrilemez ve nakit değeri yoktur; yalnızca uygulama içinde beceri takası ve oturum akışını düzenlemek içindir.\n\nÖzellikleri değiştirebilir, kötüye kullanım, taciz veya tekrarlayan ihlallerde hesapları askıya alabilir veya kısıtlayabilir, gerekli durumlarda uygulama içi bildirimlerle haber verebiliriz.\n\nŞartları güncellersek makul ölçüde bildirim yapılır; güncellemeden sonra kullanımı sürdürmek güncel şartları kabul sayılır.\n\nBu metin geliştirme amaçlı sade bir özettir. Canlıya çıkmadan önce tam hukuki metin uzman avukatla hazırlanmalıdır.",
+        "Tiempos'u adil ve güvenli kullanma kuralları: profil, davranış ve zaman kredileri.",
+      body: "Tiempos'ta hesap oluşturup hizmeti kullanarak, platformu iyi niyetle kullanmayı kabul edersiniz. Profil bilgilerinizi doğru tutar, diğer üyelere saygılı davranır ve yürürlükteki yasalara uyarsınız.\n\nZaman kredileri yasal para değildir, nakde çevrilemez ve nakit değeri yoktur; yalnızca uygulama içinde beceri takası ve oturum akışını düzenlemek içindir.\n\nÖzellikleri değiştirebilir, kötüye kullanım, taciz veya tekrarlayan ihlallerde hesapları askıya alabilir veya kısıtlayabilir, gerekli durumlarda uygulama içi bildirimlerle haber verebiliriz.\n\nŞartları güncellersek makul ölçüde bildirim yapılır; güncellemeden sonra kullanımı sürdürmek güncel şartları kabul sayılır.\n\nBu metin geliştirme amaçlı sade bir özettir. Canlıya çıkmadan önce tam hukuki metin uzman avukatla hazırlanmalıdır.",
     },
     privacy: {
       title: "Gizlilik politikası",
       heroSubtitle:
         "Hesap ve profil verilerinin kullanımı, görünürlük ve güvenlik hakkında özet bilgi.",
-      body: "Tiempo; hesap ve oturum bilgilerinizi, eklediğiniz profil alanlarını, rezervasyon ve mesajlaşma ile bildirim süreçlerinde oluşan verileri ve hizmeti güvenli çalıştırmak için gerekli teknik kayıtları işleyebilir.\n\nGörünürlük: Yayınladığınız profil bilgileri, her ekranda ve ayarlarınızda belirtildiği şekilde diğer oturum açmış üyelere gösterilebilir. Kişisel verilerinizi üçüncü taraflara “satmak” iş modelimiz değildir.\n\nÇerezler ve güvenlik: Oturum açma, tercihler ve güvenlik için gerekli olduğu ölçüde çerez veya benzeri teknolojiler kullanılabilir. Güçlü ve benzersiz bir şifre kullanın; hesap bilgilerinizi paylaşmayın.\n\nSaklama ve silme: Hesap silme talebinde bulunabilirsiniz. Yasal zorunluluk, ciddi güvenlik veya dolandırıcılık önleme için bazı kayıtların tutulması gerekebilir.\n\nBu özet, geliştirme aşamasında şeffaflık içindir. Canlı ortam için ülkeye özgü tam gizlilik politikası ve veri işleme düzenlemeleri yayımlanmalıdır.",
+      body: "Tiempos; hesap ve oturum bilgilerinizi, eklediğiniz profil alanlarını, rezervasyon ve mesajlaşma ile bildirim süreçlerinde oluşan verileri ve hizmeti güvenli çalıştırmak için gerekli teknik kayıtları işleyebilir.\n\nGörünürlük: Yayınladığınız profil bilgileri, her ekranda ve ayarlarınızda belirtildiği şekilde diğer oturum açmış üyelere gösterilebilir. Kişisel verilerinizi üçüncü taraflara “satmak” iş modelimiz değildir.\n\nÇerezler ve güvenlik: Oturum açma, tercihler ve güvenlik için gerekli olduğu ölçüde çerez veya benzeri teknolojiler kullanılabilir. Güçlü ve benzersiz bir şifre kullanın; hesap bilgilerinizi paylaşmayın.\n\nSaklama ve silme: Hesap silme talebinde bulunabilirsiniz. Yasal zorunluluk, ciddi güvenlik veya dolandırıcılık önleme için bazı kayıtların tutulması gerekebilir.\n\nBu özet, geliştirme aşamasında şeffaflık içindir. Canlı ortam için ülkeye özgü tam gizlilik politikası ve veri işleme düzenlemeleri yayımlanmalıdır.",
     },
     policyCancellation: {
       title: "İptal, geç iptal ve no-show",

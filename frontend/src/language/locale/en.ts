@@ -99,7 +99,7 @@ export const en = {
     support: "Support",
     cancellationPolicy: "Cancellations & no-show",
     copyright:
-      "Tiempo. All rights reserved. Made with passion for learning.",
+      "Tiempos. All rights reserved. Made with passion for learning.",
   },
   landing: {
     hero: {
@@ -116,7 +116,7 @@ export const en = {
       statHours: "Learn on your schedule",
     },
     features: {
-      title: "How Tiempo Works",
+      title: "How Tiempos Works",
       subtitle:
         "A simple three-step process to start exchanging skills and building your community",
       items: [
@@ -643,7 +643,7 @@ export const en = {
     reviewsSummary: "{{rating}} average · {{count}} reviews",
   },
   howItWorks: {
-    heroTitle: "How Tiempo Works",
+    heroTitle: "How Tiempos Works",
     heroSubtitle:
       "A simple, fair way to exchange skills and build your community",
     getStartedFree: "Get Started Free",
@@ -677,7 +677,7 @@ export const en = {
     ],
     creditsTitle: "Understanding Time Credits",
     creditsIntro:
-      "Time credits are the currency of Tiempo. The system is beautifully simple:",
+      "Time credits are the currency of Tiempos. The system is beautifully simple:",
     teachHour: "1 Hour Teaching = 1 Time Credit",
     teachHourSub: "Earn credits by sharing your knowledge",
     learnHour: "1 Time Credit = 1 Hour Learning",
@@ -687,7 +687,7 @@ export const en = {
     bonusDesc:
       "New members start with 1 time credit (1 hour of learning). Begin right away — no teaching required first.",
     claimBonus: "Claim Your Bonus",
-    whyTitle: "Why Choose Tiempo?",
+    whyTitle: "Why Choose Tiempos?",
     benefits: [
       "No money needed - trade time for time",
       "Learn from passionate experts in your community",
@@ -704,14 +704,14 @@ export const en = {
       },
       {
         q: "What if I don't have any skills to teach?",
-        a: "Everyone has something valuable to share! Whether it's cooking, gardening, a language you speak, or professional expertise - all skills are welcome on Tiempo.",
+        a: "Everyone has something valuable to share! Whether it's cooking, gardening, a language you speak, or professional expertise - all skills are welcome on Tiempos.",
       },
       {
         q: "Can I learn and teach at the same time?",
         a: "Absolutely! Most of our members are both teachers and students. You can offer your skills while simultaneously learning new ones.",
       },
       {
-        q: "Is Tiempo free to use?",
+        q: "Is Tiempos free to use?",
         a: "Yes! Creating an account and exchanging skills is completely free. We believe in making learning accessible to everyone.",
       },
       {
@@ -760,6 +760,8 @@ export const en = {
     successText:
       "Thank you for contacting us. We'll get back to you soon.",
     errorSend: "Your message could not be sent. Please try again or email us directly.",
+    errorSendAuth:
+      "The server blocked this request (not an account sign-in issue). If you deploy the frontend yourself, set VITE_API_BASE_URL to the API host only (no /api suffix) or configure your host to forward /api to the backend. You can still email us below.",
     errorUnavailable:
       "The site cannot send email right now (SMTP not ready or send failed). Check that Render has SPRING_MAIL_* and APP_MAIL_FROM set. You can still write to tiempos.site@gmail.com.",
     faqSectionTitle: "Looking for quick answers?",
@@ -771,7 +773,7 @@ export const en = {
   addSkill: {
     title: "Add New Skill",
     editTitle: "Edit Skill",
-    subtitle: "Share your expertise with the Tiempo community",
+    subtitle: "Share your expertise with the Tiempos community",
     editSubtitle: "Update your skill listing details",
     skillTitle: "Skill Title *",
     skillTitlePh: "e.g., Beginner Guitar Lessons",
@@ -950,12 +952,12 @@ export const en = {
   },
   staticSite: {
     about: {
-      heroTitle: "About Tiempo",
+      heroTitle: "About Tiempos",
       heroSubtitle:
         "Building a community where time is the currency and skills are shared freely",
       missionTitle: "Our Mission",
       missionP1:
-        "Tiempo was born from a simple yet powerful idea: everyone has something valuable to teach, and everyone has something they want to learn. We believe that knowledge shouldn't be locked behind financial barriers.",
+        "Tiempos was born from a simple yet powerful idea: everyone has something valuable to teach, and everyone has something they want to learn. We believe that knowledge shouldn't be locked behind financial barriers.",
       missionP2:
         "Our platform enables people to exchange skills using time as currency. One hour of your time teaching equals one hour of learning from someone else. It's fair, it's simple, and it builds genuine connections.",
       stats: {
@@ -993,10 +995,10 @@ export const en = {
       ],
       storyTitle: "Our Story",
       storyParagraphs: [
-        "Tiempo started in 2024 when a group of educators and developers came together with a shared vision: to create a world where learning is accessible to everyone, regardless of their financial situation.",
+        "Tiempos started in 2024 when a group of educators and developers came together with a shared vision: to create a world where learning is accessible to everyone, regardless of their financial situation.",
         "We noticed that traditional educational platforms often exclude talented individuals who want to learn but can't afford the fees. Meanwhile, many skilled people want to share their knowledge but don't know where to start.",
         "By using time as currency, we've created a truly equitable platform. Whether you're teaching advanced programming or beginner cooking, your hour is worth the same. This fundamental principle has helped us build a diverse, engaged community of learners and teachers from all walks of life.",
-        "Today, Tiempo continues to grow, connecting thousands of people around the world, fostering meaningful connections, and proving that the best things in life – like knowledge and community – don't need a price tag.",
+        "Today, Tiempos continues to grow, connecting thousands of people around the world, fostering meaningful connections, and proving that the best things in life – like knowledge and community – don't need a price tag.",
       ],
       ctaTitle: "Ready to Join Our Community?",
       ctaSubtitle:
@@ -1009,29 +1011,29 @@ export const en = {
     },
     contact: {
       title: "Contact us",
-      body: "We read every message. For partnerships, press, or account help, use the support email on the Support page. Average response: a few business days.\n\nEmail: support@timelink.local (update this in your deployment).",
+      body: "We read every message. For partnerships, press, or account help, use the support email on the Support page. Average response: a few business days.\n\nEmail: support@tiempos.local (update this in your deployment).",
     },
     support: {
       title: "Support & help",
-      body: "Need help? Check How it works, Cancellation & no-show policy, and the Instructor guide first. If you are stuck, email support@timelink.local with your account email and a short description.\n\nWe cannot mediate every dispute, but we take abuse and no-show patterns seriously and may restrict accounts to protect the community.",
+      body: "Need help? Check How it works, Cancellation & no-show policy, and the Instructor guide first. If you are stuck, email support@tiempos.local with your account email and a short description.\n\nWe cannot mediate every dispute, but we take abuse and no-show patterns seriously and may restrict accounts to protect the community.",
     },
     terms: {
       title: "Terms of Service",
       heroSubtitle:
-        "The rules for using Tiempo fairly and safely—profiles, behavior, and time credits.",
-      body: "By creating an account and using Tiempo, you agree to use the service in good faith. You will provide accurate profile information, treat other members with respect, and follow applicable laws.\n\nTime credits are not legal tender, have no cash value, and cannot be redeemed for cash. They exist only to schedule and record skill exchanges inside the platform.\n\nWe may change or discontinue features, send notices in the app, and suspend or restrict accounts that abuse the platform, harass others, or repeatedly break these expectations.\n\nIf we update these terms, we will give reasonable notice where practical. Continued use after changes means you accept the updated terms.\n\nThis page is a plain-language summary for the project. Before a public launch, a complete Terms of Service should be drafted and reviewed with qualified legal counsel.",
+        "The rules for using Tiempos fairly and safely—profiles, behavior, and time credits.",
+      body: "By creating an account and using Tiempos, you agree to use the service in good faith. You will provide accurate profile information, treat other members with respect, and follow applicable laws.\n\nTime credits are not legal tender, have no cash value, and cannot be redeemed for cash. They exist only to schedule and record skill exchanges inside the platform.\n\nWe may change or discontinue features, send notices in the app, and suspend or restrict accounts that abuse the platform, harass others, or repeatedly break these expectations.\n\nIf we update these terms, we will give reasonable notice where practical. Continued use after changes means you accept the updated terms.\n\nThis page is a plain-language summary for the project. Before a public launch, a complete Terms of Service should be drafted and reviewed with qualified legal counsel.",
     },
     privacy: {
       title: "Privacy Policy",
       heroSubtitle:
         "How we use account and profile data, what others can see, and how we protect your information.",
-      body: "Tiempo processes personal data that you provide and that is generated when you use the product—for example: account and login details, profile fields you choose to add, messages and notifications related to bookings, and technical data needed to keep the service secure and reliable.\n\nVisibility: Other signed-in members may see the profile information you choose to publish, according to what each screen and your settings describe (for example public profile fields and skill listings). We do not sell your personal information to third parties as a business model.\n\nCookies and security: We use cookies or similar technologies where needed for authentication, preferences, and security (such as keeping you signed in safely). Use a strong, unique password and do not share your login with others.\n\nRetention and deletion: You may request deletion of your account. Some information may be retained where the law, fraud prevention, or serious safety investigations require it.\n\nThis summary supports trust and transparency during development. A full, jurisdiction-specific privacy policy and data-processing agreements should be finalized before production.",
+      body: "Tiempos processes personal data that you provide and that is generated when you use the product—for example: account and login details, profile fields you choose to add, messages and notifications related to bookings, and technical data needed to keep the service secure and reliable.\n\nVisibility: Other signed-in members may see the profile information you choose to publish, according to what each screen and your settings describe (for example public profile fields and skill listings). We do not sell your personal information to third parties as a business model.\n\nCookies and security: We use cookies or similar technologies where needed for authentication, preferences, and security (such as keeping you signed in safely). Use a strong, unique password and do not share your login with others.\n\nRetention and deletion: You may request deletion of your account. Some information may be retained where the law, fraud prevention, or serious safety investigations require it.\n\nThis summary supports trust and transparency during development. A full, jurisdiction-specific privacy policy and data-processing agreements should be finalized before production.",
     },
     policyCancellation: {
       title: "Cancellations & no-show",
       heroSubtitle:
         "When you can cancel a session, what “late cancel” and no-show mean, and how time credits move.",
-      body: "Time credits on Tiempo are settled when the instructor marks a session as completed in the product flow. Until then, making or holding a booking does not permanently debit your balance in the same way as a final charge—see in-app help for the exact behavior in your build.\n\nUse this policy as a shared expectation between members:\n\n— More than 2 hours before the scheduled start: cancellation is typically free of credit movement (in most cases nothing has been finally debited yet; confirm in the app).\n\n— Between 1 and 2 hours before the start: treat this as a late cancellation. Tell the other person as soon as possible. Repeated patterns can affect trust signals and community standing.\n\n— Less than 1 hour before the start, or if someone does not show up (no-show): the session may be forfeited; the host may document the situation through Support. Repeated no-shows may lead to account review.\n\nOptional attendance acknowledgment in a thread can help both sides, but it does not replace the instructor’s “complete session” step for moving credits.\n\nThis is a community guideline, not a substitute for legal advice. Adjust time windows in your deployment if needed.",
+      body: "Time credits on Tiempos are settled when the instructor marks a session as completed in the product flow. Until then, making or holding a booking does not permanently debit your balance in the same way as a final charge—see in-app help for the exact behavior in your build.\n\nUse this policy as a shared expectation between members:\n\n— More than 2 hours before the scheduled start: cancellation is typically free of credit movement (in most cases nothing has been finally debited yet; confirm in the app).\n\n— Between 1 and 2 hours before the start: treat this as a late cancellation. Tell the other person as soon as possible. Repeated patterns can affect trust signals and community standing.\n\n— Less than 1 hour before the start, or if someone does not show up (no-show): the session may be forfeited; the host may document the situation through Support. Repeated no-shows may lead to account review.\n\nOptional attendance acknowledgment in a thread can help both sides, but it does not replace the instructor’s “complete session” step for moving credits.\n\nThis is a community guideline, not a substitute for legal advice. Adjust time windows in your deployment if needed.",
     },
     instructorGuide: {
       title: "Instructor: approval & session flow",

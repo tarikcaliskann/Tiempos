@@ -54,7 +54,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
             <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
               <BrandLogo className="h-full w-full object-cover" />
             </div>
-            <span className="text-2xl text-white">Tiempo</span>
+            <span className="text-2xl text-white">Tiempos</span>
           </button>
           <h1 className="text-3xl text-white mb-2">
             {emailSent ? a.titleSent : a.title}
@@ -124,7 +124,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                   <Button 
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-6"
                     onClick={() => {
-                      sessionStorage.setItem("timelink_reset_email", email);
+                      sessionStorage.setItem("tiempos_reset_email", email);
                       onNavigate?.("reset-password");
                     }}
                   >

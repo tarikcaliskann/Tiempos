@@ -128,10 +128,10 @@ export function Navbar({ onNavigate }: NavbarProps) {
       void loadUnread();
       void loadMessageUnread();
     };
-    window.addEventListener("timelink:notifications-changed", onNotificationsChanged);
+    window.addEventListener("tiempos:notifications-changed", onNotificationsChanged);
     return () =>
       window.removeEventListener(
-        "timelink:notifications-changed",
+        "tiempos:notifications-changed",
         onNotificationsChanged,
       );
   }, [loadMessageUnread, loadUnread]);
@@ -242,7 +242,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
   const goToExchangeMessages = async (exchangeRequestId: string | null) => {
     if (!exchangeRequestId) return;
     try {
-      sessionStorage.setItem("timelink_open_exchange", exchangeRequestId);
+      sessionStorage.setItem("tiempos_open_exchange", exchangeRequestId);
     } catch {
       /* ignore */
     }
@@ -301,7 +301,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                 <BrandLogo className="h-8 w-8 object-contain" />
               </div>
               <span className="text-xl whitespace-nowrap text-gray-900 dark:text-zinc-50">
-                Tiempo
+                Tiempos
               </span>
             </button>
 

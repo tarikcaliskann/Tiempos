@@ -88,8 +88,8 @@ interface MessagesPageProps {
   onViewUserProfile?: (userId: string) => void;
 }
 
-const OPEN_EXCHANGE_KEY = "timelink_open_exchange";
-const OPEN_USER_KEY = "timelink_open_user";
+const OPEN_EXCHANGE_KEY = "tiempos_open_exchange";
+const OPEN_USER_KEY = "tiempos_open_user";
 
 function tomorrowDateStr(): string {
   const t = new Date();
@@ -688,7 +688,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
             markNotificationRead(token, id).catch(() => undefined),
           ),
         );
-        window.dispatchEvent(new Event("timelink:notifications-changed"));
+        window.dispatchEvent(new Event("tiempos:notifications-changed"));
       } catch {
         /* ignore */
       }

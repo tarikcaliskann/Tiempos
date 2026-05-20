@@ -10,14 +10,14 @@
 services:
   mailpit:
     image: axllent/mailpit:latest
-    container_name: timelink-mailpit
+    container_name: tiempos-mailpit
     ports:
       - "8025:8025"
       - "1025:1025"
 
   db:
     image: postgres:16-alpine
-    container_name: timelink-postgres
+    container_name: tiempos-postgres
     environment:
       POSTGRES_USER: timebank_user
       POSTGRES_PASSWORD: "1234"
@@ -37,7 +37,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: timelink-api
+    container_name: tiempos-api
     ports:
       - "8080:8080"
     environment:
@@ -66,7 +66,7 @@ services:
       args:
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-${GOOGLE_CLIENT_ID:-}}
         VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID:-}
-    container_name: timelink-web
+    container_name: tiempos-web
     ports:
       - "3000:80"
     depends_on:

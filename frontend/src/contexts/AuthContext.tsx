@@ -9,9 +9,9 @@ import {
 } from "react";
 import { fetchMyProfile } from "../api/user";
 
-const AUTH_STORAGE_KEY = "timelink_auth";
-const AUTH_SESSION_KEY = "timelink_auth_session";
-const LEGACY_USER_KEY = "timelink_user";
+const AUTH_STORAGE_KEY = "tiempos_auth";
+const AUTH_SESSION_KEY = "tiempos_auth_session";
+const LEGACY_USER_KEY = "tiempos_user";
 
 /** localStorage ~5MB; base64 profil fotoğrafı diske yazılmaz (API tek kaynak). Bellekte tam URL kalır. */
 function userForLocalStorage(u: AuthUser): AuthUser {
@@ -114,9 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onAuthExpired = () => logout();
-    window.addEventListener("timelink:auth-expired", onAuthExpired);
+    window.addEventListener("tiempos:auth-expired", onAuthExpired);
     return () =>
-      window.removeEventListener("timelink:auth-expired", onAuthExpired);
+      window.removeEventListener("tiempos:auth-expired", onAuthExpired);
   }, [logout]);
 
   const patchUser = useCallback((patch: Partial<AuthUser>) => {

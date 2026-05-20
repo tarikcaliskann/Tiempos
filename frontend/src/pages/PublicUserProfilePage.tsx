@@ -209,7 +209,7 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
                       className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm"
                       onClick={() => {
                         try {
-                          sessionStorage.setItem("timelink_open_user", profile.id);
+                          sessionStorage.setItem("tiempos_open_user", profile.id);
                         } catch {
                           /* ignore */
                         }

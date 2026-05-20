@@ -223,10 +223,10 @@ public class RegistrationMailService {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(from);
             msg.setTo(email);
-            msg.setSubject("Tiempo — doğrulama kodunuz");
+            msg.setSubject("Tiempos — doğrulama kodunuz");
             msg.setText(
                     "Merhaba " + fullName + ",\n\n"
-                            + "Tiempo hesabınızı tamamlamak için doğrulama kodunuz:\n\n"
+                            + "Tiempos hesabınızı tamamlamak için doğrulama kodunuz:\n\n"
                             + "    " + code + "\n\n"
                             + "Bu kodu uygulamada girerek hesabınızı açabilirsiniz.\n"
                             + "Uygulama adresi: " + publicBase + "\n\n"
@@ -280,7 +280,7 @@ public class RegistrationMailService {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(from);
             msg.setTo(email);
-            msg.setSubject("Tiempo — şifre sıfırlama kodunuz");
+            msg.setSubject("Tiempos — şifre sıfırlama kodunuz");
             msg.setText(
                     "Merhaba " + fullName + ",\n\n"
                             + "Şifre sıfırlama kodunuz:\n\n"
@@ -315,10 +315,10 @@ public class RegistrationMailService {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(from);
             msg.setTo(to);
-            msg.setSubject("Tiempo — kaydınız tamamlandı");
+            msg.setSubject("Tiempos — kaydınız tamamlandı");
             msg.setText(
                     "Merhaba " + user.getFullName() + ",\n\n"
-                            + "Tiempo'e hoş geldiniz. Hesabınız oluşturuldu.\n\n"
+                            + "Tiempos'a hoş geldiniz. Hesabınız oluşturuldu.\n\n"
                             + "Uygulama: " + publicBase + "\n\n"
                             + "Bu e-postayı siz talep etmediyseniz yok sayabilirsiniz.\n"
             );
@@ -352,7 +352,7 @@ public class RegistrationMailService {
         if (user != null && !user.isBlank()) {
             return user.trim();
         }
-        return "noreply@timelink.local";
+        return "noreply@tiempos.local";
     }
 
     /**
@@ -382,7 +382,7 @@ public class RegistrationMailService {
         String from = fromAddress();
         String subjectLabel = contactSubjectLabel(subjectKey);
         String body =
-                "New message from the Tiempo contact form.\n\n"
+                "New message from the Tiempos contact form.\n\n"
                         + "Name: " + name + "\n"
                         + "Email: " + replyToEmail + "\n"
                         + "Topic: " + subjectLabel + "\n\n"
@@ -395,7 +395,7 @@ public class RegistrationMailService {
             helper.setFrom(from);
             helper.setTo(inbox);
             helper.setReplyTo(replyToEmail);
-            helper.setSubject("[Tiempo Contact] " + subjectLabel);
+            helper.setSubject("[Tiempos Contact] " + subjectLabel);
             helper.setText(body, false);
             mailSender.send(mimeMessage);
             log.info("İletişim formu e-postası gönderildi: inbox={}, replyTo={}", inbox, maskEmailForLog(replyToEmail));

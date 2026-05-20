@@ -108,7 +108,7 @@ export async function apiFetch<T>(
       token &&
       typeof window !== "undefined"
     ) {
-      window.dispatchEvent(new Event("timelink:auth-expired"));
+      window.dispatchEvent(new Event("tiempos:auth-expired"));
     }
     const msg =
       data &&

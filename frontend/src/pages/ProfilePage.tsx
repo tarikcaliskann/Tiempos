@@ -314,10 +314,10 @@ export function ProfilePage({
 
   useEffect(() => {
     try {
-      const t = sessionStorage.getItem("timelink_profile_tab");
+      const t = sessionStorage.getItem("tiempos_profile_tab");
       if (t === "teaching" || t === "learning" || t === "reviews") {
         setMainTab(t);
-        sessionStorage.removeItem("timelink_profile_tab");
+        sessionStorage.removeItem("tiempos_profile_tab");
       }
     } catch {
       /* ignore */
@@ -410,7 +410,7 @@ export function ProfilePage({
       setHiddenLearningIds([]);
       return;
     }
-    const key = `timelink_hidden_learning:${user.id.toLowerCase()}`;
+    const key = `tiempos_hidden_learning:${user.id.toLowerCase()}`;
     try {
       const raw = localStorage.getItem(key);
       if (!raw) {
@@ -436,7 +436,7 @@ export function ProfilePage({
       return;
     }
     const shareUrl = `${window.location.origin}${PATHS.user(profile.id)}`;
-    const shareTitle = displayName || "Tiempo";
+    const shareTitle = displayName || "Tiempos";
     try {
       if (navigator.share) {
         await navigator.share({
@@ -470,7 +470,7 @@ export function ProfilePage({
   const hideLearningBooking = useCallback(
     (bookingId: string) => {
       if (!user?.id) return;
-      const key = `timelink_hidden_learning:${user.id.toLowerCase()}`;
+      const key = `tiempos_hidden_learning:${user.id.toLowerCase()}`;
       setHiddenLearningIds((prev) => {
         const next = Array.from(new Set([...prev, bookingId]));
         try {

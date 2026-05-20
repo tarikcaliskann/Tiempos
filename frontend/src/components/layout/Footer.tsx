@@ -17,7 +17,7 @@ export function Footer() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
                 <BrandLogo className="h-8 w-8 object-contain" />
               </div>
-              <span className="text-2xl font-semibold">Tiempo</span>
+              <span className="text-2xl font-semibold">Tiempos</span>
             </div>
             <p className="mb-4 max-w-md text-indigo-100/90">
               {f.tagline}

@@ -3,7 +3,7 @@ type BrandLogoProps = {
   alt?: string;
 };
 
-export function BrandLogo({ className, alt = "Tiempo logo" }: BrandLogoProps) {
+export function BrandLogo({ className, alt = "Tiempos logo" }: BrandLogoProps) {
   return (
     <img
       src="/logo.svg"

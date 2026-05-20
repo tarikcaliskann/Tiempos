@@ -94,7 +94,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
         },
         res.token,
       );
-      sessionStorage.setItem("timelink_profile_onboarding", "1");
+      sessionStorage.setItem("tiempos_profile_onboarding", "1");
       onNavigate?.("edit-profile");
     } catch (err) {
       setError(apiErrorDisplayMessage(err, a.errorFailed));
@@ -123,7 +123,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
         },
         res.token,
       );
-      sessionStorage.setItem("timelink_profile_onboarding", "1");
+      sessionStorage.setItem("tiempos_profile_onboarding", "1");
       onNavigate?.("edit-profile");
     } catch (err) {
       setError(apiErrorDisplayMessage(err, a.errorFailed));
@@ -157,7 +157,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
             <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
               <BrandLogo className="h-full w-full object-cover" />
             </div>
-            <span className="text-2xl text-white">Tiempo</span>
+            <span className="text-2xl text-white">Tiempos</span>
           </button>
           <h1 className="text-3xl text-white mb-2">{a.title}</h1>
           <p className="text-white/80">{a.subtitle}</p>
@@ -363,7 +363,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
                     },
                     res.token,
                   );
-                  sessionStorage.setItem("timelink_profile_onboarding", "1");
+                  sessionStorage.setItem("tiempos_profile_onboarding", "1");
                   onNavigate?.("edit-profile");
                 }}
               />

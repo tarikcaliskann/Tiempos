@@ -14,7 +14,7 @@ createRoot(document.getElementById("root")!).render(
     attribute="class"
     defaultTheme="dark"
     enableSystem={false}
-    storageKey="timelink-theme"
+    storageKey="tiempos-theme"
     disableTransitionOnChange
   >
     <LanguageProvider>

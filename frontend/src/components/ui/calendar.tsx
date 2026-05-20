@@ -16,7 +16,7 @@ function Calendar({ className, classNames: userClassNames, components, ...props 
     <DayPicker
       showOutsideDays
       className={cn(
-        "timelink-calendar p-2 [--rdp-day-width:2.25rem] [--rdp-day-height:2.25rem] [--rdp-day_button-width:2.25rem] [--rdp-day_button-height:2.25rem]",
+        "tiempos-calendar p-2 [--rdp-day-width:2.25rem] [--rdp-day-height:2.25rem] [--rdp-day_button-width:2.25rem] [--rdp-day_button-height:2.25rem]",
         className,
       )}
       classNames={{

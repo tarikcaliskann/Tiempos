@@ -1,7 +1,7 @@
 import { apiFetch } from "./client";
 
 /** sessionStorage: başka üyenin profil sayfası için hedef kullanıcı id */
-export const PUBLIC_PROFILE_USER_ID_KEY = "timelink_view_user_id";
+export const PUBLIC_PROFILE_USER_ID_KEY = "tiempos_view_user_id";
 
 export type UserProfileDto = {
   id: string;

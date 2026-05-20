@@ -212,7 +212,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                             onClick={() => {
                               try {
                                 sessionStorage.setItem(
-                                  "timelink_open_exchange",
+                                  "tiempos_open_exchange",
                                   ex.id,
                                 );
                               } catch {

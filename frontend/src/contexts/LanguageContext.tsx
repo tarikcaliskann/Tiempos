@@ -9,7 +9,7 @@ import {
 } from "react";
 import { messages, type Locale, type Messages } from "../language";
 
-const STORAGE_KEY = "timelink-locale";
+const STORAGE_KEY = "tiempos-locale";
 
 function readLocale(): Locale {
   try {

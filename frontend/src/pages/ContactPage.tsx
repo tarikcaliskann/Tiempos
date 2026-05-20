@@ -50,6 +50,8 @@ export function ContactPage({ onNavigate }: ContactPageProps) {
       if (err instanceof ApiError && err.status === 503) {
         const detail = err.message.trim();
         msg = detail ? `${c.errorUnavailable}\n${detail}` : c.errorUnavailable;
+      } else if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        msg = c.errorSendAuth;
       } else {
         msg = contactFormErrorMessage(err, fallback);
       }

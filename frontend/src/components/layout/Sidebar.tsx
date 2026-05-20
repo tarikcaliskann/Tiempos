@@ -43,7 +43,7 @@ export function Sidebar({
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white">
               <BrandLogo className="h-8 w-8 object-contain" />
             </div>
-            <span className="text-xl text-foreground">Tiempo</span>
+            <span className="text-xl text-foreground">Tiempos</span>
           </button>
 
           <button

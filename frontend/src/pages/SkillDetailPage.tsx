@@ -512,7 +512,7 @@ export function SkillDetailPage({
         scheduledStartAt,
       });
       try {
-        sessionStorage.setItem("timelink_open_exchange", created.id);
+        sessionStorage.setItem("tiempos_open_exchange", created.id);
       } catch {
         /* ignore */
       }
@@ -849,7 +849,7 @@ export function SkillDetailPage({
                       className="w-full"
                       onClick={() => {
                         try {
-                          sessionStorage.setItem("timelink_open_user", skill.ownerId);
+                          sessionStorage.setItem("tiempos_open_user", skill.ownerId);
                         } catch {
                           /* ignore */
                         }

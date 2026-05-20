@@ -94,7 +94,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
     setDeleteLoading(true);
     try {
       await deleteMyAccount(token);
-      sessionStorage.removeItem("timelink_profile_onboarding");
+      sessionStorage.removeItem("tiempos_profile_onboarding");
       logout();
       setDeleteOpen(false);
       onNavigate?.("landing");

@@ -1,6 +1,6 @@
-# Tiempo
+# Tiempos
 
-Monorepo: **frontend** (Vite + React + TypeScript) ve **backend** (Spring Boot + PostgreSQL).
+Monorepo (**Tiempos Project**): **frontend** (Vite + React + TypeScript) ve **backend** (Spring Boot + PostgreSQL).
 
 ## Klasör yapısı
 
@@ -50,7 +50,7 @@ Sonra:
 npm run backend:run
 ```
 
-**Önemli:** `docker compose up -d --build` ile **API konteyneri de çalışıyorsa** (`timelink-api`), o zaman API zaten **8080** portunu kullanır. Bu durumda **`npm run backend:run` çalıştırmayın** (aynı porta iki süreç binemez). Yerel Maven ile denemek için önce API’yi durdurun: `npm run docker:stop-api` veya `docker compose stop api`.
+**Önemli:** `docker compose up -d --build` ile **API konteyneri de çalışıyorsa** (`tiempos-api`), o zaman API zaten **8080** portunu kullanır. Bu durumda **`npm run backend:run` çalıştırmayın** (aynı porta iki süreç binemez). Yerel Maven ile denemek için önce API’yi durdurun: `npm run docker:stop-api` veya `docker compose stop api`.
 
 ### Durdurma
 
@@ -69,7 +69,7 @@ Veritabanı dosyalarını da silmek için: `docker compose down -v`
 - **`Bind for 0.0.0.0:5432 failed: port is already allocated`** — Bilgisayarda zaten PostgreSQL çalışıyor. Bu projede Docker DB **5433** üzerinden yayınlanır; `application.properties` buna göre ayarlıdır.
 - **`Dockerfile: no such file or directory`** — `backend/Dockerfile` eksikse repodaki dosyayı kullanın; `docker compose up -d --build` kök dizinden çalıştırılmalıdır.
 - **`role "timebank_user" does not exist`** — Spring yanlış Postgres’e bağlanıyor olabilir (ör. Docker DB çalışmıyorken `localhost:5432`). Önce `docker compose up -d db`, ardından `npm run backend:run`. Ya da kendi Postgres’inizde kullanıcı oluşturun (aşağı).
-- **`Port 8080 was already in use` / `Web server failed to start`** — Aynı anda hem Docker’daki **`timelink-api`** hem de **`npm run backend:run`** çalışıyor. İkisinden birini seçin: ya sadece Docker (`docker compose up -d --build`, yerel Maven yok), ya da API konteynerini durdurun (`npm run docker:stop-api`) sonra `npm run backend:run`.
+- **`Port 8080 was already in use` / `Web server failed to start`** — Aynı anda hem Docker’daki **`tiempos-api`** hem de **`npm run backend:run`** çalışıyor. İkisinden birini seçin: ya sadece Docker (`docker compose up -d --build`, yerel Maven yok), ya da API konteynerini durdurun (`npm run docker:stop-api`) sonra `npm run backend:run`.
 
 ## PostgreSQL’i Docker kullanmadan kurduysan
 

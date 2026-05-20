@@ -3651,14 +3651,14 @@ html.dark {
 }
 
 /* react-day-picker default: .rdp-months { max-width: fit-content } takvimi sıkıştırıyor */
-.timelink-calendar .rdp-months {
+.tiempos-calendar .rdp-months {
   max-width: none !important;
   width: 100%;
   min-width: 18rem;
 }
 
 /* Seçilemeyen günler: açık gri (day_button text-foreground’u böyle ezer) */
-.timelink-calendar .rdp-day.rdp-disabled .rdp-day_button {
+.tiempos-calendar .rdp-day.rdp-disabled .rdp-day_button {
   color: #b8b8c4 !important;
   cursor: not-allowed !important;
   opacity: 1 !important;
@@ -3666,14 +3666,14 @@ html.dark {
   background: transparent !important;
   box-shadow: none !important;
 }
-.timelink-calendar .rdp-day.rdp-disabled .rdp-day_button:hover {
+.tiempos-calendar .rdp-day.rdp-disabled .rdp-day_button:hover {
   background: rgb(0 0 0 / 0.04) !important;
   color: #b8b8c4 !important;
 }
-.dark .timelink-calendar .rdp-day.rdp-disabled .rdp-day_button {
+.dark .tiempos-calendar .rdp-day.rdp-disabled .rdp-day_button {
   color: #6b6b78 !important;
 }
-.dark .timelink-calendar .rdp-day.rdp-disabled .rdp-day_button:hover {
+.dark .tiempos-calendar .rdp-day.rdp-disabled .rdp-day_button:hover {
   background: rgb(255 255 255 / 0.06) !important;
   color: #8b8b9a !important;
 }

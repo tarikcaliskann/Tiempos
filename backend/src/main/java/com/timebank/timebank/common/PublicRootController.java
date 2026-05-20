@@ -16,7 +16,7 @@ public class PublicRootController {
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> root() {
         return Map.of(
-                "service", "tiempo-backend",
+                "service", "tiempos-backend",
                 "hint", "Web arayüzü ayrı dağıtımdadır; API /api altında."
         );
     }

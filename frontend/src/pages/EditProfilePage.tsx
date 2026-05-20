@@ -21,7 +21,7 @@ import {
   mergeLegacyOption,
 } from "../data/profilePicklists";
 
-const ONBOARDING_KEY = "timelink_profile_onboarding";
+const ONBOARDING_KEY = "tiempos_profile_onboarding";
 
 interface EditProfilePageProps {
   onNavigate?: (page: PageType) => void;
