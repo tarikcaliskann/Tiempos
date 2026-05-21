@@ -18,13 +18,22 @@ import { ImageWithFallback } from "../components/common/ImageWithFallback";
 import { fetchPublicSkills, type SkillDto } from "../api/skills";
 import { resolveSkillCoverImageUrl } from "../lib/skillCoverImageUrl";
 import {
+  fallbackAvailabilityFromDescription,
+  fallbackLocationFromDescription,
+  fallbackSessionTypeFromDescription,
+  getSkillAvailabilityParts,
+  skillCardDescriptionPreview,
+} from "../lib/skillProfileCardDisplay";
+import {
   Star,
   MapPin,
-  ArrowLeft,
   Calendar,
+  BookOpen,
+  ArrowLeft,
   Link2,
   Globe,
   MessageCircle,
+  Share2,
 } from "lucide-react";
 import { initialsFromFullName } from "../lib/initials";
 import { formatTemplate } from "../language";
@@ -43,14 +52,20 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
   const navigate = useNavigate();
   const { userId: userIdParam } = useParams<{ userId: string }>();
   const { t, locale } = useLanguage();
-  const p = t.publicUserProfile;
+  const pub = t.publicUserProfile;
+  const p = t.profile;
   const { user, token } = useAuth();
   const [profile, setProfile] = useState<PublicUserProfileDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [skillsLoading, setSkillsLoading] = useState(false);
   const [skills, setSkills] = useState<SkillDto[]>([]);
-  const [avatarBroken, setAvatarBroken] = useState(false);
+  const [mainTab, setMainTab] = useState<"teaching" | "learning" | "reviews">(
+    "teaching",
+  );
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const dayLabels = t.addSkill.days;
+  const catLabels = t.browse.categoryLabels;
 
   const load = useCallback(async () => {
     if (!token) {
@@ -68,7 +83,7 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
       }
     }
     if (!id) {
-      setError(p.notFound);
+      setError(pub.notFound);
       setProfile(null);
       setLoading(false);
       return;
@@ -84,12 +99,12 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
       const data = await fetchPublicUserProfile(token, id);
       setProfile(data);
     } catch (e) {
-      setError(apiErrorDisplayMessage(e, p.loadError));
+      setError(apiErrorDisplayMessage(e, pub.loadError));
       setProfile(null);
     } finally {
       setLoading(false);
     }
-  }, [token, user?.id, onNavigate, p.loadError, p.notFound, userIdParam]);
+  }, [token, user?.id, onNavigate, pub.loadError, pub.notFound, userIdParam]);
 
   useEffect(() => {
     void load();
@@ -123,223 +138,422 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
   }, [profile?.id]);
 
   useEffect(() => {
-    setAvatarBroken(false);
-  }, [profile?.avatarUrl]);
+    if (!shareFeedback) return;
+    const id = window.setTimeout(() => setShareFeedback(null), 2500);
+    return () => window.clearTimeout(id);
+  }, [shareFeedback]);
+
+  const handleShareProfile = useCallback(async () => {
+    if (!profile?.id) {
+      setShareFeedback(pub.loadError);
+      return;
+    }
+    const shareUrl = `${window.location.origin}${PATHS.user(profile.id)}`;
+    const shareTitle = profile.fullName || "Tiempos";
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: p.shareProfile,
+          url: shareUrl,
+        });
+        setShareFeedback(p.shareSuccess);
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareFeedback(p.shareCopied);
+        return;
+      }
+      const ta = document.createElement("textarea");
+      ta.value = shareUrl;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setShareFeedback(p.shareCopied);
+    } catch {
+      setShareFeedback(p.shareError);
+    }
+  }, [p, profile?.fullName, profile?.id, pub.loadError]);
+
+  const displayName = profile?.fullName ?? "";
+  const avatarSrc = profile?.avatarUrl?.trim() || null;
+
+  const memberDateStr = profile?.memberSince
+    ? new Date(profile.memberSince).toLocaleDateString(
+        locale === "tr" ? "tr-TR" : "en-US",
+        { year: "numeric", month: "long", day: "numeric" },
+      )
+    : null;
+
+  const showRating =
+    profile != null &&
+    profile.totalReviews > 0 &&
+    Number.isFinite(profile.averageRating);
+
+  const openMessagesToUser = () => {
+    if (!profile) return;
+    try {
+      sessionStorage.setItem("tiempos_open_user", profile.id);
+    } catch {
+      /* ignore */
+    }
+    onNavigate?.("messages");
+  };
 
   return (
     <PageLayout onNavigate={onNavigate}>
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-8 pt-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <Button
-            type="button"
-            variant="outline"
-            className="mb-4 border-white/35 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-            onClick={() => onNavigate?.("messages")}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {p.backToMessages}
-          </Button>
-        </div>
-      </div>
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              onClick={() => navigate(PATHS.browse)}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {pub.backToBrowse}
+            </Button>
+          </div>
 
-      <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:px-8">
-        {loading ? (
-          <p className="text-sm text-muted-foreground">{t.common.loading}</p>
-        ) : null}
-        {error && !loading ? (
-          <p className="text-sm text-destructive">{error}</p>
-        ) : null}
-        {profile && !loading ? (
-          <>
-            <Card className="mt-[-4.5rem] rounded-2xl border-0 bg-card/95 p-6 shadow-xl backdrop-blur-sm">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-[auto_1fr] md:items-center">
-                <div className="shrink-0">
-                  {profile.avatarUrl && !avatarBroken ? (
-                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl shadow-md md:h-24 md:w-24">
-                      <img
-                        src={profile.avatarUrl}
-                        alt=""
-                        className="block h-full w-full max-h-full max-w-full object-cover object-center"
-                        onError={() => setAvatarBroken(true)}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-muted text-xl font-semibold text-muted-foreground shadow-md md:h-24 md:w-24">
-                      {initialsFromFullName(profile.fullName)}
-                    </div>
-                  )}
+          {loading ? (
+            <p className="text-sm text-white/90">{t.common.loading}</p>
+          ) : null}
+          {error && !loading ? (
+            <p className="text-sm text-red-100">{error}</p>
+          ) : null}
+
+          {profile && !loading ? (
+            <div className="flex flex-col items-start gap-6 md:flex-row">
+              {avatarSrc ? (
+                <ImageWithFallback
+                  src={avatarSrc}
+                  alt=""
+                  className="h-32 w-32 shrink-0 rounded-2xl border-4 border-white object-cover shadow-2xl"
+                />
+              ) : (
+                <div
+                  className="flex h-32 w-32 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-white/20 text-3xl font-semibold text-white shadow-2xl"
+                  aria-hidden
+                >
+                  {initialsFromFullName(displayName)}
                 </div>
-                <div className="min-w-0">
-                  <h1 className="text-2xl font-semibold text-foreground md:text-3xl">
-                    {profile.fullName}
-                  </h1>
-                  <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-                    {profile.location ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <MapPin className="h-4 w-4" aria-hidden />
-                        {profile.location}
-                      </span>
-                    ) : null}
-                    {profile.memberSince ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Calendar className="h-4 w-4" aria-hidden />
-                        {p.memberSince}:{" "}
-                        {new Date(profile.memberSince).toLocaleDateString(
-                          locale === "tr" ? "tr-TR" : "en-US",
-                          { year: "numeric", month: "long" },
-                        )}
-                      </span>
-                    ) : null}
+              )}
+
+              <div className="min-w-0 flex-1 text-white">
+                <div className="mb-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start">
+                  <div className="min-w-0">
+                    <h1 className="mb-2 text-3xl">{displayName || "—"}</h1>
+                    <div className="mb-3 flex min-h-[28px] items-center gap-2">
+                      {showRating ? (
+                        <>
+                          <Star className="h-5 w-5 shrink-0 fill-yellow-300 text-yellow-300" />
+                          <span className="text-lg">
+                            {formatTemplate(p.reviewsCount, {
+                              rating: profile.averageRating.toFixed(1),
+                              count: String(profile.totalReviews),
+                            })}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-lg text-white/80">
+                          {p.noRatingsYet}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground">
-                    <Star
-                      className="h-4 w-4 shrink-0 fill-amber-500 text-amber-500"
-                      aria-hidden
-                    />
-                    <span>
-                      {formatTemplate(p.reviewsSummary, {
-                        rating: profile.averageRating.toFixed(1),
-                        count: String(profile.totalReviews),
-                      })}
-                    </span>
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
+                  <div className="flex shrink-0 flex-wrap gap-2">
                     <Button
+                      size="sm"
+                      variant="outline"
                       type="button"
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm"
-                      onClick={() => {
-                        try {
-                          sessionStorage.setItem("tiempos_open_user", profile.id);
-                        } catch {
-                          /* ignore */
-                        }
-                        onNavigate?.("messages");
-                      }}
+                      className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+                      onClick={() => void handleShareProfile()}
+                      title={p.shareProfile}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      type="button"
+                      className="bg-card text-primary hover:bg-accent"
+                      onClick={() => openMessagesToUser()}
                     >
                       <MessageCircle className="mr-2 h-4 w-4" />
-                      {p.sendMessage}
+                      {pub.sendMessage}
                     </Button>
                   </div>
                 </div>
-              </div>
-            </Card>
 
-            <Tabs defaultValue="about" className="mt-6">
-              <TabsList className="mb-5">
-                <TabsTrigger value="about">{p.tabAbout}</TabsTrigger>
-                <TabsTrigger value="skills">{p.tabSkills}</TabsTrigger>
-                <TabsTrigger value="reviews">{p.tabReviews}</TabsTrigger>
-              </TabsList>
+                {shareFeedback ? (
+                  <p className="mb-2 text-sm text-white/90">{shareFeedback}</p>
+                ) : null}
 
-              <TabsContent value="about">
-                <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                  <p className="whitespace-pre-wrap text-sm text-foreground">
-                    {profile.bio?.trim() ? profile.bio : p.noBio}
+                {profile.bio?.trim() ? (
+                  <p className="mb-4 max-w-2xl whitespace-pre-wrap text-white/90">
+                    {profile.bio}
                   </p>
-                  {profile.languages?.trim() ? (
-                    <p className="mt-4 text-sm text-muted-foreground">
-                      {profile.languages}
-                    </p>
-                  ) : null}
-                  <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                    {profile.website?.trim() ? (
-                      <a
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
-                        href={normalizeUrl(profile.website)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Globe className="h-4 w-4" />
-                        {profile.website}
-                      </a>
-                    ) : null}
-                    {profile.linkedin?.trim() ? (
-                      <a
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
-                        href={normalizeUrl(profile.linkedin)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Link2 className="h-4 w-4" />
-                        LinkedIn
-                      </a>
-                    ) : null}
-                    {profile.twitter?.trim() ? (
-                      <a
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
-                        href={normalizeUrl(profile.twitter)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Link2 className="h-4 w-4" />
-                        X / Twitter
-                      </a>
-                    ) : null}
-                  </div>
-                </Card>
-              </TabsContent>
+                ) : null}
 
-              <TabsContent value="skills">
-                <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                  <h2 className="mb-5 text-xl text-foreground">{p.skillsTitle}</h2>
-                  {skillsLoading ? (
-                    <p className="text-sm text-muted-foreground">{t.common.loading}</p>
-                  ) : skills.length === 0 ? (
-                    <p className="py-8 text-center text-muted-foreground">{p.noSkills}</p>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                      {skills.map((skill) => (
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {profile.location ? (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span>{profile.location}</span>
+                    </div>
+                  ) : null}
+                  {memberDateStr ? (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 shrink-0" />
+                      <span>
+                        {formatTemplate(p.memberSince, { date: memberDateStr })}
+                      </span>
+                    </div>
+                  ) : null}
+                  {profile.languages?.trim() ? (
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 shrink-0" />
+                      <span>{profile.languages}</span>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                  {profile.website?.trim() ? (
+                    <a
+                      className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
+                      href={normalizeUrl(profile.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Globe className="h-4 w-4" />
+                      {profile.website}
+                    </a>
+                  ) : null}
+                  {profile.linkedin?.trim() ? (
+                    <a
+                      className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
+                      href={normalizeUrl(profile.linkedin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Link2 className="h-4 w-4" />
+                      LinkedIn
+                    </a>
+                  ) : null}
+                  {profile.twitter?.trim() ? (
+                    <a
+                      className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
+                      href={normalizeUrl(profile.twitter)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Link2 className="h-4 w-4" />
+                      X / Twitter
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mx-auto -mt-16 max-w-5xl px-4 pb-12 sm:px-6 lg:px-8">
+        {profile && !loading ? (
+          <Tabs
+            value={mainTab}
+            onValueChange={(v) =>
+              setMainTab(v as "teaching" | "learning" | "reviews")
+            }
+            className="space-y-6"
+          >
+            <TabsList className="rounded-xl border border-border bg-muted p-1 shadow-lg">
+              <TabsTrigger value="teaching" className="rounded-lg">
+                {p.tabTeaching}
+              </TabsTrigger>
+              <TabsTrigger value="learning" className="rounded-lg">
+                {p.tabLearning}
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-lg">
+                {p.tabReviews}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="teaching" className="space-y-4">
+              <Card className="rounded-2xl border-0 p-6 shadow-lg">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl text-foreground">{p.skillsTeach}</h2>
+                </div>
+
+                {skillsLoading ? (
+                  <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+                ) : skills.length === 0 ? (
+                  <p className="py-10 text-center text-muted-foreground">
+                    {pub.noSkills}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {skills.map((skill) => {
+                      const levelKey = skill.level
+                        ? (`${skill.level.charAt(0).toUpperCase()}${skill.level.slice(1).toLowerCase()}` as keyof typeof p.skillLevels)
+                        : null;
+                      const levelText =
+                        levelKey && levelKey in p.skillLevels
+                          ? p.skillLevels[levelKey]
+                          : skill.level;
+                      const categoryLabel =
+                        skill.category &&
+                        (catLabels[
+                          skill.category as keyof typeof catLabels
+                        ] ?? skill.category);
+                      const preview = skillCardDescriptionPreview(skill.description);
+                      const sessionTypeText =
+                        skill.sessionTypes && skill.sessionTypes.length > 0
+                          ? skill.sessionTypes
+                              .map((v) =>
+                                v === "in-person"
+                                  ? t.addSkill.inPerson
+                                  : t.addSkill.online,
+                              )
+                              .join(", ")
+                          : fallbackSessionTypeFromDescription(skill.description);
+                      const locationText =
+                        (skill.inPersonLocation || "").trim() ||
+                        fallbackLocationFromDescription(skill.description);
+                      const availability =
+                        getSkillAvailabilityParts(skill, dayLabels) ??
+                        fallbackAvailabilityFromDescription(
+                          skill.description,
+                          dayLabels,
+                        );
+                      const coverUrl = resolveSkillCoverImageUrl(skill);
+
+                      return (
                         <Card
                           key={skill.id}
                           className="overflow-hidden rounded-xl border border-border bg-muted/25 p-0"
                         >
                           <div className="relative h-40 w-full overflow-hidden sm:h-44">
-                            <ImageWithFallback
-                              src={resolveSkillCoverImageUrl(skill)}
-                              alt={skill.title}
-                              className="h-full w-full object-cover"
-                            />
+                            {coverUrl ? (
+                              <ImageWithFallback
+                                src={coverUrl}
+                                alt={skill.title}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div
+                                className="h-full w-full bg-gradient-to-br from-blue-500/35 via-purple-500/30 to-indigo-600/35"
+                                aria-hidden
+                              />
+                            )}
                           </div>
                           <div className="p-5">
-                            <h3 className="text-lg text-foreground">{skill.title}</h3>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {skill.category ? (
-                                <Badge variant="secondary">{skill.category}</Badge>
-                              ) : null}
-                              {skill.level ? <Badge variant="outline">{skill.level}</Badge> : null}
+                            <div className="mb-3 flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1 pr-2">
+                                <h3 className="text-lg text-foreground">
+                                  {skill.title}
+                                </h3>
+                                {categoryLabel ? (
+                                  <p className="mt-0.5 text-xs text-muted-foreground">
+                                    {categoryLabel}
+                                  </p>
+                                ) : null}
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {levelText ? (
+                                    <Badge variant="secondary">{levelText}</Badge>
+                                  ) : null}
+                                  {sessionTypeText ? (
+                                    <Badge variant="outline">{sessionTypeText}</Badge>
+                                  ) : null}
+                                  {locationText ? (
+                                    <Badge variant="outline">{locationText}</Badge>
+                                  ) : null}
+                                  {availability ? (
+                                    <>
+                                      <Badge
+                                        variant="outline"
+                                        className="h-auto max-w-full basis-full whitespace-normal text-left leading-snug sm:max-w-[min(100%,20rem)] sm:basis-auto"
+                                      >
+                                        {availability.days}
+                                      </Badge>
+                                      <Badge variant="outline" className="shrink-0">
+                                        {availability.hours}
+                                      </Badge>
+                                    </>
+                                  ) : null}
+                                </div>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-1">
+                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <span className="text-sm text-muted-foreground">
+                                  {p.ratingPending}
+                                </span>
+                              </div>
                             </div>
-                            <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">
-                              {skill.description}
-                            </p>
+
+                            {preview ? (
+                              <p className="mb-4 line-clamp-3 text-sm text-muted-foreground">
+                                {preview}
+                              </p>
+                            ) : null}
+
                             <Button
-                              type="button"
+                              size="sm"
                               variant="outline"
-                              className="mt-4 w-full"
+                              className="w-full"
+                              type="button"
                               onClick={() => navigate(PATHS.skill(skill.id))}
                             >
-                              {p.viewDetails}
+                              {pub.viewDetails}
                             </Button>
                           </div>
                         </Card>
-                      ))}
-                    </div>
-                  )}
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="reviews">
-                <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                  <h2 className="mb-3 text-xl text-foreground">{p.tabReviews}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {formatTemplate(p.reviewsSummary, {
-                      rating: profile.averageRating.toFixed(1),
-                      count: String(profile.totalReviews),
+                      );
                     })}
+                  </div>
+                )}
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="learning" className="space-y-4">
+              <Card className="rounded-2xl border-0 p-6 shadow-lg">
+                <h2 className="mb-6 text-xl text-foreground">{p.skillsLearning}</h2>
+                <p className="py-10 text-center text-muted-foreground">
+                  {pub.learningPrivate}
+                </p>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="reviews" className="space-y-4">
+              <Card className="rounded-2xl border-0 p-6 shadow-lg">
+                <h2 className="mb-6 text-xl text-foreground">{p.studentReviews}</h2>
+                {profile.totalReviews > 0 ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      {formatTemplate(pub.reviewsSummary, {
+                        rating: profile.averageRating.toFixed(1),
+                        count: String(profile.totalReviews),
+                      })}
+                    </p>
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      {pub.reviewsListPrivate}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="py-10 text-center text-muted-foreground">
+                    {p.emptyReviews}
                   </p>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </>
+                )}
+              </Card>
+            </TabsContent>
+          </Tabs>
         ) : null}
       </div>
     </PageLayout>

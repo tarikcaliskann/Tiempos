@@ -21,13 +21,22 @@ export function PageLayout({
   return (
     <div
       className={cn(
-        "flex min-h-dvh flex-col bg-background text-foreground antialiased transition-colors",
-        hideFooter && "max-h-dvh overflow-hidden",
+        "flex flex-col bg-background text-foreground antialiased transition-colors",
+        hideFooter
+          ? "h-dvh max-h-dvh min-h-0 overflow-hidden overscroll-none"
+          : "min-h-dvh",
         className,
       )}
     >
       <Navbar onNavigate={onNavigate} />
-      <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+      <main
+        className={cn(
+          "flex min-h-0 w-full max-w-full flex-1 flex-col",
+          hideFooter && "overflow-hidden",
+        )}
+      >
+        {children}
+      </main>
       {!hideFooter ? <Footer /> : null}
     </div>
   );

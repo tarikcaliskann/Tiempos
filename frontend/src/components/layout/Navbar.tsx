@@ -290,12 +290,12 @@ export function Navbar({ onNavigate }: NavbarProps) {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-[color:var(--border)] dark:bg-[color-mix(in_oklab,var(--background),black_14%)] dark:backdrop-blur-none dark:shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.05)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 min-w-0 items-center justify-between gap-3">
+        <div className="mx-auto max-w-7xl pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))]">
+          <div className="relative flex h-16 min-w-0 items-center justify-between gap-3">
             {/* Logo */}
             <button
               onClick={() => handleNavigate("landing")}
-              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80"
+              className="relative z-20 flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80"
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white">
                 <BrandLogo className="h-8 w-8 object-contain" />
@@ -305,8 +305,9 @@ export function Navbar({ onNavigate }: NavbarProps) {
               </span>
             </button>
 
-            {/* Desktop Navigation — only wide screens; flex-nowrap in CSS (nav-xl-row) */}
-            <div className="nav-xl-row min-w-0 gap-6">
+            {/* Desktop nav: ortada, tam genişlikte hizalı (≥64rem) */}
+            <div className="nav-xl-row pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+              <div className="pointer-events-auto flex min-w-0 items-center gap-6">
               <button
                 onClick={() => handleNavigate("browse")}
                 className={navLinkClass}
@@ -322,12 +323,6 @@ export function Navbar({ onNavigate }: NavbarProps) {
                   >
                     {t.nav.dashboard}
                   </button>
-                  <button
-                    onClick={() => handleNavigate("messages")}
-                    className={`${navLinkClass} inline-flex items-center gap-1.5`}
-                  >
-                    {t.nav.messages}
-                  </button>
                 </>
               )}
               <button
@@ -336,10 +331,11 @@ export function Navbar({ onNavigate }: NavbarProps) {
               >
                 {t.nav.howItWorks}
               </button>
+              </div>
             </div>
 
             {/* Auth cluster: bell outside nav-xl-row so it stays next to hamburger on narrow screens */}
-            <div className="flex shrink-0 items-center gap-3 sm:gap-2 md:gap-3 pl-2 pr-[max(0.75rem,env(safe-area-inset-right))] sm:pl-1 sm:pr-[max(0rem,env(safe-area-inset-right))]">
+            <div className="relative z-20 flex shrink-0 items-center gap-3 sm:gap-2 md:gap-3">
               {isAuthenticated ? (
                 <>
                 <Popover
@@ -353,10 +349,10 @@ export function Navbar({ onNavigate }: NavbarProps) {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="nav-notification-bell-btn relative z-30 inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-gray-700 transition hover:bg-gray-200 dark:bg-muted dark:text-foreground dark:hover:bg-accent sm:mx-1"
+                      className="nav-notification-bell-btn relative z-30 inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-full border-2 border-primary bg-white px-3 py-1.5 text-primary shadow-sm transition hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 dark:bg-zinc-950 dark:hover:bg-primary/15"
                       aria-label={t.nav.notifications}
                     >
-                      <Bell className="h-4 w-4 shrink-0" />
+                      <Bell className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                       <span className="text-sm font-semibold tabular-nums">
                         {displayedNotifCount > 99 ? "99+" : displayedNotifCount}
                       </span>
@@ -580,30 +576,33 @@ export function Navbar({ onNavigate }: NavbarProps) {
                   </PopoverContent>
                 </Popover>
 
-                <div className="relative z-30 flex min-w-0 max-w-full items-center gap-3">
-                  <div className="flex shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-1.5 text-white">
+                <div className="relative z-30 flex min-w-0 max-w-full items-center gap-3 sm:gap-2 md:gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("messages")}
+                    className="relative z-30 inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-full border-2 border-primary bg-white px-3 py-1.5 text-primary shadow-sm transition hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 dark:bg-zinc-950 dark:hover:bg-primary/15"
+                    aria-label={t.nav.messages}
+                  >
+                    <MessageCircle
+                      className="h-4 w-4 shrink-0"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                    <span className="text-sm font-semibold tabular-nums">
+                      {displayedMessageCount > 99
+                        ? "99+"
+                        : displayedMessageCount}
+                    </span>
+                  </button>
+
+                  <div className="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-1.5 text-white">
                     <Clock className="h-4 w-4 shrink-0" />
                     <span className="text-sm font-medium tabular-nums">
                       {formatNavbarCreditHours(creditMinutes, locale)}
                     </span>
                   </div>
 
-                  <div className="relative z-30 flex min-w-0 shrink-0 items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleNavigate("messages")}
-                      className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-gray-200 dark:bg-muted dark:text-foreground dark:hover:bg-accent"
-                      aria-label={t.nav.messages}
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      {displayedMessageCount > 0 ? (
-                        <span className="absolute right-0 top-0 inline-flex min-w-5 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold leading-5 text-white shadow-sm">
-                          {displayedMessageCount > 99 ? "99+" : displayedMessageCount}
-                        </span>
-                      ) : null}
-                    </button>
-
-                    <div className="relative">
+                  <div className="relative">
                     <button
                       type="button"
                       onClick={() => {
@@ -681,7 +680,6 @@ export function Navbar({ onNavigate }: NavbarProps) {
                         </div>
                       </>
                     ) : null}
-                    </div>
                   </div>
                 </div>
                 </>

@@ -81,12 +81,6 @@ export function Sidebar({
                   {t.sidebar.dashboard}
                 </button>
                 <button
-                  onClick={() => onNavigate("messages")}
-                  className="sidebar-nav-item rounded-xl px-4 py-4 text-left text-base text-foreground transition-colors"
-                >
-                  {t.sidebar.messages}
-                </button>
-                <button
                   onClick={() => onNavigate("profile")}
                   className="sidebar-nav-item rounded-xl px-4 py-4 text-left text-base text-foreground transition-colors"
                 >

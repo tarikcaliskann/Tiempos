@@ -412,6 +412,8 @@ export const tr: Translation = {
         "Google ile giriş şu an kullanılamıyor. Proje .env dosyasına GOOGLE_CLIENT_ID ekleyip backend ve frontend'i yeniden başlatın.",
       errorGoogleFailed: "Google ile giriş tamamlanamadı. Tekrar deneyin.",
       errorRequired: "E-posta ve şifrenizi girin.",
+      errorTermsRequired:
+        "Devam etmek için kullanım şartları ve gizlilik politikasını onaylayın.",
       errorFailed: "Giriş yapılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
       resendVerification: "Doğrulama e-postasını tekrar gönder",
       verificationResentHint:
@@ -428,6 +430,8 @@ export const tr: Translation = {
       terms: "Kullanım şartları",
       and: "ve",
       privacy: "Gizlilik politikası",
+      errorTermsRequired:
+        "Devam etmek için kullanım şartları ve gizlilik politikasını onaylayın.",
       createAccount: "Hesap oluştur",
       hasAccount: "Zaten hesabınız var mı?",
       signIn: "Giriş yap",
@@ -629,6 +633,7 @@ export const tr: Translation = {
   publicUserProfile: {
     title: "Profil",
     back: "Geri",
+    backToBrowse: "Becerilere dön",
     backToMessages: "Mesajlara dön",
     notFound: "Kullanıcı bulunamadı.",
     loadError: "Profil yüklenemedi.",
@@ -643,6 +648,10 @@ export const tr: Translation = {
     viewDetails: "Detayı gör",
     sendMessage: "Mesaj gönder",
     reviewsSummary: "{{rating}} ortalama · {{count}} yorum",
+    learningPrivate:
+      "Bu üyenin öğrenme tarafı herkese açık profilde gösterilmez.",
+    reviewsListPrivate:
+      "Tek tek yorumlar burada listelenmez; yalnızca genel puan özeti gösterilir.",
   },
   howItWorks: {
     heroTitle: "Tiempos nasıl çalışır",

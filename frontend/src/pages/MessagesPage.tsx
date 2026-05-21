@@ -442,6 +442,18 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
 
   const effectiveBookingUserId = user?.id ?? bookingModalUserId ?? undefined;
 
+  /** Tam sayfa kaymasını engelle; yalnızca sohbet listesi / thread kendi içinde scroll olur. */
+  useEffect(() => {
+    const htmlPrev = document.documentElement.style.overflow;
+    const bodyPrev = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = htmlPrev;
+      document.body.style.overflow = bodyPrev;
+    };
+  }, []);
+
   useEffect(() => {
     if (!token) {
       setResolvedMyUserId(null);
@@ -1273,14 +1285,14 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
 
   return (
     <PageLayout hideFooter onNavigate={onNavigate}>
-      <div className="flex min-h-0 flex-1 flex-col px-3 pb-3 pt-20 sm:px-6 sm:pb-4 lg:px-8">
-        <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col">
-          <Card className="flex min-h-0 flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
+      <div className="flex min-h-0 max-h-full flex-1 flex-col overflow-hidden overscroll-none px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-20 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-0 max-h-full w-full max-w-7xl flex-1 flex-col overflow-hidden">
+          <Card className="flex min-h-0 max-h-full flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
             <div className={cn(
               "flex min-h-0 w-full flex-1 flex-col border-r border-border sm:w-96 sm:shrink-0",
               selectedOtherUserId ? "hidden sm:flex" : "flex",
             )}>
-              <div className="border-b border-border p-4">
+              <div className="shrink-0 border-b border-border p-4">
                 <h2 className="mb-4 text-xl text-foreground">{m.title}</h2>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -1401,7 +1413,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
               selectedOtherUserId ? "flex" : "hidden sm:flex",
             )}>
               {!selected ? (
-                <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
                   <MessageCircle className="h-12 w-12 text-muted-foreground/40" />
                   <h3 className="text-lg text-foreground">
                     {m.emptyThreadTitle}
@@ -1411,7 +1423,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   </p>
                 </div>
               ) : (
-                <>
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                   <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
                     <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                       <button
@@ -1467,7 +1479,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   </div>
 
                   {selected.uiStatus === "pending-incoming" && (
-                    <div className="border-b border-sky-200/80 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 p-4 dark:border-sky-800/60 dark:bg-gradient-to-r dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70">
+                    <div className="shrink-0 border-b border-sky-200/80 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 p-4 dark:border-sky-800/60 dark:bg-gradient-to-r dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70">
                       <p className="mb-3 text-sm font-medium text-slate-800 dark:text-sky-100">
                         {formatTemplate(
                           selected.ex.pendingFromOwner
@@ -1524,7 +1536,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   )}
 
                   {selected.uiStatus === "pending-outgoing" && (
-                    <div className="border-b border-amber-200 bg-amber-50/95 p-4 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/35 dark:text-amber-100">
+                    <div className="shrink-0 border-b border-amber-200 bg-amber-50/95 p-4 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/35 dark:text-amber-100">
                       <p className="text-sm">
                         {formatTemplate(m.waitingOutgoing, {
                           name: selected.otherName,
@@ -1552,13 +1564,13 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   )}
 
                   {selected.uiStatus === "rejected" && (
-                    <div className="border-b border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+                    <div className="shrink-0 border-b border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
                       <p>{m.rejectedHint}</p>
                     </div>
                   )}
 
                   {selected.uiStatus === "accepted" && (
-                    <div className="border-b border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+                    <div className="shrink-0 border-b border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
                       <div className="flex items-center justify-between gap-3">
                         <div className="space-y-1 text-sm text-foreground/90">
                           <p>{selected.ex.skillTitle}</p>
@@ -1596,20 +1608,20 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   )}
 
                   {selected.uiStatus === "cancelled" && (
-                    <div className="border-b border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+                    <div className="shrink-0 border-b border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
                       <p>{m.cancelledHint}</p>
                     </div>
                   )}
 
                   {selected.uiStatus === "completed" && (
-                    <div className="border-b border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
+                    <div className="shrink-0 border-b border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
                       {m.sessionCompletedHint}
                     </div>
                   )}
 
                   <div
                     ref={threadScrollRef}
-                    className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4"
+                    className="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-contain bg-muted/20 p-4 dark:bg-background/80"
                   >
                     {loadingThread ? (
                       <p className="text-center text-sm text-muted-foreground">
@@ -1689,7 +1701,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   {isMessageEnabledStatus(selected.ex.status) ||
                   (isPendingExchangeStatus(selected.ex.status) &&
                     Boolean(selected.ex.pendingFromOwner)) ? (
-                    <div className="border-t border-border p-4">
+                    <div className="shrink-0 border-t border-border bg-card px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.35)]">
                       <div className="flex gap-2">
                         <Input
                           placeholder={
@@ -1706,10 +1718,11 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                               void handleSend();
                             }
                           }}
+                          className="bg-background"
                         />
                         <Button
                           type="button"
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                          className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
                           onClick={() => void handleSend()}
                           disabled={isBlockedBySelected || !messageText.trim()}
                         >
@@ -1718,7 +1731,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       </div>
                     </div>
                   ) : null}
-                </>
+                </div>
               )}
             </div>
           </Card>

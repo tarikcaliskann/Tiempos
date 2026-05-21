@@ -411,6 +411,8 @@ export const en = {
         "Google sign-in is unavailable. Add GOOGLE_CLIENT_ID to the project .env file and restart the backend and frontend.",
       errorGoogleFailed: "Google sign-in could not be completed. Try again.",
       errorRequired: "Please enter your email and password.",
+      errorTermsRequired:
+        "Please accept the Terms of Service and Privacy Policy to continue.",
       errorFailed: "Could not sign in. Check your connection and try again.",
       resendVerification: "Resend verification email",
       verificationResentHint:
@@ -427,6 +429,8 @@ export const en = {
       terms: "Terms of Service",
       and: "and",
       privacy: "Privacy Policy",
+      errorTermsRequired:
+        "Please accept the Terms of Service and Privacy Policy to continue.",
       createAccount: "Create Account",
       hasAccount: "Already have an account?",
       signIn: "Sign in",
@@ -627,6 +631,7 @@ export const en = {
   publicUserProfile: {
     title: "Profile",
     back: "Back",
+    backToBrowse: "Back to Browse",
     backToMessages: "Back to messages",
     notFound: "User not found.",
     loadError: "Could not load this profile.",
@@ -641,6 +646,10 @@ export const en = {
     viewDetails: "View details",
     sendMessage: "Send message",
     reviewsSummary: "{{rating}} average · {{count}} reviews",
+    learningPrivate:
+      "This member's learning activity is not shown on public profiles.",
+    reviewsListPrivate:
+      "Individual reviews are not listed here; only the overall rating summary is shown.",
   },
   howItWorks: {
     heroTitle: "How Tiempos Works",

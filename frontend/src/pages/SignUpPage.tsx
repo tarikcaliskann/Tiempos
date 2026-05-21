@@ -50,6 +50,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [smtpMailDeliveryEnabled, setSmtpMailDeliveryEnabled] = useState(false);
   const [smtpLocalCapture, setSmtpLocalCapture] = useState(true);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   useEffect(() => {
     if (!awaitingVerification || resendCooldown <= 0) return;
     const id = window.setInterval(() => {
@@ -70,6 +71,11 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
 
     if (password !== confirm) {
       setError(a.errorPasswordMismatch);
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError(a.errorTermsRequired);
       return;
     }
 
@@ -314,7 +320,16 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
             </div>
 
             <div className="flex items-start gap-2">
-              <Checkbox id="terms" className="mt-1" />
+              <Checkbox
+                id="terms"
+                className="mt-1"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => {
+                  const v = Boolean(checked);
+                  setAcceptedTerms(v);
+                  if (v) setError((prev) => (prev === a.errorTermsRequired ? null : prev));
+                }}
+              />
               <label htmlFor="terms" className="cursor-pointer text-sm text-muted-foreground">
                 {a.termsPrefix}{" "}
                 <Link to={PATHS.terms} className="text-primary hover:underline">
@@ -362,7 +377,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
 
             <div className="mt-6">
               <GoogleSignInButton
-                disabled={loading}
+                disabled={loading || !acceptedTerms}
                 onError={(msg) => {
                   if (msg) setError(msg);
                 }}
