@@ -70,6 +70,7 @@ Veritabanı dosyalarını da silmek için: `docker compose down -v`
   - Yerel Vite: `http://localhost:5173`, `http://127.0.0.1:5173`
   - Canlı: `https://www.tiempos.site`, `https://tiempos.site` (tarayıcıda kullandığınız tam origin)
 - **Aynı Web client ID:** kök `.env` veya Render’da `GOOGLE_CLIENT_ID` (backend `aud` doğrulaması) ve frontend için `VITE_GOOGLE_CLIENT_ID`. Backend’de boş bırakılırsa `aud` kontrolü atlanır; GSI yine de Console’daki **JavaScript origins** listesine ihtiyaç duyar.
+- **`GET /api/skills` veya `POST /api/auth/social-login` 500** → Vite, `DEV_API_PROXY` (varsayılan `http://localhost:8080`) üzerinden API’ye gider. Aynı portta **başka bir uygulama** (ör. başka bir Docker API) çalışıyorsa istekler yanlış sunucuya gider ve 500 görülebilir. `npm run dev` çıktısındaki **sarı `[tiempos]` uyarısına** bakın; çözüm: diğer süreci durdurun, `docker compose up -d api` ile Tiempos API’yi o porta alın veya kök `.env`de `DEV_API_PROXY=http://localhost:<tiempos-portu>` kullanın.
 - **`POST /api/auth/social-login` 401 ve yanıtta yalnızca `Unauthorized`** → Yerelde API’nin çalıştığını doğrulayın (`http://localhost:8080`, Vite `/api` proxy). Network sekmesinde yanıt gövdesini kontrol edin; boşsa güncel backend imajını/sürümünü çalıştırdığınızdan emin olun.
 - **Doğrulama e-postası gelmiyorsa:** `BREVO_API_KEY` veya geçerli Brevo SMTP (`SPRING_MAIL_*`), `APP_MAIL_ENABLED=true`, Brevo’da yetkisiz IP engelinin kapalı olduğu ve `APP_MAIL_FROM` adresinin doğrulanmış olduğu kontrol edilir.
 

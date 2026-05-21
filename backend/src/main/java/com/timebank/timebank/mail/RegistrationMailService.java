@@ -411,7 +411,8 @@ public class RegistrationMailService {
             String name,
             String replyToEmail,
             String subjectKey,
-            String message
+            String message,
+            String subjectTitleOverride
     ) {
         String inbox = environment.getProperty("app.contact.inbox", "tiempos.site@gmail.com").trim();
         if (inbox.isBlank()) {
@@ -419,16 +420,16 @@ public class RegistrationMailService {
             return ContactInquirySendStatus.INBOX_MISSING;
         }
         String from = fromAddress();
-        String subjectLabel = contactSubjectLabel(subjectKey);
+        String topicLine = contactTopicLine(subjectKey, subjectTitleOverride);
         String body =
                 "New message from the Tiempos contact form.\n\n"
                         + "Name: " + name + "\n"
                         + "Email: " + replyToEmail + "\n"
-                        + "Topic: " + subjectLabel + "\n\n"
+                        + "Topic: " + topicLine + "\n\n"
                         + "---\n"
                         + message + "\n"
                         + "---\n";
-        String subject = "[Tiempos Contact] " + subjectLabel;
+        String subject = topicLine;
 
         if (brevoTransactionalContactSender.sendIfConfigured(name, replyToEmail, subject, body, inbox, from)) {
             return ContactInquirySendStatus.SENT;
@@ -474,6 +475,26 @@ public class RegistrationMailService {
             }
             return ContactInquirySendStatus.SEND_FAILED;
         }
+    }
+
+    private static String contactTopicLine(String subjectKey, String subjectTitleOverride) {
+        String fromClient = sanitizeSingleLineSubject(subjectTitleOverride, 120);
+        if (!fromClient.isEmpty()) {
+            return fromClient;
+        }
+        return contactSubjectLabel(subjectKey);
+    }
+
+    /** Subject satırı: tek satır, denetim karakterleri yok, uzunluk sınırı. */
+    private static String sanitizeSingleLineSubject(String raw, int maxLen) {
+        if (raw == null) {
+            return "";
+        }
+        String t = raw.replace('\n', ' ').replace('\r', ' ').trim();
+        if (t.isEmpty()) {
+            return "";
+        }
+        return t.length() <= maxLen ? t : t.substring(0, maxLen).trim();
     }
 
     private static String contactSubjectLabel(String key) {

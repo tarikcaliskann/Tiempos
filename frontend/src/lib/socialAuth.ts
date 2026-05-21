@@ -22,6 +22,8 @@ declare global {
             auto_select?: boolean;
             cancel_on_tap_outside?: boolean;
             itp_support?: boolean;
+            /** false: klasik akış; FedCM + COOP altında postMessage uyarıları azalır */
+            use_fedcm_for_button?: boolean;
           }) => void;
           renderButton: (
             parent: HTMLElement,
@@ -171,6 +173,7 @@ function ensureGsiInitialized(clientId: string): void {
     auto_select: false,
     cancel_on_tap_outside: true,
     itp_support: true,
+    use_fedcm_for_button: false,
   });
   gsiInitializedClientId = clientId;
 }

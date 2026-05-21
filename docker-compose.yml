@@ -44,7 +44,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/timebank
       SPRING_DATASOURCE_USERNAME: timebank_user
       SPRING_DATASOURCE_PASSWORD: "1234"
-      APP_PUBLIC_BASE_URL: http://localhost:3000
+      APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://localhost:3000}
+      APP_MAIL_ENABLED: ${APP_MAIL_ENABLED:-true}
+      APP_MAIL_STRICT_ERRORS: ${APP_MAIL_STRICT_ERRORS:-false}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-at-least-32-chars-long}
       BREVO_API_KEY: ${BREVO_API_KEY:-}
@@ -56,6 +58,7 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:-true}
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED:-true}
       APP_MAIL_FROM: ${APP_MAIL_FROM:-}
+      APP_CONTACT_INBOX: ${APP_CONTACT_INBOX:-tiempos.site@gmail.com}
     depends_on:
       db:
         condition: service_healthy

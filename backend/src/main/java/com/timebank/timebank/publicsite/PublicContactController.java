@@ -25,11 +25,14 @@ public class PublicContactController {
 
     @PostMapping("/contact")
     public ResponseEntity<?> submitContact(@Valid @RequestBody ContactFormRequest req) {
+        String rawTitle = req.getSubjectTitle();
+        String title = rawTitle == null ? "" : rawTitle.trim();
         ContactInquirySendStatus status = registrationMailService.sendContactFormInquiry(
                 req.getName(),
                 req.getEmail().trim(),
                 req.getSubject().trim().toLowerCase(),
-                req.getMessage().trim()
+                req.getMessage().trim(),
+                title.isEmpty() ? null : title
         );
         if (status == ContactInquirySendStatus.SENT) {
             return ResponseEntity.noContent().build();

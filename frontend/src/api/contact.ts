@@ -4,6 +4,8 @@ export type ContactFormPayload = {
   name: string;
   email: string;
   subject: string;
+  /** E-posta Subject — arayüzdeki konu başlığı (TR/EN) */
+  subjectTitle: string;
   message: string;
 };
 

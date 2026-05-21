@@ -20,6 +20,13 @@ public class ContactFormRequest {
     @Pattern(regexp = "general|support|billing|partnership|feedback|other")
     private String subject;
 
+    /**
+     * Arayüzde görünen konu metni — e-postanın Subject satırı için (ör. yerelleştirilmiş başlık).
+     * Boşsa sunucu {@code subject} anahtarından İngilizce etiket üretir.
+     */
+    @Size(max = 120)
+    private String subjectTitle;
+
     @NotBlank
     @Size(max = 4000)
     private String message;
@@ -46,6 +53,14 @@ public class ContactFormRequest {
 
     public void setSubject(String subject) {
         this.subject = subject;
+    }
+
+    public String getSubjectTitle() {
+        return subjectTitle;
+    }
+
+    public void setSubjectTitle(String subjectTitle) {
+        this.subjectTitle = subjectTitle;
     }
 
     public String getMessage() {

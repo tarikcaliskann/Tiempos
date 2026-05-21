@@ -32,6 +32,25 @@ export function ContactPage({ onNavigate }: ContactPageProps) {
     subject: "",
     message: "",
   });
+
+  function subjectTitleForKey(subjectKey: string): string {
+    switch (subjectKey) {
+      case "general":
+        return c.subjectGeneral;
+      case "support":
+        return c.subjectSupport;
+      case "billing":
+        return c.subjectBilling;
+      case "partnership":
+        return c.subjectPartnership;
+      case "feedback":
+        return c.subjectFeedback;
+      case "other":
+        return c.subjectOther;
+      default:
+        return subjectKey;
+    }
+  }
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -45,6 +64,7 @@ export function ContactPage({ onNavigate }: ContactPageProps) {
         name: formData.name.trim(),
         email: formData.email.trim(),
         subject: formData.subject,
+        subjectTitle: subjectTitleForKey(formData.subject),
         message: formData.message.trim(),
       });
       setSubmitted(true);
