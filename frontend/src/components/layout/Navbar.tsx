@@ -292,11 +292,12 @@ export function Navbar({ onNavigate }: NavbarProps) {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-[color:var(--border)] dark:bg-[color-mix(in_oklab,var(--background),black_14%)] dark:backdrop-blur-none dark:shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.05)]">
         <div className="mx-auto max-w-7xl pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))]">
-          <div className="relative flex h-16 min-w-0 items-center justify-between gap-3">
+          <div className="flex h-16 min-w-0 w-full items-center justify-between gap-3">
             {/* Logo */}
             <button
+              type="button"
               onClick={() => handleNavigate("landing")}
-              className="relative z-20 flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80"
+              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80"
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white">
                 <BrandLogo className="h-8 w-8 object-contain" />
@@ -306,37 +307,36 @@ export function Navbar({ onNavigate }: NavbarProps) {
               </span>
             </button>
 
-            {/* Desktop nav: ortada, tam genişlikte hizalı (≥64rem) */}
-            <div className="nav-xl-row pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
-              <div className="pointer-events-auto flex min-w-0 items-center gap-6">
+            {/* Desktop orta menü: flex-1 ile ortalanır; absolute + pointer-events katmanı tıklamayı engelliyordu */}
+            <div className="nav-xl-row min-w-0 flex-1 items-center justify-center gap-6 xl:gap-8">
               <button
+                type="button"
                 onClick={() => handleNavigate("browse")}
                 className={navLinkClass}
               >
                 {t.nav.browseSkills}
               </button>
 
-              {isAuthenticated && (
-                <>
-                  <button
-                    onClick={() => handleNavigate("dashboard")}
-                    className={navLinkClass}
-                  >
-                    {t.nav.dashboard}
-                  </button>
-                </>
-              )}
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() => handleNavigate("dashboard")}
+                  className={navLinkClass}
+                >
+                  {t.nav.dashboard}
+                </button>
+              ) : null}
               <button
+                type="button"
                 onClick={() => handleNavigate("how-it-works")}
                 className={navLinkClass}
               >
                 {t.nav.howItWorks}
               </button>
-              </div>
             </div>
 
-            {/* Auth cluster: bell outside nav-xl-row so it stays next to hamburger on narrow screens */}
-            <div className="relative z-20 flex shrink-0 items-center gap-3 sm:gap-2 md:gap-3">
+            {/* Auth cluster */}
+            <div className="flex shrink-0 items-center gap-3 sm:gap-2 md:gap-3">
               {isAuthenticated ? (
                 <>
                 <Popover
