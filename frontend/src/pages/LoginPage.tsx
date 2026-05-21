@@ -251,7 +251,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
 
             <div className="mt-6">
               <GoogleSignInButton
-                disabled={loading || !acceptedTerms}
+                disabled={loading}
                 onError={(msg) => {
                   setError(msg);
                   setResendHint(null);

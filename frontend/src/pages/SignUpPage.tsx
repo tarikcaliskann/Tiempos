@@ -377,7 +377,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
 
             <div className="mt-6">
               <GoogleSignInButton
-                disabled={loading || !acceptedTerms}
+                disabled={loading}
                 onError={(msg) => {
                   if (msg) setError(msg);
                 }}
