@@ -32,7 +32,7 @@ export function PageLayout({
       <main
         className={cn(
           "flex min-h-0 w-full max-w-full flex-1 flex-col",
-          hideFooter && "overflow-hidden",
+          hideFooter && "h-0 min-h-0 flex-1 overflow-hidden",
         )}
       >
         {children}

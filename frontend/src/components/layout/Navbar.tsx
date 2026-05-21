@@ -197,7 +197,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
   }, [notifOpen, token]);
 
   useEffect(() => {
-    const mq = window.matchMedia("(width >= 80rem)");
+    const mq = window.matchMedia("(width >= 64rem)");
     const onChange = () => {
       if (mq.matches) setIsMenuOpen(false);
     };
@@ -290,14 +290,14 @@ export function Navbar({ onNavigate }: NavbarProps) {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-[color:var(--border)] dark:bg-[color-mix(in_oklab,var(--background),black_14%)] dark:backdrop-blur-none dark:shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.05)]">
-        <div className="mx-auto max-w-7xl pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))]">
-          <div className="flex h-16 min-w-0 w-full items-center justify-between gap-3">
+      <nav className="nav-horizontal-inset fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-[color:var(--border)] dark:bg-[color-mix(in_oklab,var(--background),black_14%)] dark:backdrop-blur-none dark:shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.05)]">
+        <div className="mx-auto w-full min-w-0 max-w-7xl">
+          <div className="relative flex h-16 min-w-0 w-full items-center justify-between gap-3 min-[64rem]:grid min-[64rem]:grid-cols-[1fr_auto_1fr] min-[64rem]:items-center">
             {/* Logo */}
             <button
               type="button"
               onClick={() => handleNavigate("landing")}
-              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80"
+              className="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80 min-[64rem]:justify-self-start"
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white">
                 <BrandLogo className="h-8 w-8 object-contain" />
@@ -307,8 +307,8 @@ export function Navbar({ onNavigate }: NavbarProps) {
               </span>
             </button>
 
-            {/* Desktop orta menü: flex-1 ile ortalanır; absolute + pointer-events katmanı tıklamayı engelliyordu */}
-            <div className="nav-xl-row min-w-0 flex-1 items-center justify-center gap-6 xl:gap-8">
+            {/* Desktop orta menü: 1fr auto 1fr grid ile viewport merkezine hizalı */}
+            <div className="nav-xl-row min-w-0 items-center justify-center gap-6 xl:gap-8 min-[64rem]:justify-self-center">
               <button
                 type="button"
                 onClick={() => handleNavigate("browse")}
@@ -336,7 +336,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
             </div>
 
             {/* Auth cluster */}
-            <div className="flex shrink-0 items-center gap-3 sm:gap-2 md:gap-3">
+            <div className="flex min-w-0 shrink-0 items-center justify-end gap-3 sm:gap-2 md:gap-3 min-[64rem]:justify-self-end">
               {isAuthenticated ? (
                 <>
                 <Popover

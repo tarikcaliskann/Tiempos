@@ -1283,13 +1283,24 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     }
   };
 
+  const showMessageComposer = Boolean(
+    selected &&
+      (isMessageEnabledStatus(selected.ex.status) ||
+        (isPendingExchangeStatus(selected.ex.status) &&
+          Boolean(selected.ex.pendingFromOwner))),
+  );
+  const showThreadFooter =
+    Boolean(chatActionError && !bookOpen) ||
+    isBlockedBySelected ||
+    showMessageComposer;
+
   return (
     <PageLayout hideFooter onNavigate={onNavigate}>
-      <div className="flex min-h-0 max-h-full flex-1 flex-col overflow-hidden overscroll-none px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-20 sm:px-6 lg:px-8">
-        <div className="mx-auto flex min-h-0 max-h-full w-full max-w-7xl flex-1 flex-col overflow-hidden">
-          <Card className="flex min-h-0 max-h-full flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
+      <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden overscroll-none px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-20 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden">
+          <Card className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
             <div className={cn(
-              "flex min-h-0 w-full flex-1 flex-col border-r border-border sm:w-96 sm:shrink-0",
+              "flex h-full min-h-0 w-full flex-1 flex-col border-r border-border sm:w-96 sm:shrink-0",
               selectedOtherUserId ? "hidden sm:flex" : "flex",
             )}>
               <div className="shrink-0 border-b border-border p-4">
@@ -1305,13 +1316,13 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                 </div>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
                 {loadingList ? (
                   <p className="p-6 text-sm text-muted-foreground">
                     {t.common.loading}
                   </p>
                 ) : filteredRows.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center gap-3 p-8 text-center text-muted-foreground">
+                  <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 p-8 text-center text-muted-foreground">
                     <MessageCircle className="h-10 w-10 opacity-40" />
                     <p className="text-sm">{m.emptyList}</p>
                   </div>
@@ -1409,11 +1420,11 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
             </div>
 
             <div className={cn(
-              "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
+              "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
               selectedOtherUserId ? "flex" : "hidden sm:flex",
             )}>
               {!selected ? (
-                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+                <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
                   <MessageCircle className="h-12 w-12 text-muted-foreground/40" />
                   <h3 className="text-lg text-foreground">
                     {m.emptyThreadTitle}
@@ -1423,7 +1434,8 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   </p>
                 </div>
               ) : (
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+                  <div className="shrink-0">
                   <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
                     <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                       <button
@@ -1618,11 +1630,20 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       {m.sessionCompletedHint}
                     </div>
                   )}
+                  </div>
 
                   <div
                     ref={threadScrollRef}
-                    className="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-contain bg-muted/20 p-4 dark:bg-background/80"
+                    className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain bg-muted/20 dark:bg-background/80"
                   >
+                    <div
+                      className={cn(
+                        "flex min-h-full flex-col gap-4 p-4",
+                        loadingThread
+                          ? "items-center justify-center"
+                          : "justify-end",
+                      )}
+                    >
                     {loadingThread ? (
                       <p className="text-center text-sm text-muted-foreground">
                         {t.common.loading}
@@ -1679,56 +1700,59 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                         </div>
                       ))
                     )}
+                    </div>
                   </div>
 
-                  {chatActionError && !bookOpen ? (
-                    <div
-                      role="alert"
-                      className="shrink-0 border-t border-red-200 bg-red-50 px-4 py-2 text-xs text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"
-                    >
-                      {chatActionError}
-                    </div>
-                  ) : null}
-                  {isBlockedBySelected ? (
-                    <div
-                      role="status"
-                      className="shrink-0 border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-200"
-                    >
-                      {m.blockedHint}
-                    </div>
-                  ) : null}
-
-                  {isMessageEnabledStatus(selected.ex.status) ||
-                  (isPendingExchangeStatus(selected.ex.status) &&
-                    Boolean(selected.ex.pendingFromOwner)) ? (
-                    <div className="shrink-0 border-t border-border bg-card px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.35)]">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder={
-                            isBlockedBySelected
-                              ? m.blockedInputPlaceholder
-                              : m.typeMessage
-                          }
-                          value={messageText}
-                          disabled={isBlockedBySelected}
-                          onChange={(e) => setMessageText(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault();
-                              void handleSend();
-                            }
-                          }}
-                          className="bg-background"
-                        />
-                        <Button
-                          type="button"
-                          className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                          onClick={() => void handleSend()}
-                          disabled={isBlockedBySelected || !messageText.trim()}
+                  {showThreadFooter ? (
+                    <div className="shrink-0 border-t border-border bg-card shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.35)]">
+                      {chatActionError && !bookOpen ? (
+                        <div
+                          role="alert"
+                          className="border-b border-red-200 bg-red-50 px-4 py-2 text-xs text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"
                         >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          {chatActionError}
+                        </div>
+                      ) : null}
+                      {isBlockedBySelected ? (
+                        <div
+                          role="status"
+                          className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-200"
+                        >
+                          {m.blockedHint}
+                        </div>
+                      ) : null}
+
+                      {showMessageComposer ? (
+                        <div className="px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder={
+                                isBlockedBySelected
+                                  ? m.blockedInputPlaceholder
+                                  : m.typeMessage
+                              }
+                              value={messageText}
+                              disabled={isBlockedBySelected}
+                              onChange={(e) => setMessageText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  void handleSend();
+                                }
+                              }}
+                              className="bg-background"
+                            />
+                            <Button
+                              type="button"
+                              className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                              onClick={() => void handleSend()}
+                              disabled={isBlockedBySelected || !messageText.trim()}
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>

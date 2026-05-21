@@ -3554,6 +3554,23 @@ html.dark {
   }
 }
 
+/*
+ * Navbar yatay inset: dar ekranda en az 12px, md+ en az 24px; çentik için safe-area.
+ * Tailwind `pl-[max(12px,env(...))]` virgül içerdiği için bazen üretilmez — düz CSS.
+ */
+.nav-horizontal-inset {
+  box-sizing: border-box;
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 768px) {
+  .nav-horizontal-inset {
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
+  }
+}
+
 /* Navbar: tek satır menü yalnızca geniş ekranda; dar pencerede hamburger + sidebar */
 .nav-xl-row {
   display: none;
