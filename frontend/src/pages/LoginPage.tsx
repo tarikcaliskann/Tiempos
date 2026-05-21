@@ -3,10 +3,11 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import type { PageType } from "../App";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { PATHS } from "../navigation/paths";
+import { resolvePostAuthRedirect } from "../navigation/postAuthRedirect";
 import { useLanguage } from "../contexts/LanguageContext";
 import { loginRequest, resendVerificationEmail } from "../api/auth";
 import { apiErrorDisplayMessage } from "../api/client";
@@ -20,17 +21,7 @@ interface LoginPageProps {
 export function LoginPage({ onNavigate }: LoginPageProps) {
   const location = useLocation();
   const nav = useNavigate();
-  const redirectAfterLogin = useMemo(() => {
-    const st = location.state as
-      | { from?: { pathname: string; search?: string } }
-      | null
-      | undefined;
-    const f = st?.from;
-    if (f?.pathname) {
-      return `${f.pathname}${f.search ?? ""}`;
-    }
-    return PATHS.dashboard;
-  }, [location.state]);
+  const redirectAfterLogin = resolvePostAuthRedirect(location.state, PATHS.dashboard);
 
   const { login } = useAuth();
   const { t } = useLanguage();
@@ -197,7 +188,12 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
             <p className="text-sm text-muted-foreground">
               {a.noAccount}{" "}
               <button 
-                onClick={() => onNavigate?.("signup")}
+                onClick={() =>
+                  nav(PATHS.signup, {
+                    replace: false,
+                    state: location.state,
+                  })
+                }
                 className="text-primary hover:underline"
               >
                 {a.signUp}

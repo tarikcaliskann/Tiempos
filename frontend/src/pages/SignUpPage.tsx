@@ -4,8 +4,9 @@ import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import { useEffect, useState } from "react";
 import type { PageType } from "../App";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { PATHS } from "../navigation/paths";
+import { resolvePostAuthRedirect } from "../navigation/postAuthRedirect";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import {
@@ -33,6 +34,10 @@ interface SignUpPageProps {
 
 export function SignUpPage({ onNavigate }: SignUpPageProps) {
   const { login } = useAuth();
+  const location = useLocation();
+  const nav = useNavigate();
+  /** Doğrudan /buy-credits vb. açılıp kayıt olunmuşsa buraya dönülür; yoksa profil onboarding */
+  const redirectAfterAuth = resolvePostAuthRedirect(location.state, PATHS.editProfile);
   const { t } = useLanguage();
   const a = t.auth.signup;
   const [error, setError] = useState<string | null>(null);
@@ -94,8 +99,10 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
         },
         res.token,
       );
-      sessionStorage.setItem("tiempos_profile_onboarding", "1");
-      onNavigate?.("edit-profile");
+      if (redirectAfterAuth === PATHS.editProfile) {
+        sessionStorage.setItem("tiempos_profile_onboarding", "1");
+      }
+      nav(redirectAfterAuth, { replace: true });
     } catch (err) {
       setError(apiErrorDisplayMessage(err, a.errorFailed));
     } finally {
@@ -123,8 +130,10 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
         },
         res.token,
       );
-      sessionStorage.setItem("tiempos_profile_onboarding", "1");
-      onNavigate?.("edit-profile");
+      if (redirectAfterAuth === PATHS.editProfile) {
+        sessionStorage.setItem("tiempos_profile_onboarding", "1");
+      }
+      nav(redirectAfterAuth, { replace: true });
     } catch (err) {
       setError(apiErrorDisplayMessage(err, a.errorFailed));
     } finally {
@@ -231,7 +240,9 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
                 <button
                   type="button"
                   className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-                  onClick={() => onNavigate?.("login")}
+                  onClick={() =>
+                    nav(PATHS.login, { replace: false, state: location.state })
+                  }
                 >
                   {a.goToSignIn}
                 </button>
@@ -329,7 +340,9 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
             <p className="text-sm text-muted-foreground">
               {a.hasAccount}{" "}
               <button 
-                onClick={() => onNavigate?.("login")}
+                onClick={() =>
+                  nav(PATHS.login, { replace: false, state: location.state })
+                }
                 className="text-primary hover:underline"
               >
                 {a.signIn}
@@ -363,8 +376,10 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
                     },
                     res.token,
                   );
-                  sessionStorage.setItem("tiempos_profile_onboarding", "1");
-                  onNavigate?.("edit-profile");
+                  if (redirectAfterAuth === PATHS.editProfile) {
+                    sessionStorage.setItem("tiempos_profile_onboarding", "1");
+                  }
+                  nav(redirectAfterAuth, { replace: true });
                 }}
               />
             </div>
