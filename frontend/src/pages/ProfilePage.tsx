@@ -415,143 +415,157 @@ export function ProfilePage({
     },
   );
 
-  return (
-    <PageLayout onNavigate={onNavigate}>
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 pt-24 pb-32 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {avatarSrc ? (
-              <ImageWithFallback
-                src={avatarSrc}
-                alt=""
-                className="w-32 h-32 rounded-2xl border-4 border-white object-cover shadow-2xl shrink-0"
-              />
-            ) : (
-              <div
-                className="w-32 h-32 rounded-2xl shadow-2xl border-4 border-white flex items-center justify-center text-3xl font-semibold text-white bg-white/20 shrink-0"
-                aria-hidden
-              >
-                {initialsFromFullName(displayName)}
-              </div>
-            )}
+  const heroMain = (
+    <div className="max-w-5xl mx-auto">
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {avatarSrc ? (
+          <ImageWithFallback
+            src={avatarSrc}
+            alt=""
+            className="w-32 h-32 rounded-2xl border-4 border-white object-cover shadow-2xl shrink-0"
+          />
+        ) : (
+          <div
+            className="w-32 h-32 rounded-2xl shadow-2xl border-4 border-white flex items-center justify-center text-3xl font-semibold text-white bg-white/20 shrink-0"
+            aria-hidden
+          >
+            {initialsFromFullName(displayName)}
+          </div>
+        )}
 
-            <div className="flex-1 text-white">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h1 className="text-3xl mb-2">{displayName || "—"}</h1>
-                  {displayEmail ? (
-                    <div className="mb-3 flex items-center gap-2 text-white/90">
-                      <Mail className="h-4 w-4 shrink-0" aria-hidden />
-                      <span className="text-sm sm:text-base break-all">
-                        {displayEmail}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className="flex items-center gap-2 mb-3 min-h-[28px]">
-                    {showRating ? (
-                      <>
-                        <Star className="w-5 h-5 fill-yellow-300 text-yellow-300" />
-                        <span className="text-lg">
-                          {formatTemplate(p.reviewsCount, {
-                            rating: ratingSummary.averageRating.toFixed(1),
-                            count: String(ratingSummary.totalReviews),
-                          })}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-lg text-white/80">
-                        {p.noRatingsYet}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-                    onClick={() => void handleShareProfile()}
-                    title={p.shareProfile}
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-card text-primary hover:bg-accent"
-                    onClick={() => onNavigate?.("edit-profile")}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    {p.editProfile}
-                  </Button>
-                </div>
-              </div>
-              {shareFeedback ? (
-                <p className="mb-2 text-sm text-white/90">{shareFeedback}</p>
-              ) : null}
-
-              {profile?.bio ? (
-                <p className="text-white/90 mb-4 max-w-2xl">{profile.bio}</p>
-              ) : null}
-
-              <div className="flex flex-wrap gap-4 text-sm">
-                {profile?.location ? (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    <span>{profile.location}</span>
-                  </div>
-                ) : null}
-                {memberDateStr ? (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 shrink-0" />
-                    <span>
-                      {formatTemplate(p.memberSince, { date: memberDateStr })}
-                    </span>
-                  </div>
-                ) : null}
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 shrink-0" />
-                  <span>
-                    {formatTemplate(p.timeCreditsLine, { time: creditLabel })}
+        <div className="flex-1 text-white">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h1 className="text-3xl mb-2">{displayName || "—"}</h1>
+              {displayEmail ? (
+                <div className="mb-3 flex items-center gap-2 text-white/90">
+                  <Mail className="h-4 w-4 shrink-0" aria-hidden />
+                  <span className="text-sm sm:text-base break-all">
+                    {displayEmail}
                   </span>
                 </div>
-                {profile?.languages ? (
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 shrink-0" />
-                    <span>{profile.languages}</span>
-                  </div>
-                ) : null}
+              ) : null}
+              <div className="flex items-center gap-2 mb-3 min-h-[28px]">
+                {showRating ? (
+                  <>
+                    <Star className="w-5 h-5 fill-yellow-300 text-yellow-300" />
+                    <span className="text-lg">
+                      {formatTemplate(p.reviewsCount, {
+                        rating: ratingSummary.averageRating.toFixed(1),
+                        count: String(ratingSummary.totalReviews),
+                      })}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-lg text-white/80">
+                    {p.noRatingsYet}
+                  </span>
+                )}
               </div>
             </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                onClick={() => void handleShareProfile()}
+                title={p.shareProfile}
+              >
+                <Share2 className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                className="bg-card text-primary hover:bg-accent"
+                onClick={() => onNavigate?.("edit-profile")}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {p.editProfile}
+              </Button>
+            </div>
+          </div>
+          {shareFeedback ? (
+            <p className="mb-2 text-sm text-white/90">{shareFeedback}</p>
+          ) : null}
+
+          {profile?.bio ? (
+            <p className="text-white/90 mb-4 max-w-2xl">{profile.bio}</p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-4 text-sm">
+            {profile?.location ? (
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span>{profile.location}</span>
+              </div>
+            ) : null}
+            {memberDateStr ? (
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span>
+                  {formatTemplate(p.memberSince, { date: memberDateStr })}
+                </span>
+              </div>
+            ) : null}
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 shrink-0" />
+              <span>
+                {formatTemplate(p.timeCreditsLine, { time: creditLabel })}
+              </span>
+            </div>
+            {profile?.languages ? (
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 shrink-0" />
+                <span>{profile.languages}</span>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 pb-12">
+  return (
+    <PageLayout onNavigate={onNavigate}>
+      <div className="flex min-h-0 w-full flex-1 flex-col">
         {loading ? (
-          <p className="text-muted-foreground py-8">{t.common.loading}</p>
+          <>
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
+              {heroMain}
+            </div>
+            <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col min-h-[min(26rem,42dvh)] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+              <div className="flex flex-1 flex-col items-center justify-center py-16">
+                <p className="text-muted-foreground">{t.common.loading}</p>
+              </div>
+            </div>
+          </>
         ) : (
           <Tabs
             value={mainTab}
             onValueChange={(v) =>
               setMainTab(v as "teaching" | "learning" | "reviews")
             }
-            className="space-y-6"
+            className="flex min-h-0 w-full flex-1 flex-col gap-0"
           >
-            <TabsList className="rounded-xl border border-border bg-muted p-1 shadow-lg">
-              <TabsTrigger value="teaching" className="rounded-lg">
-                {p.tabTeaching}
-              </TabsTrigger>
-              <TabsTrigger value="learning" className="rounded-lg">
-                {p.tabLearning}
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="rounded-lg">
-                {p.tabReviews}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="teaching" className="space-y-4">
-              <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                <div className="mb-6 flex items-center justify-between">
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-0 pt-24 sm:px-6 lg:px-8">
+              {heroMain}
+              <div className="mx-auto max-w-5xl py-6">
+                <TabsList className="rounded-xl border border-border bg-muted p-1 shadow-lg">
+                  <TabsTrigger value="teaching" className="rounded-lg">
+                    {p.tabTeaching}
+                  </TabsTrigger>
+                  <TabsTrigger value="learning" className="rounded-lg">
+                    {p.tabLearning}
+                  </TabsTrigger>
+                  <TabsTrigger value="reviews" className="rounded-lg">
+                    {p.tabReviews}
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+            <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col min-h-[min(26rem,42dvh)] px-4 pb-12 pt-0 sm:px-6 lg:px-8">
+            <TabsContent value="teaching" className="flex min-h-0 flex-1 flex-col gap-4">
+              <Card className="flex min-h-[min(22rem,38dvh)] flex-1 flex-col rounded-2xl border-0 p-6 shadow-lg">
+                <div className="mb-6 flex shrink-0 items-center justify-between">
                   <h2 className="text-xl text-foreground">{p.skillsTeach}</h2>
                   <Button
                     className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
@@ -562,9 +576,11 @@ export function ProfilePage({
                 </div>
 
                 {mySkills.length === 0 ? (
-                  <p className="py-10 text-center text-muted-foreground">
-                    {p.emptyTeaching}
-                  </p>
+                  <div className="flex flex-1 flex-col items-center justify-center py-16">
+                    <p className="text-center text-muted-foreground">
+                      {p.emptyTeaching}
+                    </p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {mySkills.map((skill) => {
@@ -722,15 +738,17 @@ export function ProfilePage({
               </Card>
             </TabsContent>
 
-            <TabsContent value="learning" className="space-y-4">
-              <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                <h2 className="mb-6 text-xl text-foreground">
+            <TabsContent value="learning" className="flex min-h-0 flex-1 flex-col gap-4">
+              <Card className="flex min-h-[min(22rem,38dvh)] flex-1 flex-col rounded-2xl border-0 p-6 shadow-lg">
+                <h2 className="mb-6 shrink-0 text-xl text-foreground">
                   {p.skillsLearning}
                 </h2>
                 {learningBookings.length === 0 ? (
-                  <p className="py-10 text-center text-muted-foreground">
-                    {p.emptyLearning}
-                  </p>
+                  <div className="flex flex-1 flex-col items-center justify-center py-16">
+                    <p className="text-center text-muted-foreground">
+                      {p.emptyLearning}
+                    </p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {learningBookings.map((b) => {
@@ -851,13 +869,13 @@ export function ProfilePage({
               </Card>
             </TabsContent>
 
-            <TabsContent value="reviews" className="space-y-4">
-              <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                <h2 className="mb-6 text-xl text-foreground">
+            <TabsContent value="reviews" className="flex min-h-0 flex-1 flex-col gap-4">
+              <Card className="flex min-h-[min(22rem,38dvh)] flex-1 flex-col rounded-2xl border-0 p-6 shadow-lg">
+                <h2 className="mb-6 shrink-0 text-xl text-foreground">
                   {p.studentReviews}
                 </h2>
 
-                <div className="space-y-8">
+                <div className="flex flex-1 flex-col space-y-8">
                   <section>
                     <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                       {p.reviewsFromStudents}
@@ -1002,6 +1020,7 @@ export function ProfilePage({
                 </div>
               </Card>
             </TabsContent>
+            </div>
           </Tabs>
         )}
       </div>

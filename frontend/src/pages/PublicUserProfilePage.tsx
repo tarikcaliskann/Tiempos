@@ -205,199 +205,199 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
     onNavigate?.("messages");
   };
 
-  return (
-    <PageLayout onNavigate={onNavigate}>
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-              onClick={() => navigate(PATHS.browse)}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {pub.backToBrowse}
-            </Button>
+  const publicProfileHero =
+    profile != null ? (
+      <div className="flex flex-col items-start gap-6 md:flex-row">
+        {avatarSrc ? (
+          <ImageWithFallback
+            src={avatarSrc}
+            alt=""
+            className="h-32 w-32 shrink-0 rounded-2xl border-4 border-white object-cover shadow-2xl"
+          />
+        ) : (
+          <div
+            className="flex h-32 w-32 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-white/20 text-3xl font-semibold text-white shadow-2xl"
+            aria-hidden
+          >
+            {initialsFromFullName(displayName)}
           </div>
+        )}
 
-          {loading ? (
-            <p className="text-sm text-white/90">{t.common.loading}</p>
-          ) : null}
-          {error && !loading ? (
-            <p className="text-sm text-red-100">{error}</p>
-          ) : null}
-
-          {profile && !loading ? (
-            <div className="flex flex-col items-start gap-6 md:flex-row">
-              {avatarSrc ? (
-                <ImageWithFallback
-                  src={avatarSrc}
-                  alt=""
-                  className="h-32 w-32 shrink-0 rounded-2xl border-4 border-white object-cover shadow-2xl"
-                />
-              ) : (
-                <div
-                  className="flex h-32 w-32 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-white/20 text-3xl font-semibold text-white shadow-2xl"
-                  aria-hidden
-                >
-                  {initialsFromFullName(displayName)}
-                </div>
-              )}
-
-              <div className="min-w-0 flex-1 text-white">
-                <div className="mb-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start">
-                  <div className="min-w-0">
-                    <h1 className="mb-2 text-3xl">{displayName || "—"}</h1>
-                    <div className="mb-3 flex min-h-[28px] items-center gap-2">
-                      {showRating ? (
-                        <>
-                          <Star className="h-5 w-5 shrink-0 fill-yellow-300 text-yellow-300" />
-                          <span className="text-lg">
-                            {formatTemplate(p.reviewsCount, {
-                              rating: profile.averageRating.toFixed(1),
-                              count: String(profile.totalReviews),
-                            })}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-lg text-white/80">
-                          {p.noRatingsYet}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      type="button"
-                      className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-                      onClick={() => void handleShareProfile()}
-                      title={p.shareProfile}
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      type="button"
-                      className="bg-card text-primary hover:bg-accent"
-                      onClick={() => openMessagesToUser()}
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      {pub.sendMessage}
-                    </Button>
-                  </div>
-                </div>
-
-                {shareFeedback ? (
-                  <p className="mb-2 text-sm text-white/90">{shareFeedback}</p>
-                ) : null}
-
-                {profile.bio?.trim() ? (
-                  <p className="mb-4 max-w-2xl whitespace-pre-wrap text-white/90">
-                    {profile.bio}
-                  </p>
-                ) : null}
-
-                <div className="flex flex-wrap gap-4 text-sm">
-                  {profile.location ? (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 shrink-0" />
-                      <span>{profile.location}</span>
-                    </div>
-                  ) : null}
-                  {memberDateStr ? (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 shrink-0" />
-                      <span>
-                        {formatTemplate(p.memberSince, { date: memberDateStr })}
-                      </span>
-                    </div>
-                  ) : null}
-                  {profile.languages?.trim() ? (
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 shrink-0" />
-                      <span>{profile.languages}</span>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                  {profile.website?.trim() ? (
-                    <a
-                      className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
-                      href={normalizeUrl(profile.website)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Globe className="h-4 w-4" />
-                      {profile.website}
-                    </a>
-                  ) : null}
-                  {profile.linkedin?.trim() ? (
-                    <a
-                      className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
-                      href={normalizeUrl(profile.linkedin)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Link2 className="h-4 w-4" />
-                      LinkedIn
-                    </a>
-                  ) : null}
-                  {profile.twitter?.trim() ? (
-                    <a
-                      className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
-                      href={normalizeUrl(profile.twitter)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Link2 className="h-4 w-4" />
-                      X / Twitter
-                    </a>
-                  ) : null}
-                </div>
+        <div className="min-w-0 flex-1 text-white">
+          <div className="mb-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start">
+            <div className="min-w-0">
+              <h1 className="mb-2 text-3xl">{displayName || "—"}</h1>
+              <div className="mb-3 flex min-h-[28px] items-center gap-2">
+                {showRating ? (
+                  <>
+                    <Star className="h-5 w-5 shrink-0 fill-yellow-300 text-yellow-300" />
+                    <span className="text-lg">
+                      {formatTemplate(p.reviewsCount, {
+                        rating: profile.averageRating.toFixed(1),
+                        count: String(profile.totalReviews),
+                      })}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-lg text-white/80">{p.noRatingsYet}</span>
+                )}
               </div>
             </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                type="button"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+                onClick={() => void handleShareProfile()}
+                title={p.shareProfile}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                type="button"
+                className="bg-card text-primary hover:bg-accent"
+                onClick={() => openMessagesToUser()}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                {pub.sendMessage}
+              </Button>
+            </div>
+          </div>
+
+          {shareFeedback ? (
+            <p className="mb-2 text-sm text-white/90">{shareFeedback}</p>
           ) : null}
+
+          {profile.bio?.trim() ? (
+            <p className="mb-4 max-w-2xl whitespace-pre-wrap text-white/90">
+              {profile.bio}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-4 text-sm">
+            {profile.location ? (
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span>{profile.location}</span>
+              </div>
+            ) : null}
+            {memberDateStr ? (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <span>
+                  {formatTemplate(p.memberSince, { date: memberDateStr })}
+                </span>
+              </div>
+            ) : null}
+            {profile.languages?.trim() ? (
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 shrink-0" />
+                <span>{profile.languages}</span>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            {profile.website?.trim() ? (
+              <a
+                className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
+                href={normalizeUrl(profile.website)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Globe className="h-4 w-4" />
+                {profile.website}
+              </a>
+            ) : null}
+            {profile.linkedin?.trim() ? (
+              <a
+                className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
+                href={normalizeUrl(profile.linkedin)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Link2 className="h-4 w-4" />
+                LinkedIn
+              </a>
+            ) : null}
+            {profile.twitter?.trim() ? (
+              <a
+                className="inline-flex items-center gap-1 text-white/95 underline-offset-4 hover:underline"
+                href={normalizeUrl(profile.twitter)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Link2 className="h-4 w-4" />
+                X / Twitter
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
+    ) : null;
 
-      <div className="mx-auto -mt-16 max-w-5xl px-4 pb-12 sm:px-6 lg:px-8">
+  return (
+    <PageLayout onNavigate={onNavigate}>
+      <div className="flex min-h-0 w-full flex-1 flex-col">
         {profile && !loading ? (
           <Tabs
             value={mainTab}
             onValueChange={(v) =>
               setMainTab(v as "teaching" | "learning" | "reviews")
             }
-            className="space-y-6"
+            className="flex min-h-0 w-full flex-1 flex-col gap-0"
           >
-            <TabsList className="rounded-xl border border-border bg-muted p-1 shadow-lg">
-              <TabsTrigger value="teaching" className="rounded-lg">
-                {p.tabTeaching}
-              </TabsTrigger>
-              <TabsTrigger value="learning" className="rounded-lg">
-                {p.tabLearning}
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="rounded-lg">
-                {p.tabReviews}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="teaching" className="space-y-4">
-              <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                <div className="mb-6 flex items-center justify-between">
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-0 pt-24 sm:px-6 lg:px-8">
+              <div className="mx-auto max-w-5xl">
+                <div className="mb-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                    onClick={() => navigate(PATHS.browse)}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {pub.backToBrowse}
+                  </Button>
+                </div>
+                {publicProfileHero}
+              </div>
+              <div className="mx-auto max-w-5xl py-6">
+                <TabsList className="rounded-xl border border-border bg-muted p-1 shadow-lg">
+                  <TabsTrigger value="teaching" className="rounded-lg">
+                    {p.tabTeaching}
+                  </TabsTrigger>
+                  <TabsTrigger value="learning" className="rounded-lg">
+                    {p.tabLearning}
+                  </TabsTrigger>
+                  <TabsTrigger value="reviews" className="rounded-lg">
+                    {p.tabReviews}
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+            <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col min-h-[min(26rem,42dvh)] px-4 pb-12 pt-0 sm:px-6 lg:px-8">
+            <TabsContent value="teaching" className="flex min-h-0 flex-1 flex-col gap-4">
+              <Card className="flex min-h-[min(22rem,38dvh)] flex-1 flex-col rounded-2xl border-0 p-6 shadow-lg">
+                <div className="mb-6 flex shrink-0 items-center justify-between">
                   <h2 className="text-xl text-foreground">{p.skillsTeach}</h2>
                 </div>
 
                 {skillsLoading ? (
-                  <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+                  <div className="flex flex-1 flex-col items-center justify-center py-16">
+                    <p className="text-sm text-muted-foreground">
+                      {t.common.loading}
+                    </p>
+                  </div>
                 ) : skills.length === 0 ? (
-                  <p className="py-10 text-center text-muted-foreground">
-                    {pub.noSkills}
-                  </p>
+                  <div className="flex flex-1 flex-col items-center justify-center py-16">
+                    <p className="text-center text-muted-foreground">
+                      {pub.noSkills}
+                    </p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {skills.map((skill) => {
@@ -522,39 +522,74 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
               </Card>
             </TabsContent>
 
-            <TabsContent value="learning" className="space-y-4">
-              <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                <h2 className="mb-6 text-xl text-foreground">{p.skillsLearning}</h2>
-                <p className="py-10 text-center text-muted-foreground">
-                  {pub.learningPrivate}
-                </p>
+            <TabsContent value="learning" className="flex min-h-0 flex-1 flex-col gap-4">
+              <Card className="flex min-h-[min(22rem,38dvh)] flex-1 flex-col rounded-2xl border-0 p-6 shadow-lg">
+                <h2 className="mb-6 shrink-0 text-xl text-foreground">
+                  {p.skillsLearning}
+                </h2>
+                <div className="flex flex-1 flex-col items-center justify-center py-16">
+                  <p className="text-center text-muted-foreground">
+                    {pub.learningPrivate}
+                  </p>
+                </div>
               </Card>
             </TabsContent>
 
-            <TabsContent value="reviews" className="space-y-4">
-              <Card className="rounded-2xl border-0 p-6 shadow-lg">
-                <h2 className="mb-6 text-xl text-foreground">{p.studentReviews}</h2>
+            <TabsContent value="reviews" className="flex min-h-0 flex-1 flex-col gap-4">
+              <Card className="flex min-h-[min(22rem,38dvh)] flex-1 flex-col rounded-2xl border-0 p-6 shadow-lg">
+                <h2 className="mb-6 shrink-0 text-xl text-foreground">
+                  {p.studentReviews}
+                </h2>
                 {profile.totalReviews > 0 ? (
-                  <div className="space-y-4">
+                  <div className="flex flex-1 flex-col space-y-4">
                     <p className="text-sm text-muted-foreground">
                       {formatTemplate(pub.reviewsSummary, {
                         rating: profile.averageRating.toFixed(1),
                         count: String(profile.totalReviews),
                       })}
                     </p>
-                    <p className="py-6 text-center text-sm text-muted-foreground">
+                    <p className="flex flex-1 flex-col items-center justify-center py-6 text-center text-sm text-muted-foreground">
                       {pub.reviewsListPrivate}
                     </p>
                   </div>
                 ) : (
-                  <p className="py-10 text-center text-muted-foreground">
-                    {p.emptyReviews}
-                  </p>
+                  <div className="flex flex-1 flex-col items-center justify-center py-16">
+                    <p className="text-center text-muted-foreground">
+                      {p.emptyReviews}
+                    </p>
+                  </div>
                 )}
               </Card>
             </TabsContent>
+            </div>
           </Tabs>
-        ) : null}
+        ) : (
+          <>
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
+              <div className="mx-auto max-w-5xl">
+                <div className="mb-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                    onClick={() => navigate(PATHS.browse)}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {pub.backToBrowse}
+                  </Button>
+                </div>
+                {loading ? (
+                  <p className="text-sm text-white/90">{t.common.loading}</p>
+                ) : null}
+                {error && !loading ? (
+                  <p className="text-sm text-red-100">{error}</p>
+                ) : null}
+              </div>
+            </div>
+            <div className="mx-auto flex min-h-[min(26rem,42dvh)] w-full max-w-5xl flex-1 flex-col px-4 pb-12 pt-6 sm:px-6 lg:px-8" />
+          </>
+        )}
       </div>
     </PageLayout>
   );

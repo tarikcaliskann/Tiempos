@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { PageType } from "../../App";
-import { PATHS } from "../../navigation/paths";
+import { PATHS, pageToPath } from "../../navigation/paths";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import {
@@ -55,6 +55,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ onNavigate }: NavbarProps) {
+  const navigate = useNavigate();
   const { isAuthenticated, logout, token, user, patchUser } = useAuth();
   const { t, locale } = useLanguage();
   const { resolvedTheme } = useTheme();
@@ -224,12 +225,12 @@ export function Navbar({ onNavigate }: NavbarProps) {
   }, [resolvedTheme]);
 
   const handleNavigate = (page: PageType) => {
-    if (onNavigate) {
-      onNavigate(page);
-      setIsMenuOpen(false);
-      setIsProfileMenuOpen(false);
-      window.scrollTo(0, 0);
-    }
+    if (page === "skill-detail" || page === "user-profile") return;
+    navigate(pageToPath(page));
+    onNavigate?.(page);
+    setIsMenuOpen(false);
+    setIsProfileMenuOpen(false);
+    window.scrollTo(0, 0);
   };
 
   const handleLogout = () => {
@@ -306,7 +307,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
             </button>
 
             {/* Desktop nav: ortada, tam genişlikte hizalı (≥64rem) */}
-            <div className="nav-xl-row pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            <div className="nav-xl-row pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
               <div className="pointer-events-auto flex min-w-0 items-center gap-6">
               <button
                 onClick={() => handleNavigate("browse")}
