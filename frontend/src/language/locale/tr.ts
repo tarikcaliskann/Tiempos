@@ -551,6 +551,7 @@ export const tr: Translation = {
   },
   messagesPage: {
     title: "Mesajlar",
+    resizeSplitAria: "Sürükleyerek gelen kutusu ve sohbet genişliğini ayarlayın",
     searchPlaceholder: "Sohbet ara…",
     activeNow: "Çevrim içi",
     pendingRequest: "Bekleyen istek",
@@ -574,6 +575,8 @@ export const tr: Translation = {
     waitingAccept:
       "{{name}} mesaj isteğinizi kabul edene kadar bekleniyor",
     typeMessage: "Mesaj yazın…",
+    composerReadOnlyHint:
+      "Bu konuşmada henüz mesaj gönderemezsiniz. Yukarıdaki şeritteki işlemleri kullanın veya karşı tarafı bekleyin.",
     emptyList: "Henüz konuşma yok.",
     emptyThreadTitle: "Bir konuşma seçin",
     emptyThreadBody: "Mesajlarınız burada görünecek.",

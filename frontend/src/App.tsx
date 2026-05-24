@@ -39,7 +39,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <div className="app-view">
+        <AppRoutes />
+      </div>
       <Toaster
         position="top-right"
         richColors

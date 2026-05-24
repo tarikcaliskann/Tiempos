@@ -3694,3 +3694,102 @@ html.dark {
   background: rgb(255 255 255 / 0.06) !important;
   color: #8b8b9a !important;
 }
+
+/* --- App shell: yükseklik zinciri (#root → route → PageLayout) --- */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+#root {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* PageLayout (hideFooter): #root zincirinde kalan yükseklik — h-dvh kullanma (app-view ile çakışır) */
+.page-layout {
+  flex: 1 1 0%;
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.page-layout-main {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* App.tsx: route içeriği bu kapta büyür (mesajlar dışı sayfalar dikey scroll) */
+.app-view {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* MessagesPage kökü — main’in tek çocuğu; kalan yüksekliği alır */
+.messages-page {
+  flex: 1 1 0%;
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.messages-page__inner {
+  flex: 1 1 0%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Kart: iki sütun (inbox | chat) */
+.messages-card {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+/* Sohbet / gelen kutusu sütunu */
+.chat-pane,
+.inbox-pane {
+  flex: 1 1 0%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  flex-shrink: 0;
+}
+
+.messages-container {
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-input {
+  flex-shrink: 0;
+  display: block;
+}

@@ -9,7 +9,6 @@ import {
   BookOpen,
   Award,
   Plus,
-  CreditCard,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -259,6 +258,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                   <BookOpen className="w-4 h-4 mr-2" />
                   {d.browseSkills}
                 </Button>
+                {/* Zaman kredisi satın alma — sonra açılacak
                 <Button
                   variant="outline"
                   className="w-full justify-start"
@@ -267,6 +267,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                   <CreditCard className="w-4 h-4 mr-2" />
                   {d.buyTimeCredits}
                 </Button>
+                */}
                 <Button
                   variant="outline"
                   className="w-full justify-start"

@@ -20,7 +20,9 @@ createRoot(document.getElementById("root")!).render(
     <LanguageProvider>
       <AuthProvider>
         <ErrorBoundary>
-          <App />
+          <div className="flex h-full min-h-0 w-full flex-1 flex-col">
+            <App />
+          </div>
         </ErrorBoundary>
       </AuthProvider>
     </LanguageProvider>

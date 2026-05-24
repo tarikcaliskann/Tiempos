@@ -1,5 +1,5 @@
 /**
- * Skill detail hero — layout/spacing aligned with design reference (gradient hero, 2-col, meta grid).
+ * Skill detail hero — layout/spacing (düz footer tonu, 2 kolon, meta grid).
  * Scoped under .skill-detail-page to avoid leaking globals.
  */
 
@@ -13,12 +13,8 @@
   padding-bottom: 2.75rem;
   padding-left: max(24px, env(safe-area-inset-left, 0px));
   padding-right: max(24px, env(safe-area-inset-right, 0px));
-  background: linear-gradient(
-    125deg,
-    #2563eb 0%,
-    #4338ca 42%,
-    #6d28d9 100%
-  );
+  /* Footer ile aynı paletten tek düz ton (linear-gradient yok) — Tailwind blue-500 */
+  background: #3b82f6;
 }
 
 @media (min-width: 640px) {
@@ -34,12 +30,8 @@
 }
 
 .dark .sd-hero-wrap {
-  background: linear-gradient(
-    125deg,
-    #172554 0%,
-    #312e81 45%,
-    #4c1d95 100%
-  );
+  /* Koyu arayüzde aynı aileden bir ton daha koyu mavi */
+  background: #2563eb;
 }
 
 .sd-hero-inner-max {

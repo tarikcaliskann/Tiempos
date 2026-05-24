@@ -101,6 +101,23 @@ const OPEN_EXCHANGE_KEY = "tiempos_open_exchange";
 const OPEN_USER_KEY = "tiempos_open_user";
 const OPEN_SKILL_KEY = "tiempos_open_skill";
 
+const INBOX_WIDTH_STORAGE_KEY = "tiempos_messages_inbox_width_px";
+const DEFAULT_INBOX_WIDTH_PX = 384;
+const MIN_INBOX_WIDTH_PX = 220;
+const MIN_CHAT_PANE_WIDTH_PX = 260;
+const MAX_INBOX_WIDTH_PX = 560;
+
+function readStoredInboxWidthPx(): number {
+  try {
+    const v = localStorage.getItem(INBOX_WIDTH_STORAGE_KEY);
+    const n = v ? parseInt(v, 10) : NaN;
+    if (!Number.isFinite(n)) return DEFAULT_INBOX_WIDTH_PX;
+    return Math.min(MAX_INBOX_WIDTH_PX, Math.max(MIN_INBOX_WIDTH_PX, n));
+  } catch {
+    return DEFAULT_INBOX_WIDTH_PX;
+  }
+}
+
 type MessagesLocationState = {
   tiemposOpenChat?: { userId?: string; skillId?: string };
 };
@@ -433,6 +450,15 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   const [userAvatarById, setUserAvatarById] = useState<Record<string, string>>({});
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [inboxWidthPx, setInboxWidthPx] = useState(readStoredInboxWidthPx);
+  const [splitPaneDragging, setSplitPaneDragging] = useState(false);
+  const [isSmViewport, setIsSmViewport] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 640px)").matches,
+  );
+  const splitLayoutRef = useRef<HTMLDivElement | null>(null);
+  const splitDragWidthRef = useRef(readStoredInboxWidthPx());
   const [threadLines, setThreadLines] = useState<ThreadLine[]>([]);
   const threadScrollRef = useRef<HTMLDivElement | null>(null);
   /** Dar ekranda geri ile sohbet panelini kapattıysa, listeyi tekrar doldurunca ilk satırı yeniden otomatik seçme */
@@ -559,6 +585,55 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   );
 
   const effectiveBookingUserId = user?.id ?? bookingModalUserId ?? undefined;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const fn = () => setIsSmViewport(mq.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+
+  useEffect(() => {
+    if (!splitPaneDragging) return;
+    const rowEl = splitLayoutRef.current;
+    const onMove = (e: PointerEvent) => {
+      if (!rowEl) return;
+      const rect = rowEl.getBoundingClientRect();
+      const maxInbox = Math.min(
+        MAX_INBOX_WIDTH_PX,
+        Math.max(MIN_INBOX_WIDTH_PX, rect.width - MIN_CHAT_PANE_WIDTH_PX),
+      );
+      const w = Math.min(
+        maxInbox,
+        Math.max(MIN_INBOX_WIDTH_PX, e.clientX - rect.left),
+      );
+      splitDragWidthRef.current = w;
+      setInboxWidthPx(w);
+    };
+    const end = () => {
+      setSplitPaneDragging(false);
+      try {
+        localStorage.setItem(
+          INBOX_WIDTH_STORAGE_KEY,
+          String(splitDragWidthRef.current),
+        );
+      } catch {
+        /* ignore */
+      }
+    };
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    return () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    };
+  }, [splitPaneDragging]);
 
   /** Tam sayfa kaymasını engelle; yalnızca sohbet listesi / thread kendi içinde scroll olur. */
   useEffect(() => {
@@ -1549,10 +1624,6 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   };
 
   const showMessageComposer = composerAllowsSend;
-  const showThreadFooter =
-    Boolean(chatActionError && !bookOpen) ||
-    isBlockedBySelected ||
-    showMessageComposer;
 
   const showConversationPane = useMemo(
     () =>
@@ -1581,18 +1652,41 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     [routeOpenIntent.userId, routeOpenIntent.skillId, newThreadDraft, selected],
   );
 
+  const onInboxSplitPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isSmViewport) return;
+    e.preventDefault();
+    splitDragWidthRef.current = inboxWidthPx;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setSplitPaneDragging(true);
+  };
+
   return (
     <PageLayout hideFooter onNavigate={onNavigate}>
-      <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden overscroll-none px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-20 sm:px-6 lg:px-8">
-        <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden">
-          <Card className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
-            <div className={cn(
-              "flex h-full min-h-0 w-full flex-1 flex-col border-r border-border sm:w-96 sm:shrink-0",
-              selectedOtherUserId || newThreadDraft || showOpeningNavHint
-                ? "hidden sm:flex"
-                : "flex",
-            )}>
-              <div className="shrink-0 border-b border-border p-4">
+      <div className="messages-page box-border w-full px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-8">
+        <div className="messages-page__inner mx-auto w-full max-w-7xl">
+          <div
+            ref={splitLayoutRef}
+            className="flex min-h-0 w-full flex-1 flex-row overflow-hidden rounded-2xl"
+          >
+          <Card className="messages-card flex min-h-0 flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
+            <div
+              className={cn(
+                "inbox-pane border-r border-border sm:flex-[0_0_auto] sm:shrink-0",
+                selectedOtherUserId || newThreadDraft || showOpeningNavHint
+                  ? "hidden w-full min-w-0 sm:flex"
+                  : "flex w-full min-w-0",
+              )}
+              style={
+                isSmViewport
+                  ? {
+                      width: inboxWidthPx,
+                      minWidth: MIN_INBOX_WIDTH_PX,
+                      maxWidth: MAX_INBOX_WIDTH_PX,
+                    }
+                  : undefined
+              }
+            >
+              <div className="chat-header border-b border-border p-4">
                 <h2 className="mb-4 text-xl text-foreground">{m.title}</h2>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -1605,7 +1699,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+              <div className="messages-container overscroll-contain">
                 {loadingList || listAwaitingMyId ? (
                   <p className="p-6 text-sm text-muted-foreground">
                     {t.common.loading}
@@ -1708,18 +1802,33 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
               </div>
             </div>
 
-            <div className={cn(
-              "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
-              showConversationPane ? "flex" : "hidden sm:flex",
-            )}>
+            <div
+              role="separator"
+              aria-orientation="vertical"
+              aria-label={m.resizeSplitAria}
+              className="hidden w-0 shrink-0 cursor-col-resize touch-none sm:relative sm:z-[1] sm:flex sm:w-2 sm:max-w-[0.5rem] sm:shrink-0 sm:items-stretch sm:justify-center sm:border-x sm:border-border/60 sm:bg-muted/30 sm:hover:bg-muted/60"
+              onPointerDown={onInboxSplitPointerDown}
+            >
+              <span
+                className="pointer-events-none mx-auto my-2 h-[calc(100%-1rem)] w-px shrink-0 bg-border"
+                aria-hidden
+              />
+            </div>
+
+            <div
+              className={cn(
+                "chat-pane",
+                showConversationPane ? "flex" : "hidden sm:flex",
+              )}
+            >
               {showOpeningNavHint ? (
-                <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
                   <MessageCircle className="h-12 w-12 animate-pulse text-muted-foreground/50" />
                   <p className="text-sm text-muted-foreground">{t.common.loading}</p>
                 </div>
               ) : selected ? (
-                <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="shrink-0">
+                <>
+                  <div className="chat-header border-b border-border bg-card">
                   <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
                     <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                       <button
@@ -1866,39 +1975,53 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   )}
 
                   {selected.uiStatus === "accepted" && (
-                    <div className="shrink-0 border-b border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="space-y-1 text-sm text-foreground/90">
-                          <p>{selected.ex.skillTitle}</p>
-                          <p>{formatScheduledAt(selected.ex.scheduledStartAt, locale)}</p>
+                    <div className="shrink-0 border-b border-emerald-100 bg-emerald-50 px-3 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2">
+                        <div className="min-w-0 flex-1 space-y-0.5 text-xs leading-tight text-foreground/90 sm:text-sm">
+                          <p className="truncate font-medium">{selected.ex.skillTitle}</p>
+                          <p className="truncate text-muted-foreground">
+                            {formatScheduledAt(selected.ex.scheduledStartAt, locale)}
+                          </p>
                         </div>
-                        {canCancelSelected ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="ml-auto border-destructive/50 text-destructive hover:bg-destructive/10"
-                            onClick={() => {
-                              setCancelError(null);
-                              setCancelOpen(true);
-                            }}
-                          >
-                            <X className="mr-1 h-4 w-4" />
-                            {m.cancelSession}
-                          </Button>
-                        ) : null}
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
-                        {isSelectedRequesterSide && !selected.ex.requesterAttendanceAckAt ? (
-                          <Button type="button" size="sm" variant="secondary" onClick={() => void handleRequesterStarted()}>
-                            {m.requesterConfirmStarted}
-                          </Button>
-                        ) : null}
-                        {isSelectedOwnerSide && !selected.ex.ownerAttendanceAckAt ? (
-                          <Button type="button" size="sm" variant="secondary" onClick={() => void handleOwnerStarted()}>
-                            {m.ownerConfirmStarted}
-                          </Button>
-                        ) : null}
+                        <div className="flex max-w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                          {canCancelSelected ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-8 shrink-0 border-destructive/50 px-2 text-xs text-destructive hover:bg-destructive/10 sm:px-3 sm:text-sm"
+                              onClick={() => {
+                                setCancelError(null);
+                                setCancelOpen(true);
+                              }}
+                            >
+                              <X className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              {m.cancelSession}
+                            </Button>
+                          ) : null}
+                          {isSelectedRequesterSide && !selected.ex.requesterAttendanceAckAt ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="h-8 shrink-0 px-2 text-xs sm:px-3 sm:text-sm"
+                              onClick={() => void handleRequesterStarted()}
+                            >
+                              {m.requesterConfirmStarted}
+                            </Button>
+                          ) : null}
+                          {isSelectedOwnerSide && !selected.ex.ownerAttendanceAckAt ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="h-8 shrink-0 px-2 text-xs sm:px-3 sm:text-sm"
+                              onClick={() => void handleOwnerStarted()}
+                            >
+                              {m.ownerConfirmStarted}
+                            </Button>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1918,7 +2041,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
 
                   <div
                     ref={threadScrollRef}
-                    className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain bg-muted/20 dark:bg-background/80"
+                    className="messages-container bg-muted/20 dark:bg-background/80"
                   >
                     <div
                       className={cn(
@@ -1987,8 +2110,10 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                     </div>
                   </div>
 
-                  {showThreadFooter ? (
-                    <div className="shrink-0 border-t border-border bg-card shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.35)]">
+                  {/* Alt: composer — messages-container dışında, chat-input */}
+                  <div
+                    className="chat-input border-t border-border bg-card pt-[12px] pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.35)]"
+                  >
                       {chatActionError && !bookOpen ? (
                         <div
                           role="alert"
@@ -2007,8 +2132,8 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       ) : null}
 
                       {showMessageComposer ? (
-                        <div className="px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
-                          <div className="flex gap-2">
+                        <div className="px-4">
+                          <div className="flex items-center gap-2">
                             <Input
                               placeholder={
                                 isBlockedBySelected
@@ -2024,7 +2149,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                                   void handleSend();
                                 }
                               }}
-                              className="bg-background"
+                              className="bg-background py-2.5"
                             />
                             <Button
                               type="button"
@@ -2036,12 +2161,16 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                             </Button>
                           </div>
                         </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
+                      ) : (
+                        <div className="px-4 text-center text-xs leading-snug text-muted-foreground">
+                          {m.composerReadOnlyHint}
+                        </div>
+                      )}
+                  </div>
+                </>
               ) : newThreadDraft ? (
-                <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+                <>
+                  <div className="chat-header border-b border-border bg-card">
                   <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
                     <div className="flex min-w-0 flex-1 items-center gap-3">
                       <button
@@ -2082,8 +2211,9 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       </div>
                     </div>
                   </div>
+                  </div>
 
-                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-4">
+                  <div className="messages-container p-4">
                     <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
                       {m.newThreadIntro}
                     </p>
@@ -2118,35 +2248,38 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                         <p className="text-xs leading-relaxed text-muted-foreground">
                           {m.newThreadScheduleHint}
                         </p>
-                        <div className="mt-auto flex flex-wrap gap-2 border-t border-border pt-4">
-                          <Button
-                            type="button"
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                            disabled={
-                              draftSubmitting ||
-                              !draftFirstMessage.trim()
-                            }
-                            onClick={() => void handleSubmitNewThreadDraft()}
-                          >
-                            {draftSubmitting ? t.common.loading : m.newThreadSubmit}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={draftSubmitting}
-                            onClick={() =>
-                              navigate(PATHS.skill(newThreadDraft.skill.id))
-                            }
-                          >
-                            {m.newThreadPickTimeOnSkillPage}
-                          </Button>
-                        </div>
                       </div>
                     )}
                   </div>
-                </div>
+                  {!isNewThreadBlockedByOther ? (
+                    <div className="chat-input border-t border-border bg-card px-4 pt-[12px] pb-[max(12px,env(safe-area-inset-bottom))]">
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                          disabled={
+                            draftSubmitting || !draftFirstMessage.trim()
+                          }
+                          onClick={() => void handleSubmitNewThreadDraft()}
+                        >
+                          {draftSubmitting ? t.common.loading : m.newThreadSubmit}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={draftSubmitting}
+                          onClick={() =>
+                            navigate(PATHS.skill(newThreadDraft.skill.id))
+                          }
+                        >
+                          {m.newThreadPickTimeOnSkillPage}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : (
-                <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
                   {chatActionError ? (
                     <div
                       role="alert"
@@ -2166,6 +2299,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
               )}
             </div>
           </Card>
+          </div>
         </div>
       </div>
       <Modal

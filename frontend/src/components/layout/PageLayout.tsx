@@ -22,8 +22,9 @@ export function PageLayout({
     <div
       className={cn(
         "flex flex-col bg-background text-foreground antialiased transition-colors",
+        /* hideFooter: tam yükseklik sütunu; taşma yok — çocuklar flex + min-h-0 ile kalan yüksekliği alır */
         hideFooter
-          ? "h-dvh max-h-dvh min-h-0 overflow-hidden overscroll-none"
+          ? "page-layout min-h-0 flex-1 overflow-hidden overscroll-none"
           : "min-h-dvh",
         className,
       )}
@@ -31,8 +32,10 @@ export function PageLayout({
       <Navbar onNavigate={onNavigate} />
       <main
         className={cn(
-          "flex min-h-0 w-full max-w-full flex-1 flex-col",
-          hideFooter && "h-0 min-h-0 flex-1 overflow-hidden",
+          "flex w-full max-w-full min-h-0 flex-1 flex-col",
+          /* pt-16: fixed navbar (h-16) — yükseklik düşümü yalnızca layout’ta; Messages içinde tekrarlanmaz */
+          hideFooter &&
+            "page-layout-main flex min-h-0 flex-1 flex-col overflow-hidden overscroll-none pt-16",
         )}
       >
         {children}

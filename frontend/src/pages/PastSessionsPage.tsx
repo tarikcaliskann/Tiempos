@@ -161,7 +161,7 @@ export function PastSessionsPage({ onNavigate }: PastSessionsPageProps) {
   if (loading) {
     return (
       <PageLayout hideFooter onNavigate={onNavigate}>
-        <div className="flex min-h-0 flex-1 flex-col px-4 pt-24 sm:px-6 lg:px-8">
+        <div className="flex min-h-0 flex-1 flex-col px-4 pt-8 sm:px-6 lg:px-8">
           <p className="text-muted-foreground">{t.common.loading}</p>
         </div>
       </PageLayout>
@@ -170,7 +170,7 @@ export function PastSessionsPage({ onNavigate }: PastSessionsPageProps) {
 
   return (
     <PageLayout hideFooter onNavigate={onNavigate}>
-      <div className="flex min-h-0 flex-1 flex-col px-3 pb-4 pt-20 sm:px-6 sm:pt-24 lg:px-8">
+      <div className="flex min-h-0 flex-1 flex-col px-3 pb-4 pt-4 sm:px-6 sm:pt-8 lg:px-8">
         <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col min-h-0">
           <div className="mb-8">
             <h1 className="mb-2 text-3xl text-foreground">{p.title}</h1>

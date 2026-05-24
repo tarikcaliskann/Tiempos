@@ -550,6 +550,7 @@ export const en = {
   },
   messagesPage: {
     title: "Messages",
+    resizeSplitAria: "Drag to resize the inbox and chat panes",
     searchPlaceholder: "Search conversations...",
     activeNow: "Active now",
     pendingRequest: "Pending Request",
@@ -572,6 +573,8 @@ export const en = {
     requestSent: "Request Sent",
     waitingAccept: "Waiting for {{name}} to accept your message request",
     typeMessage: "Type a message...",
+    composerReadOnlyHint:
+      "You can’t send messages in this thread yet. Use the actions in the banner above, or wait for the other person.",
     emptyList: "No conversations yet.",
     emptyThreadTitle: "Select a conversation",
     emptyThreadBody: "When you have message threads, they will appear here.",
