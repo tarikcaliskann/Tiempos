@@ -9,6 +9,25 @@ const projectRoot = path.resolve(
   "..",
 );
 
+/** Google gsi/client: her yanıtta COOP (rolldown-vite’da server.headers tek başına yetmeyebilir). */
+function coopUnsafeNoneDevPlugin(): Plugin {
+  return {
+    name: "tiempos-coop-unsafe-none",
+    configureServer(server) {
+      server.middlewares.use((_req, res, next) => {
+        res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+        next();
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((_req, res, next) => {
+        res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+        next();
+      });
+    },
+  };
+}
+
 /** Yanlış süreç 8080’deyken /api/skills vb. 500 döner; dev başında bir kez uyar */
 function apiProxySanityCheckPlugin(proxyBase: string): Plugin {
   return {
@@ -78,27 +97,63 @@ export default defineConfig(({ mode }) => {
   const gaId = env.VITE_GA_MEASUREMENT_ID;
   /** Yerelde 8080 başka bir konteyner/süreç tarafından doluysa: .env → DEV_API_PROXY=http://localhost:8082 */
   const devApiProxy = (env.DEV_API_PROXY || "http://localhost:8080").trim().replace(/\/+$/, "");
+  /**
+   * Google gsi/client (popup / postMessage): `same-origin-allow-popups` bazı tarayıcı ve
+   * rolldown-vite ile yine client:380’de bloklanabiliyor. Bu başlıklar yalnızca yerel
+   * `vite` / `vite preview` sunucusuna gider; prod’da nginx (allow-popups) geçerli.
+   */
+  const coopForGoogleSignIn = {
+    "Cross-Origin-Opener-Policy": "unsafe-none",
+  } as const;
 
   return {
     envDir: projectRoot,
     envPrefix: ["VITE_", "GOOGLE_"],
-    plugins: [react(), googleAnalyticsHtmlPlugin(gaId), apiProxySanityCheckPlugin(devApiProxy)],
+    plugins: [
+      coopUnsafeNoneDevPlugin(),
+      react(),
+      googleAnalyticsHtmlPlugin(gaId),
+      apiProxySanityCheckPlugin(devApiProxy),
+    ],
     server: {
-      // Google GSI / OAuth: aksi halde COOP postMessage (client:380) ile giriş kırılır
-      headers: {
-        "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
-      },
+      headers: { ...coopForGoogleSignIn },
       proxy: {
         "/api": {
           target: devApiProxy,
           changeOrigin: true,
+          configure(proxy) {
+            /** Bağlantı reddedildi / hedef kapalı → tarayıcıda “500” gibi görünmesin; 502 + JSON mesajı. */
+            proxy.on("error", (err, req, res) => {
+              const out = res as http.ServerResponse;
+              if (out.headersSent) return;
+              const path = req && "url" in req && typeof req.url === "string" ? req.url : "/api";
+              out.writeHead(502, {
+                "Content-Type": "application/json; charset=utf-8",
+              });
+              out.end(
+                JSON.stringify({
+                  timestamp: new Date().toISOString(),
+                  status: 502,
+                  message:
+                    `Vite proxy: backend’e ulaşılamadı (${devApiProxy}). ` +
+                    "`docker compose up -d api db` çalıştırın veya kök `.env` içinde `DEV_API_PROXY` değerini API’nin dinlediği adrese ayarlayın " +
+                    `(örn. http://localhost:8080). Teknik: ${err instanceof Error ? err.message : String(err)}`,
+                  path,
+                }),
+              );
+            });
+            proxy.on("proxyReq", (proxyReq, req) => {
+              const auth = req.headers.authorization;
+              if (auth) {
+                proxyReq.setHeader("Authorization", auth);
+              }
+            });
+          },
         },
       },
     },
     preview: {
-      headers: {
-        "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
-      },
+      headers: { ...coopForGoogleSignIn },
     },
   };
 });

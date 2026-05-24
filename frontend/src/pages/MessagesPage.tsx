@@ -34,9 +34,16 @@ import {
   CalendarIcon,
   AlertTriangle,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { flushSync, createPortal } from "react-dom";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { PageType } from "../App";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -58,7 +65,8 @@ import {
   type ExchangeMessageDto,
   type ExchangeRequestDto,
 } from "../api/exchange";
-import { apiErrorDisplayMessage } from "../api/client";
+import { fetchSkillById, type SkillDto } from "../api/skills";
+import { ApiError, apiErrorDisplayMessage } from "../api/client";
 import {
   blockUser,
   fetchMyBlockState,
@@ -81,6 +89,7 @@ import {
   isWithinSkillAvailability,
 } from "../lib/bookingAvailability";
 import { initialsFromFullName } from "../lib/initials";
+import { PATHS } from "../navigation/paths";
 
 interface MessagesPageProps {
   onNavigate?: (page: PageType) => void;
@@ -90,11 +99,82 @@ interface MessagesPageProps {
 
 const OPEN_EXCHANGE_KEY = "tiempos_open_exchange";
 const OPEN_USER_KEY = "tiempos_open_user";
+const OPEN_SKILL_KEY = "tiempos_open_skill";
+
+type MessagesLocationState = {
+  tiemposOpenChat?: { userId?: string; skillId?: string };
+};
+
+/** Mesajlar route'una gelirken açılacak sohbet / taslak (session + URL). */
+type MessagesRouteOpenIntent = {
+  userId: string | null;
+  skillId: string | null;
+  exchangeId: string | null;
+};
+
+function clearStoredOpenNavIntent() {
+  try {
+    sessionStorage.removeItem(OPEN_USER_KEY);
+    sessionStorage.removeItem(OPEN_SKILL_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Her /messages girişinde senkron okunur (SkillDetail session + adres çubuğu). */
+function readMessagesRouteBootstrap(): {
+  userId: string | null;
+  skillId: string | null;
+  exchangeId: string | null;
+} {
+  let userId: string | null = null;
+  let skillId: string | null = null;
+  let exchangeId: string | null = null;
+  try {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      userId = sp.get("user")?.trim() || null;
+      skillId = sp.get("skill")?.trim() || null;
+      exchangeId = sp.get("open")?.trim() || null;
+    }
+  } catch {
+    /* ignore */
+  }
+  try {
+    userId = userId || sessionStorage.getItem(OPEN_USER_KEY)?.trim() || null;
+    skillId = skillId || sessionStorage.getItem(OPEN_SKILL_KEY)?.trim() || null;
+    const ex = sessionStorage.getItem(OPEN_EXCHANGE_KEY)?.trim();
+    if (ex) {
+      exchangeId = exchangeId || ex;
+      sessionStorage.removeItem(OPEN_EXCHANGE_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+  return { userId, skillId, exchangeId };
+}
 
 function tomorrowDateStr(): string {
   const t = new Date();
   t.setDate(t.getDate() + 1);
   return t.toISOString().slice(0, 10);
+}
+
+/** İlk talep için varsayılan başlangıç: en az 1 saat sonrası, mümkünse 10:00. */
+function firstBookableDefaultStartIso(): string {
+  for (let addDays = 1; addDays <= 21; addDays++) {
+    const d = new Date();
+    d.setDate(d.getDate() + addDays);
+    const y = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, "0");
+    const da = String(d.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${mo}-${da}`;
+    const iso = localDateTimeToUtcIso(dateStr, "10:00");
+    if (new Date(iso).getTime() >= Date.now() + 60 * 60 * 1000) {
+      return iso;
+    }
+  }
+  return localDateTimeToUtcIso(tomorrowDateStr(), "18:00");
 }
 
 function localDateTimeToUtcIso(dateStr: string, timeStr: string): string {
@@ -319,20 +399,35 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   const { t, locale } = useLanguage();
   const m = t.messagesPage;
   const sd = t.skillDetail;
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, token, patchUser } = useAuth();
   const [resolvedMyUserId, setResolvedMyUserId] = useState<string | null>(null);
   const effectiveMyUserId = user?.id ?? resolvedMyUserId;
-  const [searchParams, setSearchParams] = useSearchParams();
+  /** Oturum var ama UUID henüz yok: mergeExchanges yanlış otherUserId üretir; listeyi beklet */
+  const listAwaitingMyId = Boolean(token && !effectiveMyUserId);
   const [rows, setRows] = useState<ConversationRow[]>([]);
   const [loadingList, setLoadingList] = useState(false);
+  /** State bir frame gecikebilir; open-from-nav ile loadList yarışını önlemek için senkron ref. */
+  const loadingListRef = useRef(false);
+  /** Yeni konuşma taslağı yüklenirken effect 922'nin seçimi silmesini engeller */
+  const pendingOpenNewChatUserLowerRef = useRef<string | null>(null);
+  /** rows güncellenince aynı user+skill için ikinci bir fetch başlatılmasını engeller */
+  const openInstructorIntentFlightRef = useRef<string | null>(null);
   const [selectedOtherUserId, setSelectedOtherUserId] = useState<string | null>(
     null,
   );
   const [activeExchangeId, setActiveExchangeId] = useState<string | null>(null);
-  const [openFromNavExchangeId, setOpenFromNavExchangeId] = useState<
-    string | null
-  >(null);
-  const [openFromNavUserId, setOpenFromNavUserId] = useState<string | null>(null);
+  const [routeOpenIntent, setRouteOpenIntent] = useState<MessagesRouteOpenIntent>(
+    () => readMessagesRouteBootstrap(),
+  );
+  const [newThreadDraft, setNewThreadDraft] = useState<{
+    otherUserId: string;
+    otherName: string;
+    skill: SkillDto;
+  } | null>(null);
+  const [draftFirstMessage, setDraftFirstMessage] = useState("");
+  const [draftSubmitting, setDraftSubmitting] = useState(false);
   const [blockedUserIds, setBlockedUserIds] = useState<string[]>([]);
   const [blockedByUserIds, setBlockedByUserIds] = useState<string[]>([]);
   const [userAvatarById, setUserAvatarById] = useState<Record<string, string>>({});
@@ -386,9 +481,11 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
 
   const loadList = useCallback(async (): Promise<ConversationRow[]> => {
     if (!token) {
+      loadingListRef.current = false;
       setRows([]);
       return [];
     }
+    loadingListRef.current = true;
     setLoadingList(true);
     try {
       const [sent, received] = await Promise.all([
@@ -406,13 +503,18 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
       setRows([]);
       return [];
     } finally {
+      loadingListRef.current = false;
       setLoadingList(false);
     }
   }, [token, effectiveMyUserId]);
 
   const selected = useMemo(() => {
     if (!selectedOtherUserId) return null;
-    const row = rows.find((r) => r.otherUserId === selectedOtherUserId) ?? null;
+    const sid = selectedOtherUserId.trim().toLowerCase();
+    const row =
+      rows.find(
+        (r) => r.otherUserId.trim().toLowerCase() === sid,
+      ) ?? null;
     if (!row) return null;
     const ex =
       row.exchanges.find(
@@ -430,6 +532,17 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
       uiStatus: toUiStatus(ex, effectiveMyUserId ?? undefined),
     };
   }, [rows, selectedOtherUserId, activeExchangeId, effectiveMyUserId]);
+
+  const composerAllowsSend = useMemo(() => {
+    if (!selected) return false;
+    return (
+      isMessageEnabledStatus(selected.ex.status) ||
+      (isPendingExchangeStatus(selected.ex.status) &&
+        (Boolean(selected.ex.pendingFromOwner) ||
+          Boolean(selected.ex.inquiryOnly)))
+    );
+  }, [selected]);
+
   const selectedOtherId = selected
     ? getOtherUserId(selected.ex, effectiveMyUserId ?? undefined).toLowerCase()
     : null;
@@ -438,6 +551,11 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   );
   const isBlockedBySelected = Boolean(
     selectedOtherId && blockedByUserIds.includes(selectedOtherId),
+  );
+
+  const isNewThreadBlockedByOther = Boolean(
+    newThreadDraft?.otherUserId &&
+      blockedByUserIds.includes(newThreadDraft.otherUserId.trim().toLowerCase()),
   );
 
   const effectiveBookingUserId = user?.id ?? bookingModalUserId ?? undefined;
@@ -589,8 +707,13 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   }, [hasBookingAvailabilityConstraints, bookingTimeOptions, bookTime]);
 
   useEffect(() => {
+    if (!token) {
+      void loadList();
+      return;
+    }
+    if (!effectiveMyUserId) return;
     void loadList();
-  }, [loadList]);
+  }, [loadList, token, effectiveMyUserId]);
 
   /** Bekleyen giden talep: karşı taraf reddettiğinde liste eski kalmasın (çekme hatası / gecikmeli güncelleme). */
   useEffect(() => {
@@ -618,36 +741,25 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     }
   }, [bookOpen]);
 
-  useEffect(() => {
+  /**
+   * Intent: önce session + window.location (RR7'de setSearchParams ile temizlik state kaybına yol açabiliyor),
+   * sonra navigate(..., { state }) ile gelen tiemposOpenChat.
+   */
+  useLayoutEffect(() => {
+    const b = readMessagesRouteBootstrap();
+    let userId = b.userId;
+    let skillId = b.skillId;
+    let exchangeId = b.exchangeId;
     try {
-      const open = sessionStorage.getItem(OPEN_EXCHANGE_KEY);
-      if (open) {
-        setOpenFromNavExchangeId(open);
-        sessionStorage.removeItem(OPEN_EXCHANGE_KEY);
-      }
-      const openUser = sessionStorage.getItem(OPEN_USER_KEY);
-      if (openUser?.trim()) {
-        setOpenFromNavUserId(openUser.trim().toLowerCase());
-        sessionStorage.removeItem(OPEN_USER_KEY);
-      }
+      const st = location.state as MessagesLocationState | null;
+      const tc = st?.tiemposOpenChat;
+      if (tc?.userId?.trim()) userId = tc.userId.trim();
+      if (tc?.skillId?.trim()) skillId = tc.skillId.trim();
     } catch {
       /* ignore */
     }
-  }, []);
-
-  useEffect(() => {
-    const o = searchParams.get("open");
-    const u = searchParams.get("user");
-    if (o) {
-      setOpenFromNavExchangeId(o);
-    }
-    if (u?.trim()) {
-      setOpenFromNavUserId(u.trim().toLowerCase());
-    }
-    if (o || u) {
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
+    setRouteOpenIntent({ userId, skillId, exchangeId });
+  }, [location.key]);
 
   const hydrateBlockState = useCallback(
     async (authToken: string) => {
@@ -743,39 +855,131 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
   }, [rows, token, userAvatarById]);
 
   useEffect(() => {
-    if (!openFromNavExchangeId || rows.length === 0) return;
+    const exId = routeOpenIntent.exchangeId;
+    if (!exId || rows.length === 0) return;
     for (const r of rows) {
       if (
         r.exchanges.some(
           (e) =>
-            e.id.toLowerCase() === openFromNavExchangeId.toLowerCase(),
+            e.id.toLowerCase() === exId.toLowerCase(),
         )
       ) {
         setSelectedOtherUserId(r.otherUserId);
-        setActiveExchangeId(openFromNavExchangeId);
-        setOpenFromNavExchangeId(null);
+        setActiveExchangeId(exId);
+        setRouteOpenIntent((p) => ({ ...p, exchangeId: null }));
         return;
       }
     }
-    setOpenFromNavExchangeId(null);
-  }, [rows, openFromNavExchangeId]);
+    setRouteOpenIntent((p) => ({ ...p, exchangeId: null }));
+  }, [rows, routeOpenIntent.exchangeId]);
 
   useEffect(() => {
-    if (!openFromNavUserId || rows.length === 0) return;
+    if (!token || loadingListRef.current) return;
+    const uid = routeOpenIntent.userId?.trim();
+    if (!uid) return;
+
     const row = rows.find(
-      (r) => r.otherUserId.trim().toLowerCase() === openFromNavUserId,
+      (r) => r.otherUserId.trim().toLowerCase() === uid.toLowerCase(),
     );
     if (row) {
+      pendingOpenNewChatUserLowerRef.current = null;
+      openInstructorIntentFlightRef.current = null;
+      setNewThreadDraft(null);
+      setDraftFirstMessage("");
       setSelectedOtherUserId(row.otherUserId);
       setActiveExchangeId(row.exchanges[0]?.id ?? null);
+      setRouteOpenIntent((p) => ({ ...p, userId: null, skillId: null }));
+      clearStoredOpenNavIntent();
+      return;
     }
-    setOpenFromNavUserId(null);
-  }, [rows, openFromNavUserId]);
+
+    const sid = routeOpenIntent.skillId?.trim();
+    if (!sid) {
+      pendingOpenNewChatUserLowerRef.current = null;
+      openInstructorIntentFlightRef.current = null;
+      setRouteOpenIntent((p) => ({ ...p, userId: null, skillId: null }));
+      clearStoredOpenNavIntent();
+      return;
+    }
+
+    const flightKey = `${uid.toLowerCase()}\n${sid.toLowerCase()}`;
+    if (openInstructorIntentFlightRef.current === flightKey) {
+      return;
+    }
+    openInstructorIntentFlightRef.current = flightKey;
+
+    let cancelled = false;
+    pendingOpenNewChatUserLowerRef.current = uid.toLowerCase();
+    void (async () => {
+      try {
+        const sk = await fetchSkillById(sid);
+        if (cancelled) return;
+        if (sk.ownerId.trim().toLowerCase() !== uid.toLowerCase()) {
+          pendingOpenNewChatUserLowerRef.current = null;
+          if (openInstructorIntentFlightRef.current === flightKey) {
+            openInstructorIntentFlightRef.current = null;
+          }
+          setChatActionError(m.newThreadOwnerMismatch);
+          setRouteOpenIntent((p) => ({ ...p, userId: null, skillId: null }));
+          clearStoredOpenNavIntent();
+          return;
+        }
+        let profile: PublicUserProfileDto | null = null;
+        try {
+          profile = await fetchPublicUserProfile(token, uid);
+        } catch {
+          /* avatar/isim için tercih; beceri kartında ownerName yeterli */
+        }
+        if (cancelled) return;
+        const name =
+          profile?.fullName?.trim() ||
+          sk.ownerName?.trim() ||
+          m.newThreadUnknownName;
+        const av = profile?.avatarUrl?.trim();
+        if (av) {
+          setUserAvatarById((prev) => ({
+            ...prev,
+            [uid.toLowerCase()]: av,
+          }));
+        }
+        setNewThreadDraft({
+          otherUserId: sk.ownerId,
+          otherName: name,
+          skill: sk,
+        });
+        setSelectedOtherUserId(sk.ownerId);
+        setDraftFirstMessage("");
+        userClosedConversationPaneRef.current = false;
+      } catch (e) {
+        if (!cancelled) {
+          setChatActionError(apiErrorDisplayMessage(e, m.actionError));
+          clearStoredOpenNavIntent();
+        }
+      } finally {
+        pendingOpenNewChatUserLowerRef.current = null;
+        if (openInstructorIntentFlightRef.current === flightKey) {
+          openInstructorIntentFlightRef.current = null;
+        }
+        if (!cancelled) {
+          setRouteOpenIntent((p) => ({ ...p, userId: null, skillId: null }));
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, rows, routeOpenIntent.userId, routeOpenIntent.skillId, m]);
 
   /** İlk yüklemede (veya sayfa yeniden açıldığında) en güncel konuşmayı sağ panelde aç; bildirim/?open= yönlendirmesi varken bekleme */
   useEffect(() => {
-    if (!token || loadingList || rows.length === 0) return;
-    if (openFromNavExchangeId || openFromNavUserId) return;
+    if (!token || loadingListRef.current || rows.length === 0) return;
+    if (
+      routeOpenIntent.exchangeId ||
+      routeOpenIntent.userId ||
+      newThreadDraft
+    )
+      return;
     if (selectedOtherUserId) return;
     if (userClosedConversationPaneRef.current) return;
     const first = rows[0];
@@ -784,17 +988,33 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     setActiveExchangeId(first.exchanges[0].id);
   }, [
     token,
-    loadingList,
     rows,
     selectedOtherUserId,
-    openFromNavExchangeId,
-    openFromNavUserId,
+    routeOpenIntent.exchangeId,
+    routeOpenIntent.userId,
+    newThreadDraft,
   ]);
 
   useEffect(() => {
     if (!selectedOtherUserId) return;
-    const row = rows.find((r) => r.otherUserId === selectedOtherUserId);
+    if (
+      newThreadDraft &&
+      newThreadDraft.otherUserId.trim().toLowerCase() ===
+        selectedOtherUserId.trim().toLowerCase()
+    ) {
+      return;
+    }
+    const row = rows.find(
+      (r) => r.otherUserId.trim().toLowerCase() === selectedOtherUserId.trim().toLowerCase(),
+    );
     if (!row) {
+      const sel = selectedOtherUserId.trim().toLowerCase();
+      if (
+        pendingOpenNewChatUserLowerRef.current &&
+        pendingOpenNewChatUserLowerRef.current === sel
+      ) {
+        return;
+      }
       setSelectedOtherUserId(null);
       setActiveExchangeId(null);
       return;
@@ -807,7 +1027,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     ) {
       setActiveExchangeId(row.exchanges[0].id);
     }
-  }, [rows, selectedOtherUserId, activeExchangeId]);
+  }, [rows, selectedOtherUserId, activeExchangeId, newThreadDraft]);
   const canCancelSelected = Boolean(
     selected && canCancelExchange(selected.ex, user?.id),
   );
@@ -1120,10 +1340,55 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     }
   };
 
+  const handleSubmitNewThreadDraft = async () => {
+    if (!token || !newThreadDraft || draftSubmitting) return;
+    if (isNewThreadBlockedByOther) return;
+    const body = draftFirstMessage.trim();
+    if (!body) {
+      setChatActionError(m.newThreadEmptyMessage);
+      return;
+    }
+    const sk = newThreadDraft.skill;
+    const booked = sk.durationMinutes >= 30 ? sk.durationMinutes : 60;
+    setDraftSubmitting(true);
+    setChatActionError(null);
+    try {
+      const scheduledStartAt = firstBookableDefaultStartIso();
+      const created = await createExchangeRequest(token, sk.id, {
+        message: body,
+        bookedMinutes: booked,
+        scheduledStartAt,
+        inquiryOnly: true,
+      });
+      const myId = user?.id ?? effectiveMyUserId ?? undefined;
+      setNewThreadDraft(null);
+      setDraftFirstMessage("");
+      clearStoredOpenNavIntent();
+      await loadList();
+      setSelectedOtherUserId(getOtherUserId(created, myId));
+      setActiveExchangeId(created.id);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        setChatActionError(m.authSessionInvalid);
+      } else if (e instanceof ApiError && e.status === 403) {
+        const raw = e.message.trim();
+        const generic =
+          !raw || raw === "Forbidden" || raw === "Access Denied";
+        setChatActionError(
+          generic ? m.authSessionInvalid : apiErrorDisplayMessage(e, m.actionError),
+        );
+      } else {
+        setChatActionError(apiErrorDisplayMessage(e, m.actionError));
+      }
+    } finally {
+      setDraftSubmitting(false);
+    }
+  };
+
   const handleSend = async () => {
     if (!token || !selected || !messageText.trim()) return;
     if (isBlockedBySelected) return;
-    if (!isMessageEnabledStatus(selected.ex.status)) return;
+    if (!composerAllowsSend) return;
     setChatActionError(null);
     try {
       await postExchangeMessage(token, selected.ex.id, messageText.trim());
@@ -1283,16 +1548,38 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
     }
   };
 
-  const showMessageComposer = Boolean(
-    selected &&
-      (isMessageEnabledStatus(selected.ex.status) ||
-        (isPendingExchangeStatus(selected.ex.status) &&
-          Boolean(selected.ex.pendingFromOwner))),
-  );
+  const showMessageComposer = composerAllowsSend;
   const showThreadFooter =
     Boolean(chatActionError && !bookOpen) ||
     isBlockedBySelected ||
     showMessageComposer;
+
+  const showConversationPane = useMemo(
+    () =>
+      Boolean(
+        selectedOtherUserId ||
+          newThreadDraft ||
+          (Boolean(routeOpenIntent.userId?.trim()) &&
+            Boolean(routeOpenIntent.skillId?.trim())),
+      ),
+    [
+      selectedOtherUserId,
+      newThreadDraft,
+      routeOpenIntent.userId,
+      routeOpenIntent.skillId,
+    ],
+  );
+
+  const showOpeningNavHint = useMemo(
+    () =>
+      Boolean(
+        routeOpenIntent.userId?.trim() &&
+          routeOpenIntent.skillId?.trim() &&
+          !newThreadDraft &&
+          !selected,
+      ),
+    [routeOpenIntent.userId, routeOpenIntent.skillId, newThreadDraft, selected],
+  );
 
   return (
     <PageLayout hideFooter onNavigate={onNavigate}>
@@ -1301,7 +1588,9 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
           <Card className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-row gap-0 overflow-hidden rounded-2xl border-0 shadow-lg">
             <div className={cn(
               "flex h-full min-h-0 w-full flex-1 flex-col border-r border-border sm:w-96 sm:shrink-0",
-              selectedOtherUserId ? "hidden sm:flex" : "flex",
+              selectedOtherUserId || newThreadDraft || showOpeningNavHint
+                ? "hidden sm:flex"
+                : "flex",
             )}>
               <div className="shrink-0 border-b border-border p-4">
                 <h2 className="mb-4 text-xl text-foreground">{m.title}</h2>
@@ -1317,7 +1606,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
-                {loadingList ? (
+                {loadingList || listAwaitingMyId ? (
                   <p className="p-6 text-sm text-muted-foreground">
                     {t.common.loading}
                   </p>
@@ -1421,19 +1710,14 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
 
             <div className={cn(
               "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
-              selectedOtherUserId ? "flex" : "hidden sm:flex",
+              showConversationPane ? "flex" : "hidden sm:flex",
             )}>
-              {!selected ? (
-                <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-                  <MessageCircle className="h-12 w-12 text-muted-foreground/40" />
-                  <h3 className="text-lg text-foreground">
-                    {m.emptyThreadTitle}
-                  </h3>
-                  <p className="max-w-sm text-sm text-muted-foreground">
-                    {m.emptyThreadBody}
-                  </p>
+              {showOpeningNavHint ? (
+                <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+                  <MessageCircle className="h-12 w-12 animate-pulse text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">{t.common.loading}</p>
                 </div>
-              ) : (
+              ) : selected ? (
                 <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
                   <div className="shrink-0">
                   <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
@@ -1755,6 +2039,129 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       ) : null}
                     </div>
                   ) : null}
+                </div>
+              ) : newThreadDraft ? (
+                <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+                  <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <button
+                        type="button"
+                        className="mr-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent sm:hidden"
+                        onClick={() => {
+                          userClosedConversationPaneRef.current = true;
+                          setNewThreadDraft(null);
+                          setSelectedOtherUserId(null);
+                          setDraftFirstMessage("");
+                          setChatActionError(null);
+                          clearStoredOpenNavIntent();
+                        }}
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </button>
+                      {userAvatarById[newThreadDraft.otherUserId.trim().toLowerCase()] ? (
+                        <img
+                          src={userAvatarById[newThreadDraft.otherUserId.trim().toLowerCase()]}
+                          alt=""
+                          className="h-10 w-10 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground"
+                          aria-hidden
+                        >
+                          {initialsFromFullName(newThreadDraft.otherName)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="truncate text-foreground">
+                          {newThreadDraft.otherName}
+                        </h3>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {newThreadDraft.skill.title}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-4">
+                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                      {m.newThreadIntro}
+                    </p>
+                    {chatActionError ? (
+                      <div
+                        role="alert"
+                        className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                      >
+                        {chatActionError}
+                      </div>
+                    ) : null}
+                    {isNewThreadBlockedByOther ? (
+                      <p className="text-sm text-amber-900 dark:text-amber-200">
+                        {m.blockedHint}
+                      </p>
+                    ) : (
+                      <div className="flex min-h-0 flex-1 flex-col gap-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="new-thread-first-msg">
+                            {m.newThreadMessageLabel}
+                          </Label>
+                          <Textarea
+                            id="new-thread-first-msg"
+                            rows={5}
+                            className="min-h-[7.5rem] resize-y bg-background"
+                            placeholder={m.newThreadPlaceholder}
+                            value={draftFirstMessage}
+                            disabled={draftSubmitting}
+                            onChange={(e) => setDraftFirstMessage(e.target.value)}
+                          />
+                        </div>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          {m.newThreadScheduleHint}
+                        </p>
+                        <div className="mt-auto flex flex-wrap gap-2 border-t border-border pt-4">
+                          <Button
+                            type="button"
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                            disabled={
+                              draftSubmitting ||
+                              !draftFirstMessage.trim()
+                            }
+                            onClick={() => void handleSubmitNewThreadDraft()}
+                          >
+                            {draftSubmitting ? t.common.loading : m.newThreadSubmit}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={draftSubmitting}
+                            onClick={() =>
+                              navigate(PATHS.skill(newThreadDraft.skill.id))
+                            }
+                          >
+                            {m.newThreadPickTimeOnSkillPage}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+                  {chatActionError ? (
+                    <div
+                      role="alert"
+                      className="mb-2 max-w-md rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                    >
+                      {chatActionError}
+                    </div>
+                  ) : null}
+                  <MessageCircle className="h-12 w-12 text-muted-foreground/40" />
+                  <h3 className="text-lg text-foreground">
+                    {m.emptyThreadTitle}
+                  </h3>
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    {m.emptyThreadBody}
+                  </p>
                 </div>
               )}
             </div>

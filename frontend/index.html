@@ -16,8 +16,8 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <link rel="apple-touch-icon" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Google GSI: COOP; statik host HTTP başlığı vermiyorsa yedek (Vite dev: vite.config server.headers) -->
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
+    <!-- Google GSI postMessage: Vite server.headers ile birlikte; bazı ortamlarda yalnızca meta etkili olur -->
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="unsafe-none" />
     <meta name="application-name" content="Tiempos" />
     <title>Tiempos</title>
   </head>

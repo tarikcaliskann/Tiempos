@@ -576,6 +576,8 @@ export const en = {
     emptyThreadTitle: "Select a conversation",
     emptyThreadBody: "When you have message threads, they will appear here.",
     actionError: "Something went wrong. Try again.",
+    authSessionInvalid:
+      "Your session is invalid or expired. Please sign in again, then retry.",
     bookingNeedUserId:
       "We couldn’t verify your account. Please sign in again and retry.",
     acceptedBadge: "Confirmed",
@@ -627,6 +629,18 @@ export const en = {
     blockedHint: "This user blocked you. You cannot send messages until they unblock you.",
     blockedInputPlaceholder: "You are blocked by this user...",
     blockedBadge: "Blocked",
+    newThreadIntro:
+      "Send one message with your session request. The instructor must accept before you can keep chatting here (like a message request). Until then, you won’t be able to send more messages in this thread.",
+    newThreadMessageLabel: "Your message",
+    newThreadPlaceholder:
+      "Introduce yourself and what you’d like to learn — this will be sent with your booking request.",
+    newThreadScheduleHint:
+      "We’ll suggest the first available start time (10:00 on a day at least 1 hour from now). If you need an exact slot, open the skill page and use Book Session.",
+    newThreadSubmit: "Send session request",
+    newThreadPickTimeOnSkillPage: "Pick time on skill page",
+    newThreadEmptyMessage: "Please write a message before sending.",
+    newThreadOwnerMismatch: "This skill does not belong to that instructor.",
+    newThreadUnknownName: "Member",
   },
   publicUserProfile: {
     title: "Profile",
@@ -880,6 +894,7 @@ export const en = {
     reviewsCount: "{{rating}} ({{count}} reviews)",
     studentsCount: "{{n}} students",
     perSession: "{{n}} min / session",
+    heroPricingCaption: "Time credits per session",
     tabAbout: "About",
     tabCurriculum: "Curriculum",
     tabReviews: "Reviews",
@@ -931,6 +946,8 @@ export const en = {
     bookSuccess: "Request sent. The instructor will be notified.",
     bookError: "Could not send request. Try again.",
     bookLogin: "Sign in to book",
+    ownListingHint:
+      "This is your listing. Book and message actions are not shown for your own skill.",
   },
   editProfile: {
     title: "Edit Profile",

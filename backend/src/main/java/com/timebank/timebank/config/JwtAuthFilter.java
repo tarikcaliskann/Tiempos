@@ -57,7 +57,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (JwtException e) {
-            // token geçersiz → auth set etmiyoruz, sadece devam
+            // Bearer vardı ama JWT geçersiz/süresi doldu → anonim gibi zincire devam edilirse
+            // tüm /api/** uçları 403 verir; istemci 401 ile oturumu temizleyebilsin.
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);

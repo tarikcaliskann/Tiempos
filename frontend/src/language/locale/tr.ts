@@ -578,6 +578,8 @@ export const tr: Translation = {
     emptyThreadTitle: "Bir konuşma seçin",
     emptyThreadBody: "Mesajlarınız burada görünecek.",
     actionError: "İşlem başarısız. Tekrar deneyin.",
+    authSessionInvalid:
+      "Oturumunuz geçersiz veya süresi doldu. Lütfen tekrar giriş yapıp yeniden deneyin.",
     bookingNeedUserId:
       "Hesabınız doğrulanamadı. Lütfen tekrar giriş yapıp yeniden deneyin.",
     acceptedBadge: "Onaylandı",
@@ -629,6 +631,18 @@ export const tr: Translation = {
     blockedHint: "Bu kullanıcı sizi engelledi. Engel kalkana kadar mesaj gönderemezsiniz.",
     blockedInputPlaceholder: "Bu kullanıcı tarafından engellendiniz...",
     blockedBadge: "Engelli",
+    newThreadIntro:
+      "Tek bir mesajla oturum talebinizi gönderin. Eğitmen kabul etmeden burada sohbet devam etmez (mesaj isteği gibi). Kabul edilene kadar bu konuşmada yeni mesaj gönderemezsiniz.",
+    newThreadMessageLabel: "Mesajın",
+    newThreadPlaceholder:
+      "Kendini ve ne öğrenmek istediğini yaz — bu metin rezervasyon talebinle birlikte gider.",
+    newThreadScheduleHint:
+      "Başlangıç için uygun ilk zamanı öneririz (şimdiden en az 1 saat sonrası, mümkünse 10:00). Tam tarih/saat seçmek için beceri sayfasından “Oturum ayırt”ı kullan.",
+    newThreadSubmit: "Oturum talebini gönder",
+    newThreadPickTimeOnSkillPage: "Beceri sayfasında saat seç",
+    newThreadEmptyMessage: "Göndermeden önce bir mesaj yaz.",
+    newThreadOwnerMismatch: "Bu beceri bu eğitmene ait değil.",
+    newThreadUnknownName: "Üye",
   },
   publicUserProfile: {
     title: "Profil",
@@ -882,6 +896,7 @@ export const tr: Translation = {
     reviewsCount: "{{rating}} ({{count}} değerlendirme)",
     studentsCount: "{{n}} öğrenci",
     perSession: "Oturum: {{n}} dk",
+    heroPricingCaption: "Oturum başına zaman kredisi",
     tabAbout: "Hakkında",
     tabCurriculum: "Müfredat",
     tabReviews: "Yorumlar",
@@ -934,6 +949,8 @@ export const tr: Translation = {
     bookSuccess: "İstek gönderildi. Eğitmen bilgilendirilecek.",
     bookError: "İstek gönderilemedi. Tekrar deneyin.",
     bookLogin: "Ayırtmak için giriş yap",
+    ownListingHint:
+      "Bu sizin ilanınız. Kendi becerinizde ayırtma ve mesaj düğmeleri gösterilmez.",
   },
   editProfile: {
     title: "Profili düzenle",

@@ -103,13 +103,6 @@ export async function apiFetch<T>(
   }
 
   if (!res.ok) {
-    if (
-      res.status === 401 &&
-      token &&
-      typeof window !== "undefined"
-    ) {
-      window.dispatchEvent(new Event("tiempos:auth-expired"));
-    }
     const msg =
       data &&
       typeof data === "object" &&
@@ -118,6 +111,24 @@ export async function apiFetch<T>(
       typeof (data as { message: unknown }).message === "string"
         ? (data as { message: string }).message
         : res.statusText || "";
+    const msgTrim = msg.trim();
+    const generic403 =
+      !msgTrim ||
+      msgTrim === "Forbidden" ||
+      msgTrim === "Access Denied";
+    if (token && typeof window !== "undefined") {
+      if (res.status === 401) {
+        window.dispatchEvent(new Event("tiempos:auth-expired"));
+      } else if (
+        res.status === 403 &&
+        path.startsWith("/api/") &&
+        !path.startsWith("/api/auth/") &&
+        generic403
+      ) {
+        // Eski Spring / vekil: anonim istek bazen 403; gerçek iş kuralı 403’ünde JSON message olur
+        window.dispatchEvent(new Event("tiempos:auth-expired"));
+      }
+    }
     throw new ApiError(msg, res.status, data);
   }
 

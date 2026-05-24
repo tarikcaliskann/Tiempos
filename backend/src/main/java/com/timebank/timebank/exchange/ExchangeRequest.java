@@ -65,6 +65,12 @@ public class ExchangeRequest {
     @Column(name = "requester_credit_held", nullable = false)
     private boolean requesterCreditHeld;
 
+    /**
+     * Eğitmene ilk mesaj / tanışma: önerilen slot ve süre kayıtlı kalır ama kredi kabul anına ertelenir.
+     */
+    @Column(name = "inquiry_only", nullable = false)
+    private boolean inquiryOnly;
+
     /** Oturum başlangıcında "başladı mı?" bildirimi gönderildi mi */
     @Column(name = "started_prompt_sent", nullable = false)
     private boolean startedPromptSent;
@@ -189,6 +195,14 @@ public class ExchangeRequest {
 
     public void setRequesterCreditHeld(boolean requesterCreditHeld) {
         this.requesterCreditHeld = requesterCreditHeld;
+    }
+
+    public boolean isInquiryOnly() {
+        return inquiryOnly;
+    }
+
+    public void setInquiryOnly(boolean inquiryOnly) {
+        this.inquiryOnly = inquiryOnly;
     }
 
     public boolean isStartedPromptSent() {

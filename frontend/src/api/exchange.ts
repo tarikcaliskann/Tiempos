@@ -13,6 +13,8 @@ export type ExchangeRequestDto = {
   /** ISO-8601 instant */
   scheduledStartAt?: string | null;
   pendingFromOwner?: boolean;
+  /** Mesaj / tanışma talebi: kredi eğitmen kabulünde düşer */
+  inquiryOnly?: boolean;
   status: string;
   createdAt: string;
   sessionMeetingUrl?: string | null;
@@ -35,6 +37,8 @@ export function createExchangeRequest(
     message: string;
     bookedMinutes: number;
     scheduledStartAt: string;
+    /** true: mesaj / tanışma talebi — kredi eğitmen kabulünde düşer */
+    inquiryOnly?: boolean;
   },
 ) {
   return apiFetch<ExchangeRequestDto>(

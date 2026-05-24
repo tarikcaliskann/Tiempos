@@ -1,0 +1,489 @@
+/**
+ * Skill detail hero — layout/spacing aligned with design reference (gradient hero, 2-col, meta grid).
+ * Scoped under .skill-detail-page to avoid leaking globals.
+ */
+
+.skill-detail-page {
+  width: 100%;
+}
+
+.sd-hero-wrap {
+  color: #fff;
+  padding-top: 6rem;
+  padding-bottom: 2.75rem;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(
+    125deg,
+    #2563eb 0%,
+    #4338ca 42%,
+    #6d28d9 100%
+  );
+}
+
+@media (min-width: 640px) {
+  .sd-hero-wrap {
+    padding-bottom: 3.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sd-hero-wrap {
+    padding-bottom: 3.5rem;
+  }
+}
+
+.dark .sd-hero-wrap {
+  background: linear-gradient(
+    125deg,
+    #172554 0%,
+    #312e81 45%,
+    #4c1d95 100%
+  );
+}
+
+.sd-hero-inner-max {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sd-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.75rem;
+  padding: 0.35rem 0.65rem;
+  margin-left: -0.35rem;
+  border: none;
+  background: transparent;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.sd-back-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.sd-back-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.sd-back-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.sd-hero-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 2.25rem;
+}
+
+@media (min-width: 640px) {
+  .sd-hero-content {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2.5rem 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sd-hero-content {
+    gap: 3rem 2.75rem;
+  }
+}
+
+.sd-hero-image-container {
+  position: relative;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 26rem;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.55);
+}
+
+@media (min-width: 640px) {
+  .sd-hero-image-container {
+    max-width: none;
+    margin-inline: 0;
+    border-radius: 1.65rem;
+  }
+}
+
+.sd-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sd-hero-info {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: clamp(1.35rem, 2.8vw, 2rem);
+  /* İki sütunlu hero’da sağ kolon dar olsa bile butonları yan yana zorlamayı engeller */
+  container-type: inline-size;
+  container-name: sd-hero-info;
+}
+
+.sd-hero-title-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .sd-hero-title-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    column-gap: 2.25rem;
+    row-gap: 1rem;
+  }
+
+  .sd-hero-title-row .sd-skill-title {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sd-hero-title-row {
+    column-gap: 3rem;
+  }
+}
+
+.sd-category-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  line-height: 1.25;
+}
+
+.sd-skill-title {
+  margin: 0;
+  font-size: clamp(1.85rem, 4.2vw, 2.55rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  color: #fff;
+}
+
+.sd-skill-description {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.92);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .sd-skill-description {
+    font-size: 1.05rem;
+  }
+}
+
+.sd-instructor-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+}
+
+/* Wider card beside title (sm+) */
+@media (min-width: 640px) {
+  .sd-instructor-info--inline {
+    flex-shrink: 0;
+    min-width: 15rem;
+    max-width: 20rem;
+    width: min(20rem, 100%);
+    padding: 0.8rem 1.05rem;
+    gap: 0.85rem;
+  }
+
+  .sd-instructor-info--inline .sd-instructor-avatar,
+  .sd-instructor-info--inline .sd-instructor-avatar--initials {
+    width: 3.125rem;
+    height: 3.125rem;
+    font-size: 0.8125rem;
+  }
+
+  .sd-instructor-info--inline .sd-instructor-name {
+    font-size: 1rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: unset;
+  }
+
+  .sd-instructor-info--inline .sd-students-line {
+    font-size: 0.8125rem;
+    margin-top: 0.35rem;
+  }
+
+  .sd-instructor-info--inline .sd-instructor-label {
+    font-size: 0.6875rem;
+  }
+}
+
+.sd-instructor-avatar {
+  width: 3.75rem;
+  height: 3.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  object-fit: cover;
+}
+
+.sd-instructor-avatar--initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.sd-instructor-text {
+  min-width: 0;
+}
+
+.sd-instructor-label {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.sd-instructor-name {
+  margin: 0.35rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sd-students-line {
+  margin: 0.45rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sd-meta-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .sd-meta-info {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 1.45rem;
+    column-gap: 1.35rem;
+  }
+}
+
+.sd-meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.sd-meta-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  margin-top: 0.12rem;
+  color: #fff;
+}
+
+.sd-meta-icon--star {
+  fill: #fcd34d;
+  color: #fcd34d;
+}
+
+.sd-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+}
+
+.sd-tag {
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #fff !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  padding: 0.38rem 0.9rem !important;
+}
+
+.sd-divider-before-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 0.35rem;
+  padding-top: 1.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (min-width: 640px) {
+  .sd-divider-before-actions {
+    padding-top: 2rem;
+  }
+}
+
+.sd-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Viewport değil, gerçek kolon genişliği: dar sütunda yan yana taşmayı önler */
+@container sd-hero-info (min-width: 28rem) {
+  .sd-action-buttons {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.sd-book-button {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 3rem !important;
+  border-radius: 0.875rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+  background: #fff !important;
+  color: #3730a3 !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  white-space: normal !important;
+  text-align: center;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  line-height: 1.25 !important;
+}
+
+.sd-book-button:hover {
+  background: #f4f4f5 !important;
+  color: #312e81 !important;
+}
+
+.sd-message-button {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 3rem !important;
+  border-radius: 0.875rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.88) !important;
+  white-space: normal !important;
+  text-align: center;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  line-height: 1.25 !important;
+}
+
+.sd-message-button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+.sd-message-button svg {
+  color: #fff !important;
+}
+
+.sd-price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.35rem;
+}
+
+.sd-price-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.sd-price-label {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.sd-book-success {
+  margin: 0;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  background: rgba(16, 185, 129, 0.22);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #ecfdf5;
+}
+
+.sd-own-hint {
+  margin: 0.25rem 0 0;
+  padding: 1.15rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.95);
+}

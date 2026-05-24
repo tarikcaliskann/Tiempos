@@ -402,13 +402,17 @@ public class UserService {
             userRepository.save(user);
         }
 
-        String appToken = jwtService.generateToken(user.getEmail(), user.getRole());
+        String role = user.getRole();
+        if (role == null || role.isBlank()) {
+            role = "USER";
+        }
+        String appToken = jwtService.generateToken(user.getEmail(), role);
         return new LoginResponse(
                 appToken,
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole()
+                role
         );
     }
 

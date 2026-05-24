@@ -1,8 +1,6 @@
 import { PageLayout } from "../components/layout/PageLayout";
-import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -31,16 +29,17 @@ import {
 import {
   Star,
   Clock,
-  Users,
-  Award,
   Video,
   MessageCircle,
   CalendarIcon,
-  ArrowLeft,
+  ChevronLeft,
   AlertTriangle,
+  MapPin,
 } from "lucide-react";
+import "../styles/skill-detail.css";
 import type { PageType } from "../App";
 import { useParams } from "react-router-dom";
+import { PATHS } from "../navigation/paths";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { formatTemplate } from "../language";
@@ -54,6 +53,8 @@ import {
 } from "../api/exchange";
 import { apiErrorDisplayMessage } from "../api/client";
 import { initialsFromFullName } from "../lib/initials";
+import { ImageWithFallback } from "../components/common/ImageWithFallback";
+import { resolveSkillCoverImageUrl } from "../lib/skillCoverImageUrl";
 
 interface SkillDetailPageProps {
   onNavigate?: (page: PageType) => void;
@@ -128,17 +129,6 @@ function pad2(v: number): string {
   return String(v).padStart(2, "0");
 }
 
-function formatSessionTime(
-  iso: string | null | undefined,
-  locale: string,
-): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleString(locale === "tr" ? "tr-TR" : "en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
 function dateToYmd(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
@@ -174,7 +164,6 @@ export function SkillDetailPage({
   const { user, token } = useAuth();
   const s = t.skillDetail;
   const b = t.browse;
-  const p = t.profile;
   const [skill, setSkill] = useState<SkillDto | null>(null);
   const [receivedTeachingForSkill, setReceivedTeachingForSkill] = useState<
     ExchangeRequestDto[]
@@ -458,6 +447,30 @@ export function SkillDetailPage({
     setBookOpen(true);
   };
 
+  const handleMessageInstructorClick = () => {
+    if (!skill) return;
+    const ownerId = skill.ownerId?.trim();
+    const sid = skill.id?.trim();
+    if (!ownerId || !sid) return;
+    if (!token) {
+      if (onLoginRequired) {
+        onLoginRequired();
+      } else {
+        onNavigate?.("login");
+      }
+      return;
+    }
+    try {
+      sessionStorage.setItem("tiempos_open_user", ownerId);
+      sessionStorage.setItem("tiempos_open_skill", sid);
+    } catch {
+      /* ignore */
+    }
+    const qs = new URLSearchParams({ user: ownerId, skill: sid });
+    /** Tam sayfa geçişi: client-side route değişiminde intent ilk frame’de kaybolabiliyor */
+    window.location.assign(`${PATHS.messages}?${qs.toString()}`);
+  };
+
   const handleBookModalChange = (open: boolean) => {
     if (!open && bookSubmitting) return;
     setBookOpen(open);
@@ -572,6 +585,7 @@ export function SkillDetailPage({
     b.categoryLabels[catKey as keyof typeof b.categoryLabels] ??
     catKey ??
     s.categoryProgramming;
+  const coverImageSrc = resolveSkillCoverImageUrl(skill);
   const mainDesc = descriptionMain(skill.description);
   const metaBlock = descriptionMeta(skill.description);
   const dayLabels = t.addSkill.days;
@@ -615,253 +629,143 @@ export function SkillDetailPage({
   const isOwnListing =
     Boolean(user?.id) && skill.ownerId === user?.id;
 
+  const perSessionLabel = formatTemplate(s.perSession, {
+    n: String(skill.durationMinutes > 0 ? skill.durationMinutes : 60),
+  });
+  const scheduleSummary =
+    metaDays?.trim() ||
+    metaTime?.trim() ||
+    "—";
+
+  const metaVenueLine =
+    [metaSessionType?.trim(), metaLocation?.trim()].filter(Boolean).join(" · ") ||
+    "—";
+  const VenueIcon = metaLocation?.trim() ? MapPin : Video;
+
+  const dm = skill.durationMinutes > 0 ? skill.durationMinutes : 60;
+  const sessionHoursDisplay =
+    dm >= 60 && dm % 60 === 0
+      ? `${dm / 60}h`
+      : dm >= 60
+        ? `${(dm / 60).toFixed(1)}h`
+        : `${dm} min`;
+
+  const heroTagBadges = [
+    levelLabel,
+    ...(metaSessionType
+      ? metaSessionType.split(",").map((x) => x.trim()).filter(Boolean)
+      : []),
+  ].filter((x, i, a) => Boolean(x) && a.indexOf(x) === i).slice(0, 5);
+
   return (
     <PageLayout onNavigate={onNavigate}>
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <Button
-            type="button"
-            variant="ghost"
-            className="-ml-2 mb-6 h-auto gap-2 px-2 py-1.5 text-muted-foreground hover:text-foreground"
-            onClick={() => onNavigate?.("browse")}
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0" />
-            {s.backToBrowse}
-          </Button>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="rounded-2xl border-0 p-8 shadow-lg">
-                <Badge className="mb-4">{categoryLabel}</Badge>
-                <h1 className="mb-4 text-3xl text-foreground">{skill.title}</h1>
-
-                <div className="mb-6 flex flex-wrap items-center gap-6 text-foreground">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-muted-foreground text-sm">
-                      {s.noReviews}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <span>
-                      {formatTemplate(s.studentsCount, {
-                        n: isOwnListing
-                          ? String(learnersCountForOwner)
-                          : "0",
-                      })}
-                    </span>
-                  </div>
-                  {levelLabel ? (
-                    <Badge variant="secondary">{levelLabel}</Badge>
-                  ) : null}
-                </div>
-
-                <Tabs defaultValue="about" className="mt-6">
-                  <TabsList className="border border-border bg-muted">
-                    <TabsTrigger value="about">{s.tabAbout}</TabsTrigger>
-                    <TabsTrigger value="curriculum">{s.tabCurriculum}</TabsTrigger>
-                    <TabsTrigger value="reviews">{s.tabReviews}</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="about" className="mt-6 space-y-4">
-                    {isOwnListing && receivedTeachingForSkill.length > 0 ? (
-                      <div className="rounded-lg border border-border/70 bg-muted/30 p-3">
-                        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                          {p.activeLearners}
-                        </p>
-                        <div className="space-y-2">
-                          {receivedTeachingForSkill.map((b) => (
-                            <div
-                              key={b.id}
-                              className="flex items-center justify-between gap-2 text-sm"
-                            >
-                              <span className="truncate text-foreground">
-                                {b.requesterName}
-                              </span>
-                              <span className="shrink-0 text-xs text-muted-foreground">
-                                {formatSessionTime(
-                                  b.scheduledStartAt ?? null,
-                                  locale,
-                                )}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <div>
-                      <h3 className="mb-2 text-lg text-foreground">
-                        {s.whatYouLearn}
-                      </h3>
-                      {s.learnItems.length > 0 ? (
-                        <ul className="space-y-2 text-muted-foreground">
-                          {s.learnItems.map((item, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <span className="text-green-500">✓</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-muted-foreground">{s.learnEmpty}</p>
-                      )}
+      <div className="skill-detail-page">
+        <div className="sd-hero-wrap">
+          <div className="sd-hero-inner-max">
+            <button
+              type="button"
+              className="sd-back-button"
+              onClick={() => onNavigate?.("browse")}
+            >
+              <ChevronLeft aria-hidden />
+              {s.backToBrowse}
+            </button>
+            <div className="sd-hero-content">
+              <div className="sd-hero-image-container">
+                <ImageWithFallback
+                  key={skill.id}
+                  src={coverImageSrc}
+                  alt={skill.title}
+                  loading="eager"
+                  className="sd-hero-image"
+                />
+              </div>
+              <div className="sd-hero-info">
+                <span className="sd-category-badge">{categoryLabel}</span>
+                <div className="sd-hero-title-row">
+                  <h1 className="sd-skill-title">{skill.title}</h1>
+                  <div className="sd-instructor-info sd-instructor-info--inline">
+                    <div
+                      className="sd-instructor-avatar sd-instructor-avatar--initials"
+                      aria-hidden
+                    >
+                      {initialsFromFullName(skill.ownerName)}
                     </div>
-
-                    <div>
-                      <h3 className="mb-2 text-lg text-foreground">
-                        {s.descriptionTitle}
-                      </h3>
-                      <p className="text-muted-foreground whitespace-pre-line">
-                        {mainDesc || s.learnEmpty}
+                    <div className="sd-instructor-text">
+                      <p className="sd-instructor-label">{s.instructor}</p>
+                      <p className="sd-instructor-name">{skill.ownerName}</p>
+                      <p className="sd-students-line">
+                        {formatTemplate(s.studentsCount, {
+                          n: isOwnListing ? String(learnersCountForOwner) : "0",
+                        })}
                       </p>
                     </div>
-
-                    {metaBlock || metaSessionType || metaLocation || metaDays || metaTime ? (
-                      <div>
-                        <h3 className="mb-2 text-lg text-foreground">
-                          {s.prerequisitesTitle}
-                        </h3>
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          {metaSessionType ? (
-                            <p>
-                              <span className="font-medium text-foreground/80">
-                                {t.addSkill.sessionType}:
-                              </span>{" "}
-                              {metaSessionType}
-                            </p>
-                          ) : null}
-                          {metaDays ? (
-                            <p>
-                              <span className="font-medium text-foreground/80">
-                                {t.addSkill.availableDays}:
-                              </span>{" "}
-                              {metaDays}
-                            </p>
-                          ) : null}
-                          {metaTime ? (
-                            <p>
-                              <span className="font-medium text-foreground/80">
-                                {locale === "tr" ? "Saat aralığı" : "Time range"}:
-                              </span>{" "}
-                              {metaTime}
-                            </p>
-                          ) : null}
-                          {metaLocation ? (
-                            <p>
-                              <span className="font-medium text-foreground/80">
-                                {t.addSkill.location}:
-                              </span>{" "}
-                              {metaLocation}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    ) : s.prerequisitesBody ? (
-                      <div>
-                        <h3 className="mb-2 text-lg text-foreground">
-                          {s.prerequisitesTitle}
-                        </h3>
-                        <p className="text-muted-foreground">
-                          {s.prerequisitesBody}
-                        </p>
-                      </div>
-                    ) : null}
-                  </TabsContent>
-
-                  <TabsContent value="curriculum" className="mt-6 space-y-3">
-                    {s.curriculum.length > 0 ? (
-                      s.curriculum.map((week, i) => (
-                        <Card
-                          key={i}
-                          className="rounded-xl border border-border bg-muted/30 p-4"
-                        >
-                          <h4 className="mb-1 text-foreground">{week.title}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {week.desc}
-                          </p>
-                        </Card>
-                      ))
-                    ) : (
-                      <p className="text-muted-foreground">{s.curriculumEmpty}</p>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="reviews" className="mt-6">
-                    <p className="text-muted-foreground">{s.noReviews}</p>
-                  </TabsContent>
-                </Tabs>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-1">
-              <Card className="sticky top-24 rounded-2xl border-0 p-6 shadow-lg">
-                <div className="mb-6 flex items-center gap-4 border-b border-border pb-6">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-semibold text-muted-foreground">
-                    {initialsFromFullName(skill.ownerName)}
-                  </div>
-                  <div>
-                    <p className="mb-1 text-sm text-muted-foreground">
-                      {s.instructor}
-                    </p>
-                    <h3 className="text-foreground">{skill.ownerName}</h3>
-                    <div className="mt-1 flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm text-muted-foreground">
-                        {s.noReviews}
-                      </span>
-                    </div>
                   </div>
                 </div>
-
-                <div className="mb-6 space-y-3">
-                  <div className="flex items-center gap-3 text-sm">
-                    <Video className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-foreground/90">{s.detailOnline}</span>
+                <p className="sd-skill-description">
+                  {(mainDesc || s.learnEmpty).trim() || s.learnEmpty}
+                </p>
+                <div className="sd-meta-info">
+                  <div className="sd-meta-item">
+                    <Star className="sd-meta-icon sd-meta-icon--star" />
+                    <span>{s.noReviews}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-foreground/90">{s.detailSchedule}</span>
+                  <div className="sd-meta-item">
+                    <Clock className="sd-meta-icon" />
+                    <span>{perSessionLabel}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Award className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-foreground/90">{s.detailCert}</span>
+                  <div className="sd-meta-item">
+                    <VenueIcon className="sd-meta-icon" />
+                    <span className="min-w-0">{metaVenueLine}</span>
+                  </div>
+                  <div className="sd-meta-item">
+                    <CalendarIcon className="sd-meta-icon" />
+                    <span className="min-w-0">{scheduleSummary}</span>
                   </div>
                 </div>
-
-                {!isOwnListing ? (
-                  <div className="space-y-3">
-                    {bookSuccess ? (
-                      <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-800 dark:text-green-200">
-                        {s.bookSuccess}
-                      </p>
-                    ) : null}
-                    <Button
-                      type="button"
-                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 py-6 text-white"
-                      onClick={handleBookClick}
-                    >
-                      {token ? s.bookSession : s.bookLogin}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        try {
-                          sessionStorage.setItem("tiempos_open_user", skill.ownerId);
-                        } catch {
-                          /* ignore */
-                        }
-                        onNavigate?.("messages");
-                      }}
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      {s.messageInstructor}
-                    </Button>
+                {heroTagBadges.length > 0 ? (
+                  <div className="sd-tags-container">
+                    {heroTagBadges.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="sd-tag">
+                        {tag}
+                      </Badge>
+                    ))}
                   </div>
                 ) : null}
-              </Card>
+                {!isOwnListing ? (
+                  <>
+                    <div className="sd-divider-before-actions">
+                      {bookSuccess ? (
+                        <p className="sd-book-success">{s.bookSuccess}</p>
+                      ) : null}
+                      <div className="sd-action-buttons">
+                        <Button
+                          type="button"
+                          className="sd-book-button"
+                          onClick={handleBookClick}
+                        >
+                          {token ? s.bookSession : s.bookLogin}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="sd-message-button"
+                          onClick={handleMessageInstructorClick}
+                        >
+                          <MessageCircle className="mr-2 h-5 w-5 shrink-0" />
+                          {s.messageInstructor}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="sd-price-info">
+                      <div className="sd-price-amount">{sessionHoursDisplay}</div>
+                      <div className="sd-price-label">{s.heroPricingCaption}</div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="sd-own-hint">{s.ownListingHint}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

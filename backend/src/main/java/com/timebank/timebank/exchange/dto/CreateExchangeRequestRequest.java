@@ -23,6 +23,11 @@ public class CreateExchangeRequestRequest {
     @NotNull(message = "Oturum tarihi ve saati zorunludur")
     private Instant scheduledStartAt;
 
+    /**
+     * true: yalnızca mesaj / tanışma talebi — kredi oluşturulmaz, eğitmen kabulünde düşülür.
+     */
+    private Boolean inquiryOnly;
+
     public String getMessage() {
         return message;
     }
@@ -45,5 +50,13 @@ public class CreateExchangeRequestRequest {
 
     public void setScheduledStartAt(Instant scheduledStartAt) {
         this.scheduledStartAt = scheduledStartAt;
+    }
+
+    public Boolean getInquiryOnly() {
+        return inquiryOnly;
+    }
+
+    public void setInquiryOnly(Boolean inquiryOnly) {
+        this.inquiryOnly = inquiryOnly;
     }
 }

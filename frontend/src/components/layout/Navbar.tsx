@@ -226,6 +226,14 @@ export function Navbar({ onNavigate }: NavbarProps) {
 
   const handleNavigate = (page: PageType) => {
     if (page === "skill-detail" || page === "user-profile") return;
+    if (page === "messages") {
+      try {
+        sessionStorage.removeItem("tiempos_open_user");
+        sessionStorage.removeItem("tiempos_open_skill");
+      } catch {
+        /* ignore */
+      }
+    }
     navigate(pageToPath(page));
     onNavigate?.(page);
     setIsMenuOpen(false);

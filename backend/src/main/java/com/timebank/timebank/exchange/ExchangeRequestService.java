@@ -69,11 +69,12 @@ public class ExchangeRequestService {
             throw new IllegalArgumentException("Kendi skill'inize talep gönderemezsiniz");
         }
 
+        boolean inquiry = Boolean.TRUE.equals(req.getInquiryOnly());
         int booked = req.getBookedMinutes();
         if (booked < 30) {
             throw new IllegalArgumentException("Rezervasyon süresi en az 30 dakika olmalıdır");
         }
-        if (requester.getTimeCreditMinutes() < booked) {
+        if (!inquiry && requester.getTimeCreditMinutes() < booked) {
             throw new IllegalArgumentException("Saat bakiyeniz bu süre için yetersiz");
         }
 
@@ -82,14 +83,18 @@ public class ExchangeRequestService {
         if (scheduled.isBefore(minStart)) {
             throw new IllegalArgumentException("Oturum başlangıcı en az 1 saat sonrası için seçilmelidir");
         }
-        validateScheduleAgainstSkillAvailability(skill, scheduled);
-        assertNoAcceptScheduleConflict(
-                requester,
-                skill.getOwner(),
-                scheduled,
-                booked,
-                null
-        );
+        // inquiryOnly: yalnızca eğitmene ilk mesaj / tanışma — önerilen slot bilgilendirme amaçlı;
+        // beceri takvimi ve onaylı oturum çakışması rezervasyon (book) akışında zorunlu.
+        if (!inquiry) {
+            validateScheduleAgainstSkillAvailability(skill, scheduled);
+            assertNoAcceptScheduleConflict(
+                    requester,
+                    skill.getOwner(),
+                    scheduled,
+                    booked,
+                    null
+            );
+        }
 
         ExchangeRequest exchangeRequest = new ExchangeRequest();
         exchangeRequest.setSkill(skill);
@@ -100,14 +105,17 @@ public class ExchangeRequestService {
         exchangeRequest.setReminderSent(false);
         exchangeRequest.setStartedPromptSent(false);
         exchangeRequest.setPendingFromOwner(false);
-        exchangeRequest.setRequesterCreditHeld(true);
+        exchangeRequest.setInquiryOnly(inquiry);
+        exchangeRequest.setRequesterCreditHeld(!inquiry);
         exchangeRequest.setStatus(ExchangeRequestStatus.PENDING);
 
-        // Rezervasyon anında kredi askıya alınır: kullanıcı bu krediyi ikinci kez harcayamaz.
-        requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() - booked);
+        if (!inquiry) {
+            // Rezervasyon anında kredi askıya alınır: kullanıcı bu krediyi ikinci kez harcayamaz.
+            requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() - booked);
+            userRepository.save(requester);
+        }
 
         ExchangeRequest saved = exchangeRequestRepository.save(exchangeRequest);
-        userRepository.save(requester);
         notificationService.notifyNewBookingRequest(saved);
         return mapToResponse(saved);
     }
@@ -147,6 +155,17 @@ public class ExchangeRequestService {
             if (!isOwner) {
                 throw new IllegalArgumentException("Bu talebi kabul etme yetkiniz yok");
             }
+        }
+
+        if (exchangeRequest.isInquiryOnly() && !exchangeRequest.isRequesterCreditHeld()) {
+            User requester = exchangeRequest.getRequester();
+            int booked = exchangeRequest.getBookedMinutes();
+            if (requester.getTimeCreditMinutes() < booked) {
+                throw new IllegalArgumentException("Saat bakiyeniz bu süre için yetersiz");
+            }
+            requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() - booked);
+            exchangeRequest.setRequesterCreditHeld(true);
+            userRepository.save(requester);
         }
 
         assertNoAcceptScheduleConflict(
@@ -476,7 +495,9 @@ public class ExchangeRequestService {
         ExchangeRequest ex = exchangeRequestRepository.findById(exchangeRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("Talep bulunamadı"));
         if (ex.getStatus() == ExchangeRequestStatus.PENDING && !ex.isPendingFromOwner()) {
-            throw new IllegalArgumentException("Talep beklemedeyken mesaj gönderilemez");
+            if (!ex.isInquiryOnly()) {
+                throw new IllegalArgumentException("Talep beklemedeyken mesaj gönderilemez");
+            }
         }
         if (!isParticipant(ex, userEmail)) {
             throw new IllegalArgumentException("Bu konuşmaya erişim yok");
@@ -602,7 +623,8 @@ public class ExchangeRequestService {
                 exchangeRequest.getCreatedAt(),
                 exchangeRequest.getSessionMeetingUrl(),
                 exchangeRequest.getRequesterAttendanceAckAt(),
-                exchangeRequest.getOwnerAttendanceAckAt()
+                exchangeRequest.getOwnerAttendanceAckAt(),
+                exchangeRequest.isInquiryOnly()
         );
     }
 

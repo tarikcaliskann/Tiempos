@@ -23,6 +23,7 @@ public class ExchangeRequestResponse {
     private String sessionMeetingUrl;
     private Instant requesterAttendanceAckAt;
     private Instant ownerAttendanceAckAt;
+    private boolean inquiryOnly;
 
     public ExchangeRequestResponse(
             UUID id,
@@ -40,7 +41,8 @@ public class ExchangeRequestResponse {
             Instant createdAt,
             String sessionMeetingUrl,
             Instant requesterAttendanceAckAt,
-            Instant ownerAttendanceAckAt
+            Instant ownerAttendanceAckAt,
+            boolean inquiryOnly
     ) {
         this.id = id;
         this.skillId = skillId;
@@ -58,6 +60,7 @@ public class ExchangeRequestResponse {
         this.sessionMeetingUrl = sessionMeetingUrl;
         this.requesterAttendanceAckAt = requesterAttendanceAckAt;
         this.ownerAttendanceAckAt = ownerAttendanceAckAt;
+        this.inquiryOnly = inquiryOnly;
     }
 
     public UUID getId() {
@@ -122,5 +125,9 @@ public class ExchangeRequestResponse {
 
     public Instant getOwnerAttendanceAckAt() {
         return ownerAttendanceAckAt;
+    }
+
+    public boolean isInquiryOnly() {
+        return inquiryOnly;
     }
 }
