@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../api/notifications_api.dart';
 import '../app/app_state.dart';
+import '../theme/app_colors.dart';
+import '../widgets/app_chrome.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key, required this.appState});
@@ -72,10 +74,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
+      appBar: AppChrome.gradientAppBar(
+        title: 'Notifications',
         actions: [
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
             onPressed: _items.any(isNotificationUnread) ? _markAllRead : null,
             child: const Text('Mark all read'),
           ),
@@ -107,16 +110,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ],
               )
             : ListView.separated(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                 itemCount: _items.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
+                separatorBuilder: (context, index) => const SizedBox(height: 10),
                 itemBuilder: (context, i) {
                   final n = _items[i];
                   final unread = isNotificationUnread(n);
-                  return ListTile(
-                    tileColor: unread
-                        ? theme.colorScheme.primaryContainer.withValues(alpha: 0.25)
-                        : null,
+                  return Material(
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: unread ? 0.55 : 0.35),
+                    borderRadius: BorderRadius.circular(14),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: unread
+                              ? theme.colorScheme.primary.withValues(alpha: 0.45)
+                              : theme.colorScheme.outline.withValues(alpha: 0.15),
+                        ),
+                      ),
                     title: Text(
                       n.title,
                       style: GoogleFonts.inter(fontWeight: FontWeight.w700),
@@ -126,9 +137,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       style: GoogleFonts.inter(fontSize: 13, height: 1.35),
                     ),
                     trailing: unread
-                        ? const Icon(Icons.circle, size: 10, color: Colors.blueAccent)
+                        ? Icon(Icons.circle, size: 10, color: AppColors.primary)
                         : null,
                     onTap: () => _tap(n),
+                  ),
                   );
                 },
               ),

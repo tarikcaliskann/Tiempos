@@ -17,6 +17,7 @@ import '../config/app_web_config.dart';
 import '../language/profile_l10n.dart';
 import '../util/formatting.dart';
 import '../util/skill_profile_card_display.dart';
+import '../widgets/app_chrome.dart';
 import 'add_skill_screen.dart';
 import 'edit_profile_screen.dart';
 import 'public_profile_screen.dart';
@@ -1242,10 +1243,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
-          SliverAppBar.large(
-            title: Text(l10n.profileTitle),
-            pinned: true,
-            backgroundColor: theme.colorScheme.surface,
+          AppChrome.gradientSliverHeader(
+            context: context,
+            title: l10n.profileTitle,
+            subtitle: l10n.profileHeroSubtitle,
           ),
           if (_loading)
             const SliverFillRemaining(
@@ -1259,7 +1260,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 8),
-                    _heroAvatar(theme),
+                    AppChrome.profileAvatarRing(
+                      theme: theme,
+                      diameter: 96,
+                      child: _heroAvatar(theme),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       name,

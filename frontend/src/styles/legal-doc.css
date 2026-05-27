@@ -92,7 +92,52 @@
 .legal-prose {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0;
+}
+
+/* Between body sections (body is split on blank lines) */
+.legal-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: clamp(1.5rem, 3.5vw, 2.25rem) 0 clamp(1rem, 2.5vw, 1.5rem);
+  width: 100%;
+}
+
+.legal-section-divider__line {
+  flex: 1;
+  min-width: 0;
+  height: 1px;
+  border-radius: 999px;
+}
+
+.legal-section-divider__line--left {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(29, 78, 216, 0.35) 45%,
+    var(--border) 100%
+  );
+}
+
+.legal-section-divider__line--right {
+  background: linear-gradient(
+    90deg,
+    var(--border) 0%,
+    rgba(109, 40, 217, 0.4) 55%,
+    transparent 100%
+  );
+}
+
+.legal-section-divider__mark {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+  box-shadow:
+    0 0 0 3px var(--card),
+    0 1px 2px rgb(0 0 0 / 0.08);
 }
 
 .legal-paragraph {

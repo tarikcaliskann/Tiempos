@@ -5,6 +5,7 @@ import '../api/exchange_api.dart';
 import '../app/app_state.dart';
 import '../exchange/exchange_ui_logic.dart';
 import 'conversation_thread_screen.dart';
+import '../widgets/app_chrome.dart';
 
 /// Tüm talepler — konuşma ile aynı birleştirme mantığı.
 class PastSessionsScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _PastSessionsScreenState extends State<PastSessionsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Sessions & requests')),
+      appBar: AppChrome.gradientAppBar(title: 'Sessions & requests'),
       body: RefreshIndicator(
         onRefresh: _load,
         child: _loading

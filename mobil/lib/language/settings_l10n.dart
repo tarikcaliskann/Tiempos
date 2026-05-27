@@ -32,6 +32,12 @@ class SettingsL10n {
   String get themeDesc => _e('Light or dark theme for the app.', 'Açık veya koyu tema.');
   String get themeLight => _e('Light', 'Açık');
   String get themeDark => _e('Dark', 'Koyu');
+  String get helpLegalTitle => _e('Help & legal', 'Yardım ve yasal');
+  String get helpLegalDesc => _e(
+        'How it works, FAQ, contact form, terms, and policies — all inside the app.',
+        'Nasıl çalışır, SSS, iletişim formu, şartlar ve politikalar — hepsi uygulama içinde.',
+      );
+  String get helpLegalOpen => _e('Open help center', 'Yardım merkezini aç');
   String get dangerTitle => _e('Danger zone', 'Tehlikeli alan');
   String get dangerDesc => _e(
         'Permanently delete your account and all related data (skills, requests, messages, reviews, notifications, transactions). This cannot be undone.',

@@ -25,6 +25,9 @@ abstract final class AppTheme {
     return base.copyWith(
       textTheme: _interTextTheme(base.textTheme),
       scaffoldBackgroundColor: AppColors.lightBackground,
+      inputDecorationTheme: _inputDecorationLight(),
+      chipTheme: _chipThemeLight(),
+      segmentedButtonTheme: _segmentedLight(),
       cardTheme: CardThemeData(
         color: AppColors.lightCard,
         elevation: 4,
@@ -55,6 +58,9 @@ abstract final class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
+      inputDecorationTheme: _inputDecorationDark(),
+      chipTheme: _chipThemeDark(),
+      segmentedButtonTheme: _segmentedDark(),
       cardTheme: CardThemeData(
         color: AppColors.darkCard,
         elevation: 0,
@@ -68,6 +74,81 @@ abstract final class AppTheme {
         ),
       ),
       navigationBarTheme: _navBarThemeDark(),
+    );
+  }
+
+  static InputDecorationTheme _inputDecorationLight() {
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.lightMuted.withValues(alpha: 0.55),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.35)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    );
+  }
+
+  static InputDecorationTheme _inputDecorationDark() {
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.darkMuted.withValues(alpha: 0.65),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.darkBorder.withValues(alpha: 0.9)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    );
+  }
+
+  static ChipThemeData _chipThemeLight() {
+    return ChipThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.22)),
+      labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+    );
+  }
+
+  static ChipThemeData _chipThemeDark() {
+    return ChipThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+      backgroundColor: AppColors.darkMuted.withValues(alpha: 0.5),
+      labelStyle: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: AppColors.darkForeground,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+    );
+  }
+
+  static SegmentedButtonThemeData _segmentedLight() {
+    return SegmentedButtonThemeData(
+      style: ButtonStyle(
+        side: WidgetStateProperty.all(BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.4))),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+      ),
+    );
+  }
+
+  static SegmentedButtonThemeData _segmentedDark() {
+    return SegmentedButtonThemeData(
+      style: ButtonStyle(
+        side: WidgetStateProperty.all(BorderSide(color: AppColors.darkBorder)),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+      ),
     );
   }
 

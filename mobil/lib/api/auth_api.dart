@@ -90,3 +90,113 @@ Future<LoginResponse> socialLoginGoogle({
   }
   return LoginResponse.fromJson(Map<String, dynamic>.from(data));
 }
+
+/// Web `RegisterResponse` / `POST /api/auth/register`.
+class RegisterResponse {
+  RegisterResponse({
+    required this.id,
+    required this.fullName,
+    required this.email,
+    required this.timeCreditMinutes,
+    required this.emailVerificationPending,
+    required this.smtpMailDeliveryEnabled,
+    required this.smtpLocalCapture,
+  });
+
+  final String id;
+  final String fullName;
+  final String email;
+  final int timeCreditMinutes;
+  final bool emailVerificationPending;
+  final bool smtpMailDeliveryEnabled;
+  final bool smtpLocalCapture;
+
+  factory RegisterResponse.fromJson(Map<String, dynamic> j) {
+    return RegisterResponse(
+      id: '${j['id'] ?? ''}',
+      fullName: j['fullName'] as String? ?? '',
+      email: j['email'] as String? ?? '',
+      timeCreditMinutes: (j['timeCreditMinutes'] as num?)?.toInt() ?? 0,
+      emailVerificationPending: j['emailVerificationPending'] == true,
+      smtpMailDeliveryEnabled: j['smtpMailDeliveryEnabled'] == true,
+      smtpLocalCapture: j['smtpLocalCapture'] != false,
+    );
+  }
+}
+
+Future<RegisterResponse> registerRequest({
+  required String fullName,
+  required String email,
+  required String password,
+}) async {
+  final data = await apiFetch(
+    '/api/auth/register',
+    method: 'POST',
+    body: {
+      'fullName': fullName.trim(),
+      'email': email.trim(),
+      'password': password,
+    },
+    timeout: const Duration(seconds: 180),
+  );
+  if (data is! Map) {
+    throw StateError('Invalid register response');
+  }
+  return RegisterResponse.fromJson(Map<String, dynamic>.from(data));
+}
+
+Future<LoginResponse> verifyEmailWithCode({
+  required String email,
+  required String code,
+}) async {
+  final digits = code.replaceAll(RegExp(r'\D'), '');
+  final normalized = digits.length > 6 ? digits.substring(0, 6) : digits;
+  final data = await apiFetch(
+    '/api/auth/verify-email',
+    method: 'POST',
+    body: {
+      'email': email.trim().toLowerCase(),
+      'code': normalized,
+    },
+    timeout: const Duration(seconds: 120),
+  );
+  if (data is! Map) {
+    throw StateError('Invalid verify-email response');
+  }
+  return LoginResponse.fromJson(Map<String, dynamic>.from(data));
+}
+
+Future<void> resendVerificationEmail(String email) async {
+  await apiFetch(
+    '/api/auth/resend-verification',
+    method: 'POST',
+    body: {'email': email.trim().toLowerCase()},
+    timeout: const Duration(seconds: 90),
+  );
+}
+
+Future<void> forgotPasswordRequest(String email) async {
+  await apiFetch(
+    '/api/auth/forgot-password',
+    method: 'POST',
+    body: {'email': email.trim().toLowerCase()},
+    timeout: const Duration(seconds: 90),
+  );
+}
+
+Future<void> resetPasswordRequest({
+  required String email,
+  required String token,
+  required String newPassword,
+}) async {
+  await apiFetch(
+    '/api/auth/reset-password',
+    method: 'POST',
+    body: {
+      'email': email.trim().toLowerCase(),
+      'token': token.trim(),
+      'newPassword': newPassword,
+    },
+    timeout: const Duration(seconds: 90),
+  );
+}

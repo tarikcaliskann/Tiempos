@@ -16,4 +16,10 @@ abstract final class AppWebConfig {
     final id = userId.trim();
     return '$origin/u/${Uri.encodeComponent(id)}';
   }
+
+  /// Web `paths.ts` ile aynı kök + yol (yardım / yasal sayfalar tarayıcıda açılır).
+  static String webPageUrl(String path) {
+    final p = path.trim().isEmpty ? '/' : (path.startsWith('/') ? path : '/$path');
+    return '$origin$p';
+  }
 }

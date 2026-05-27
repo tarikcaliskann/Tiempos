@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/exchange_api.dart';
 import '../app/app_state.dart';
 import '../exchange/exchange_ui_logic.dart';
+import '../widgets/app_chrome.dart';
 import 'conversation_thread_screen.dart';
 
 class MessagesScreen extends StatefulWidget {
@@ -93,24 +94,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
-          SliverAppBar.large(
-            title: const Text('Messages'),
-            pinned: true,
-            backgroundColor: theme.colorScheme.surface,
+          AppChrome.gradientSliverHeader(
+            context: context,
+            title: 'Messages',
+            subtitle: 'Chats grouped by person',
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             sliver: SliverToBoxAdapter(
               child: TextField(
                 controller: _search,
-                decoration: InputDecoration(
+                decoration: AppChrome.searchDecoration(
+                  context,
                   hintText: 'Search conversations…',
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
                 ),
               ),
             ),
@@ -158,48 +154,64 @@ class _MessagesScreenState extends State<MessagesScreen> {
               ),
             )
           else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  final conv = list[i];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(
-                        conv.otherName.isNotEmpty
-                            ? conv.otherName[0].toUpperCase()
-                            : '?',
-                      ),
-                    ),
-                    title: Text(
-                      conv.otherName,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      conv.lastPreview,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Chip(
-                      label: Text(
-                        conv.listUiStatus,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
-                    onTap: () async {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ConversationThreadScreen(
-                            appState: widget.appState,
-                            initialRow: conv,
-                            initialExchangeId: conv.exchanges.first.id,
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final conv = list[i];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Material(
+                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(14),
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            side: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
                           ),
+                          leading: CircleAvatar(
+                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            foregroundColor: theme.colorScheme.primary,
+                            child: Text(
+                              conv.otherName.isNotEmpty
+                                  ? conv.otherName[0].toUpperCase()
+                                  : '?',
+                            ),
+                          ),
+                          title: Text(
+                            conv.otherName,
+                            style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            conv.lastPreview,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Chip(
+                            label: Text(
+                              conv.listUiStatus,
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                          ),
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => ConversationThreadScreen(
+                                  appState: widget.appState,
+                                  initialRow: conv,
+                                  initialExchangeId: conv.exchanges.first.id,
+                                ),
+                              ),
+                            );
+                            if (mounted) _load();
+                          },
                         ),
-                      );
-                      if (mounted) _load();
-                    },
-                  );
-                },
-                childCount: list.length,
+                      ),
+                    );
+                  },
+                  childCount: list.length,
+                ),
               ),
             ),
         ],

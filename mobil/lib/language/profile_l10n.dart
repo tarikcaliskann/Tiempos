@@ -13,6 +13,10 @@ class ProfileL10n {
   String _e(String en, String tr) => _tr ? tr : en;
 
   String get profileTitle => _e('Profile', 'Profil');
+  String get profileHeroSubtitle => _e(
+        'Your skills, sessions, and reputation in one place.',
+        'Becerilerin, oturumların ve profilin tek yerde.',
+      );
   String get shareProfile => _e('Share profile', 'Profili paylaş');
   String get editProfile => _e('Edit Profile', 'Profili düzenle');
   String get shareSuccess => _e('Profile shared.', 'Profil paylaşıldı.');

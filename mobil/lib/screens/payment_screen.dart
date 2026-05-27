@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_state.dart';
+import '../widgets/app_chrome.dart';
 
 // -----------------------------------------------------------------------------
 // Ödeme kısmı şimdilik olmayacak — aşağıda önceki akışın özeti (tam kod: git geçmişi).
@@ -32,7 +33,7 @@ class PaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Ödeme')),
+      appBar: AppChrome.gradientAppBar(title: 'Ödeme'),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

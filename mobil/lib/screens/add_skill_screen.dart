@@ -8,6 +8,7 @@ import '../api/skills_api.dart';
 import '../app/app_state.dart';
 import '../util/booking_utils.dart';
 import '../util/skill_description.dart';
+import '../widgets/app_chrome.dart';
 
 const _categories = [
   'Sports',
@@ -253,8 +254,8 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
     final times = _timeOptions();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? 'Edit skill' : 'Offer a skill'),
+      appBar: AppChrome.gradientAppBar(
+        title: _isEdit ? 'Edit skill' : 'Offer a skill',
       ),
       body: _loadingSkill
           ? const Center(child: CircularProgressIndicator())

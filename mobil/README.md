@@ -11,8 +11,21 @@ Web `frontend` ile **aynı Spring API** (`/api/...`) üzerinden çalışan mobil
 ```bash
 cd mobil
 flutter pub get
-flutter run -d chrome
+# Sabit port — Google ile giriş için Cloud Console'a TEK köken eklemeniz yeter: http://localhost:9339
+flutter run -d chrome --web-port=9339
 ```
+
+Veya kısayol: `./run_chrome.sh` (`mobil/` içinde).
+
+### Yerel backend + mobil (tek komut)
+
+Docker Desktop açıkken repo kökünde:
+
+```bash
+./scripts/dev-backend-and-mobile.sh
+```
+
+Önce Postgres (`docker compose up -d db`), ardından Spring Boot (`./mvnw spring-boot:run`), en sonda Flutter Web (**Chrome sabit port 9339**) — API `http://localhost:8080`.
 
 ### API adresi
 
@@ -38,27 +51,46 @@ flutter run --dart-define=WEB_APP_ORIGIN=https://www.tiempos.site
 
 ### Oturum
 
-İlk açılışta **Sign in** ekranı gelir: **Continue with Google** (`/api/auth/google-config` + `google_sign_in` + `/api/auth/social-login`) veya e-posta / şifre (`/api/auth/login`). Başarılı girişte JWT `shared_preferences` ile saklanır; **Profile → Log out** ile temizlenir (Google oturumu da kapatılmaya çalışılır).
+İlk açılışta **Sign in** ekranı gelir: **Google**, e-posta/şifre, **Create account** (kayıt + isteğe bağlı e-posta doğrulama), **Forgot password**, **Reset with email code**. Başarılı girişte JWT `shared_preferences` ile saklanır; **Profile → Log out** ile temizlenir.
 
-### Google (Flutter Web — `flutter run -d chrome`)
+### Google (Flutter Web — `origin_mismatch` düzeltmesi)
 
-Google Cloud Console’da **Web application** OAuth istemcisinde **Authorized JavaScript origins** listesine Flutter’ın çalıştığı kökü ekleyin, örn. `http://localhost:XXXX` (port `flutter run` çıktısındaki gibi). Aksi halde tarayıcı Google popup’ını engelleyebilir. Backend’deki `GOOGLE_CLIENT_ID` / `app.google.client-id` ile **aynı** Web client ID kullanılmalı (`/api/auth/google-config` bunu döner).
+Google yalnızca **Cloud Console’da kayıtlı kökenlere** izin verir. `flutter run -d chrome` **rastgele port** açtığı için (`localhost:61739` gibi) sürekli **400 origin_mismatch** alırsınız.
 
-**Not:** `google_sign_in` Web’de `serverClientId` kullanmaz; yalnızca `clientId` ile `initialize` edilir. Android/iOS’ta `idToken` için `serverClientId` olarak aynı Web client ID verilir. Web’de `authenticate()` desteklenmediği için giriş, paketin **GIS `renderButton`** widget’ı + `authenticationEvents` akışı ile yapılır (`lib/auth/google_sign_in_render_button*.dart`).
+**Çözüm (önerilen):** Bu projede web için **sabit port 9339** kullanın:
 
-### Tema
+```bash
+flutter run -d chrome --web-port=9339
+```
 
-Varsayılan **koyu** (`ThemeMode.dark`). Açık tema için `lib/app/tiempos_app.dart` içinde `themeMode: ThemeMode.system` kullan.
+Ardından [Google Cloud Console](https://console.cloud.google.com/) → **API’ler ve Hizmetler** → **Kimlik Bilgileri** → backend’deki `GOOGLE_CLIENT_ID` ile **aynı** **OAuth 2.0 Web istemcisi** → **Yetkili JavaScript kökenleri** → şunu **tek satır** ekleyin:
+
+`http://localhost:9339`
+
+`http://127.0.0.1:9339` ile `http://localhost:9339` **farklıdır**; uygulama hangi host’ta açılıyorsa onu ekleyin. Backend’deki Web client ID (`/api/auth/google-config`) ile uyumlu olmalı.
+
+**Giriş ekranında `GoogleSignInExceptionCode.canceled`:** Kullanıcı pencereyi kapattığında veya yukarıdaki OAuth hatası dönüşünde oluşabilir; iptal sessizce yutulur; yapılandırma hatasında ekranda `Authorized JavaScript origins` için kök URL gösterilir.
+
+### Tema ve dil
+
+**Profile → Settings** üzerinden açık/koyu tema ve English/Türkçe dil seçimi `SharedPreferences` ile saklanır (`AppState` + `MaterialApp`).
 
 ## Kod yapısı
 
 | Yol | Açıklama |
 |-----|----------|
 | `lib/config/api_config.dart` | `API_BASE_URL` (`--dart-define`) + normalizasyon |
-| `lib/config/app_web_config.dart` | `WEB_APP_ORIGIN` — paylaşılan profil URL’si (`…/u/{id}`) |
+| `lib/config/app_web_config.dart` | `WEB_APP_ORIGIN` — paylaşılan profil (`…/u/{id}`) + `webPageUrl(path)` (ör. kayıt ekranı yasal linkleri) |
 | `lib/language/profile_l10n.dart` | Profil / düzenle ekranı metinleri (cihaz dili `tr` ise Türkçe) |
+| `lib/language/auth_l10n.dart` | Giriş / kayıt / şifre sıfırlama metinleri |
+| `lib/language/legal_l10n.dart` | Yardım merkezi başlıkları / bölüm adları (`LegalL10n.forTr` ayar diliyle uyumlu) |
+| `lib/help/help_models.dart` | Web `en.ts` / `tr.ts` ile hizalı yardım veri modelleri |
+| `lib/help/help_bundle_en.dart` / `help_bundle_tr.dart` | Kopya metinler (`tool/generate_help_bundles.py` ile üretilir) |
+| `lib/help/help_center_screen.dart` | Tek sayfa yardım: Nasıl çalışır, Hakkında (+ `GET /api/public/stats`), SSS, iletişim formu (`POST /api/public/contact`), yasal metinler |
+| `lib/api/public_api.dart` | `GET /api/public/stats`, `POST /api/public/contact` |
+| `tool/generate_help_bundles.py` | Web `en.ts` / `tr.ts` ile aynı yardım metnini `help_bundle_*.dart` olarak üretir |
 | `lib/api/api_client.dart` | `http` + JSON + `Authorization: Bearer` |
-| `lib/api/auth_api.dart` | `POST /api/auth/login`, `GET /api/auth/google-config`, `POST /api/auth/social-login` |
+| `lib/api/auth_api.dart` | `login`, `register`, `verify-email`, `resend-verification`, `forgot-password`, `reset-password`, `google-config`, `social-login` |
 | `lib/api/user_api.dart` | `GET/PUT /api/users/me/profile` (createdAt dahil), dashboard, engelleme, public profil |
 | `lib/api/notifications_api.dart` | `GET /api/notifications`, okundu işaretleme |
 | `lib/api/reviews_api.dart` | Aldığın / verdiğin yorumlar, özet, `POST .../reviews/exchange/{id}` |
@@ -68,7 +100,11 @@ Varsayılan **koyu** (`ThemeMode.dark`). Açık tema için `lib/app/tiempos_app.
 | `lib/api/skills_api.dart` | `GET /api/skills`, `GET /api/skills/{id}`, `GET/POST/PUT /api/skills...` (mine, create, update) |
 | `lib/api/exchange_api.dart` | Talepler + mesajlar: sent/received, `POST .../skill/{id}`, thread `GET/POST .../messages` |
 | `lib/app/app_state.dart` | Token / kullanıcı + profil adı; tema (`ThemeMode`) ve dil (`localeOverride`, `en`/`tr`) kalıcılığı |
-| `lib/screens/login_screen.dart` | E-posta/şifre + **Google** (mobilde düğme; web’de GIS düğmesi) |
+| `lib/screens/login_screen.dart` | E-posta/şifre + Google; kayıt / şifre unuttum / kod ile sıfırlama yönlendirmeleri |
+| `lib/screens/signup_screen.dart` | `POST /api/auth/register`, doğrulama kodu, `verify-email`, `resend-verification` |
+| `lib/screens/forgot_password_screen.dart` | `POST /api/auth/forgot-password` (web ile aynı “her zaman başarılı” mesajı) |
+| `lib/screens/reset_password_screen.dart` | `POST /api/auth/reset-password` |
+| `lib/screens/settings_screen.dart` | Web `SettingsPage`: şifre, dil/tema, **Yardım merkezi** (`HelpCenterScreen`), hesap sil |
 | `lib/auth/google_sign_in_render_button.dart` | Web-only GIS düğmesi (koşullu import) |
 | `lib/screens/dashboard_screen.dart` | Canlı istatistikler, çekerek yenileme, yaklaşan oturumlar, hızlı aksiyonlar |
 | `lib/screens/browse_screen.dart` | `GET /api/skills` keşfet, arama, skill detaya git |
@@ -80,7 +116,6 @@ Varsayılan **koyu** (`ThemeMode.dark`). Açık tema için `lib/app/tiempos_app.
 | `lib/screens/notifications_screen.dart` | Bildirim listesi |
 | `lib/screens/payment_screen.dart` | Ödeme akışı **şimdilik kapalı**; bilgilendirme metni + eski davranışın `//` özeti (tam kod: git). Paket seçimi (`buy_credits_screen`) kaldırıldı. |
 | `lib/widgets/searchable_profile_combobox.dart` | Profil düzenle: aranabilir konum/dil seçici (web `SearchableCombobox`) |
-| `lib/screens/settings_screen.dart` | Web `SettingsPage`: şifre (`POST .../change-password`), dil/tema (`SharedPreferences`), hesap sil (`POST .../delete`) |
 | `lib/screens/edit_profile_screen.dart` | Web `EditProfilePage`: alanlar, picklist’ler veya metin fallback, foto, `PUT /api/users/me/profile` |
 | `lib/screens/profile_screen.dart` | Hero (avatar, bio, konum, diller, üyelik tarihi), paylaş / düzenle, Teaching–Learning–Reviews, yorumlar, kredi |
 | `lib/screens/root_scaffold.dart` | Alt gezinme; bildirimler kısayolu (`onBuyCredits` şimdilik `null`) |

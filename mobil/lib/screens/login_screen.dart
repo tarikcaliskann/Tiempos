@@ -10,7 +10,12 @@ import '../api/auth_api.dart';
 import '../app/app_state.dart';
 import '../auth/google_sign_in_render_button.dart';
 import '../config/api_config.dart';
+import '../language/auth_l10n.dart';
 import '../theme/app_colors.dart';
+import '../widgets/app_chrome.dart';
+import 'forgot_password_screen.dart';
+import 'reset_password_screen.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.appState});
@@ -26,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _password = TextEditingController();
   bool _loading = false;
   String? _error;
+  String? _loginErrorHint;
 
   String? _googleInitClientId;
 
@@ -91,9 +97,13 @@ class _LoginScreenState extends State<LoginScreen> {
         _onGoogleAuthEvent,
         onError: (Object e, StackTrace _) {
           if (!mounted) return;
+          if (e is GoogleSignInException && _suppressGoogleSignInException(e)) {
+            return;
+          }
+          final l = AuthL10n.of(context);
           setState(() {
             _error = e is GoogleSignInException
-                ? (e.description ?? e.toString())
+                ? _googleSignInMessageForUi(e, l)
                 : '$e';
           });
         },
@@ -115,6 +125,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  bool _suppressGoogleSignInException(GoogleSignInException e) {
+    return e.code == GoogleSignInExceptionCode.canceled ||
+        e.code == GoogleSignInExceptionCode.interrupted;
+  }
+
+  String _googleSignInMessageForUi(GoogleSignInException e, AuthL10n l) {
+    final raw = '${e.description ?? ''} ${e.toString()}'.toLowerCase();
+    final likelyOAuthConfig = raw.contains('origin') ||
+        raw.contains('mismatch') ||
+        raw.contains('access_denied') ||
+        raw.contains('policy') ||
+        raw.contains('400');
+    if (kIsWeb && likelyOAuthConfig) {
+      return l.googleOAuthWebHint(Uri.base.origin);
+    }
+    if (kIsWeb) {
+      final d = e.description?.trim();
+      if (d != null && d.isNotEmpty) return d;
+      return e.toString();
+    }
+    return e.description?.trim().isNotEmpty == true ? e.description!.trim() : e.toString();
+  }
+
   Future<void> _onGoogleAuthEvent(GoogleSignInAuthenticationEvent event) async {
     switch (event) {
       case GoogleSignInAuthenticationEventSignIn(:final user):
@@ -122,8 +155,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (idToken == null || idToken.isEmpty) {
           if (mounted) {
             setState(() {
-              _error =
-                  'Google did not return an ID token. Check OAuth web client / authorized JavaScript origins.';
+              _error = kIsWeb
+                  ? AuthL10n.of(context).googleOAuthWebHint(Uri.base.origin)
+                  : 'Google did not return an ID token. Check OAuth web client / authorized JavaScript origins.';
             });
           }
           return;
@@ -132,6 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _loading = true;
           _error = null;
+          _loginErrorHint = null;
         });
         try {
           final res = await socialLoginGoogle(idToken: idToken);
@@ -149,8 +184,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submit() async {
+    final a = AuthL10n.of(context);
     setState(() {
       _error = null;
+      _loginErrorHint = null;
       _loading = true;
     });
     try {
@@ -159,9 +196,21 @@ class _LoginScreenState extends State<LoginScreen> {
         _password.text,
       );
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      setState(() {
+        _error = e.message;
+        if (e.statusCode == 401) {
+          _loginErrorHint = a.loginHint401;
+        } else if (e.statusCode == 0) {
+          _loginErrorHint = a.loginHintNetwork;
+        } else {
+          _loginErrorHint = null;
+        }
+      });
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() {
+        _error = '$e';
+        _loginErrorHint = a.loginHintNetwork;
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -170,6 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _googleSignInMobile() async {
     setState(() {
       _error = null;
+      _loginErrorHint = null;
       _loading = true;
     });
     try {
@@ -206,11 +256,11 @@ class _LoginScreenState extends State<LoginScreen> {
       final res = await socialLoginGoogle(idToken: idToken);
       await widget.appState.applyLoginResponse(res);
     } on GoogleSignInException catch (e) {
-      if (e.code == GoogleSignInExceptionCode.canceled ||
-          e.code == GoogleSignInExceptionCode.interrupted) {
+      if (_suppressGoogleSignInException(e)) {
         return;
       }
-      setState(() => _error = e.description ?? e.toString());
+      if (!mounted) return;
+      setState(() => _error = _googleSignInMessageForUi(e, AuthL10n.of(context)));
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
@@ -220,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Widget _buildGoogleEntry(ThemeData theme) {
+  Widget _buildGoogleEntry(ThemeData theme, AuthL10n a) {
     if (kIsWeb) {
       if (_googleWebSetupInProgress) {
         return Row(
@@ -288,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: _loading ? null : _googleSignInMobile,
       icon: const _GoogleMark(),
       label: Text(
-        'Continue with Google',
+        a.continueWithGoogle,
         style: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 15,
@@ -307,37 +357,69 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final a = AuthL10n.of(context);
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 24),
-                  Text(
-                    'Tiempos',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: theme.colorScheme.onSurface,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DecoratedBox(
+            decoration: const BoxDecoration(gradient: AppChrome.heroGradientLinear),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Tiempos',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Sign in to continue',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    const SizedBox(height: 8),
+                    Text(
+                      a.loginSubtitle,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: -20),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 20,
+                    offset: const Offset(0, -6),
                   ),
-                  const SizedBox(height: 28),
-                  _buildGoogleEntry(theme),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildGoogleEntry(theme, a),
                   const SizedBox(height: 22),
                   Row(
                     children: [
@@ -349,7 +431,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text(
-                          'or with email',
+                          a.orWithEmail,
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
@@ -368,20 +450,60 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: a.email,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _password,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: a.password,
+                      border: const OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _loading ? null : _submit(),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 4,
+                    runSpacing: 0,
+                    children: [
+                      TextButton(
+                        onPressed: _loading
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => SignupScreen(appState: widget.appState),
+                                  ),
+                                );
+                              },
+                        child: Text(a.signUpCta, style: GoogleFonts.inter(fontSize: 13)),
+                      ),
+                      TextButton(
+                        onPressed: _loading
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(builder: (_) => const ForgotPasswordScreen()),
+                                );
+                              },
+                        child: Text(a.forgotPassword, style: GoogleFonts.inter(fontSize: 13)),
+                      ),
+                      TextButton(
+                        onPressed: _loading
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(builder: (_) => const ResetPasswordScreen()),
+                                );
+                              },
+                        child: Text(a.resetWithCode, style: GoogleFonts.inter(fontSize: 13)),
+                      ),
+                    ],
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 16),
@@ -392,6 +514,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 13,
                       ),
                     ),
+                    if (_loginErrorHint != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _loginErrorHint!,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          height: 1.35,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                        ),
+                      ),
+                    ],
                   ],
                   const SizedBox(height: 24),
                   FilledButton(
@@ -407,7 +540,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(
-                            'Sign in',
+                            a.signIn,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w700,
                               fontSize: 15,
@@ -416,7 +549,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'If the server was asleep, the first sign-in can take 1–2 minutes. Please wait on the loading spinner.',
+                    a.serverSleepHint,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 12,
@@ -433,11 +566,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
                     ),
                   ),
-                ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

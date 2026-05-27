@@ -5,6 +5,8 @@ import '../api/api_exception.dart';
 import '../api/user_api.dart';
 import '../app/app_state.dart';
 import '../language/settings_l10n.dart';
+import '../help/help_center_screen.dart';
+import '../widgets/app_chrome.dart';
 
 /// Web `SettingsPage` ile aynı: şifre, dil, tema, hesap silme (`user_api`).
 class SettingsScreen extends StatefulWidget {
@@ -175,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.title)),
+      appBar: AppChrome.gradientAppBar(title: s.title),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
@@ -337,6 +339,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           _SettingsCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(s.helpLegalTitle, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Text(
+                  s.helpLegalDesc,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => HelpCenterScreen(appState: widget.appState)),
+                    );
+                  },
+                  icon: const Icon(Icons.menu_book_outlined, size: 20),
+                  label: Text(s.helpLegalOpen),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SettingsCard(
             borderColor: theme.colorScheme.error.withValues(alpha: 0.45),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -386,16 +415,30 @@ class _SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final border = borderColor ?? theme.colorScheme.outline.withValues(alpha: 0.22);
-    return Material(
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(17),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: 0.45),
+            theme.colorScheme.tertiary.withValues(alpha: 0.35),
+          ],
         ),
-        child: child,
+      ),
+      padding: const EdgeInsets.all(1.2),
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: border),
+          ),
+          child: child,
+        ),
       ),
     );
   }

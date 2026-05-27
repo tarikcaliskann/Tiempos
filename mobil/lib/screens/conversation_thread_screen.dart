@@ -10,6 +10,7 @@ import '../api/skills_api.dart';
 import '../api/user_api.dart';
 import '../app/app_state.dart';
 import '../exchange/exchange_ui_logic.dart';
+import '../widgets/app_chrome.dart';
 import '../util/booking_availability.dart' hide buildHalfHourSlots;
 import '../util/booking_utils.dart';
 import 'public_profile_screen.dart';
@@ -675,7 +676,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
     final theme = Theme.of(context);
     if (_row == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: AppChrome.gradientAppBar(title: 'Conversation'),
         body: const Center(child: Text('Conversation not found')),
       );
     }
@@ -688,17 +689,27 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
         _blocks?.blockedUserIds.contains(r.otherUserId.toLowerCase()) ?? false;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
+      appBar: AppChrome.gradientAppBar(
+        titleWidget: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(r.otherName, maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(
+              r.otherName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
+                color: Colors.white,
+              ),
+            ),
             if (r.exchanges.length > 1)
               Text(
                 '${r.exchanges.length} requests',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 11,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
           ],
@@ -719,16 +730,20 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             icon: const Icon(Icons.person_outline_rounded),
           ),
           if (_blockBusy)
-            const Padding(
-              padding: EdgeInsets.all(12),
+            Padding(
+              padding: const EdgeInsets.all(12),
               child: SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               ),
             )
           else
             TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
               onPressed: _toggleBlock,
               child: Text(blocked ? 'Unblock' : 'Block'),
             ),

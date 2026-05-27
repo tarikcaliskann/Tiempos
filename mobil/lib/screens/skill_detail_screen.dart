@@ -7,6 +7,7 @@ import '../api/api_exception.dart';
 import '../api/exchange_api.dart';
 import '../api/skills_api.dart';
 import '../app/app_state.dart';
+import '../widgets/app_chrome.dart';
 import '../util/booking_availability.dart' hide buildHalfHourSlots;
 import '../util/booking_utils.dart';
 import 'public_profile_screen.dart';
@@ -329,14 +330,10 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
             )
           : CustomScrollView(
               slivers: [
-                SliverAppBar.large(
-                  title: Text(
-                    s.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  pinned: true,
-                  backgroundColor: theme.colorScheme.surface,
+                AppChrome.gradientSliverHeader(
+                  context: context,
+                  title: s.title,
+                  subtitle: s.ownerName,
                 ),
                 SliverToBoxAdapter(
                   child: Padding(

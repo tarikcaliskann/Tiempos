@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../api/skills_api.dart';
 import '../app/app_state.dart';
+import '../widgets/app_chrome.dart';
 import 'public_profile_screen.dart';
 import 'skill_detail_screen.dart';
 
@@ -122,30 +123,25 @@ class _BrowseScreenState extends State<BrowseScreen> {
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
-          SliverAppBar.large(
-            title: const Text('Explore Skills'),
-            pinned: true,
-            backgroundColor: theme.colorScheme.surface,
+          AppChrome.gradientSliverHeader(
+            context: context,
+            title: 'Explore Skills',
+            subtitle: 'Discover skills from the Tiempos community',
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   TextField(
                     controller: _search,
-                    decoration: InputDecoration(
+                    decoration: AppChrome.searchDecoration(
+                      context,
                       hintText: 'Search skills, instructors, categories…',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 22),
                   Row(
                     children: [
                       Text(
@@ -183,7 +179,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
           if (_error != null)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                 child: Text(
                   _error!,
                   style: GoogleFonts.inter(
@@ -220,7 +216,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, i) {

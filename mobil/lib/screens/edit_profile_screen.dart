@@ -12,6 +12,7 @@ import '../app/app_state.dart';
 import '../data/profile_picklists.dart';
 import '../language/profile_l10n.dart';
 import '../widgets/searchable_profile_combobox.dart';
+import '../widgets/app_chrome.dart';
 
 const _maxAvatarBytes = 4 * 1024 * 1024;
 const _jpegMaxSide = 512;
@@ -316,7 +317,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final tr = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('tr');
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.editProfileTitle)),
+      appBar: AppChrome.gradientAppBar(title: l10n.editProfileTitle),
       body: _loading
           ? Center(child: Text(l10n.loading))
           : SingleChildScrollView(

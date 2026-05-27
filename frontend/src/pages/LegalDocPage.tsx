@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Scale, Shield, CalendarClock } from "lucide-react";
 import { PageLayout } from "../components/layout/PageLayout";
@@ -51,9 +52,20 @@ export function LegalDocPage({ pageKey, onNavigate }: LegalDocPageProps) {
               <div className="legal-card">
                 <div className="legal-prose">
                   {paragraphs.map((p, i) => (
-                    <p key={i} className="legal-paragraph">
-                      {p}
-                    </p>
+                    <Fragment key={i}>
+                      {i > 0 ? (
+                        <div
+                          className="legal-section-divider"
+                          role="presentation"
+                          aria-hidden
+                        >
+                          <span className="legal-section-divider__line legal-section-divider__line--left" />
+                          <span className="legal-section-divider__mark" />
+                          <span className="legal-section-divider__line legal-section-divider__line--right" />
+                        </div>
+                      ) : null}
+                      <p className="legal-paragraph">{p}</p>
+                    </Fragment>
                   ))}
                 </div>
               </div>

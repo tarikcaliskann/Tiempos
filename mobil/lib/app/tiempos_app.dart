@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../screens/login_screen.dart';
 import '../screens/root_scaffold.dart';
@@ -25,6 +26,11 @@ class TiemposApp extends StatelessWidget {
           supportedLocales: const [
             Locale('en'),
             Locale('tr'),
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
           home: appState.isAuthenticated
               ? RootScaffold(appState: appState)
