@@ -50,6 +50,7 @@ export async function registerRequest(body: {
   fullName: string;
   email: string;
   password: string;
+  acceptedTerms: boolean;
 }): Promise<RegisterResponse> {
   return apiFetch<RegisterResponse>("/api/auth/register", {
     method: "POST",

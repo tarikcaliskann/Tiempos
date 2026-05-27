@@ -412,8 +412,6 @@ export const en = {
         "Google sign-in is unavailable. Add GOOGLE_CLIENT_ID to the project .env file and restart the backend and frontend.",
       errorGoogleFailed: "Google sign-in could not be completed. Try again.",
       errorRequired: "Please enter your email and password.",
-      errorTermsRequired:
-        "Please accept the Terms of Service and Privacy Policy to continue.",
       errorFailed: "Could not sign in. Check your connection and try again.",
       resendVerification: "Resend verification email",
       verificationResentHint:

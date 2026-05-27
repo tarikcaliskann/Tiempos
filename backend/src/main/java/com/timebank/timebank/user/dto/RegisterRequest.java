@@ -1,5 +1,6 @@
 package com.timebank.timebank.user.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,10 +20,15 @@ public class RegisterRequest {
     @Size(min = 6, max = 72)
     private String password;
 
+    @AssertTrue(message = "Kullanım koşulları ve gizlilik politikasını kabul etmelisiniz")
+    private boolean acceptedTerms;
+
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    public boolean isAcceptedTerms() { return acceptedTerms; }
+    public void setAcceptedTerms(boolean acceptedTerms) { this.acceptedTerms = acceptedTerms; }
 }

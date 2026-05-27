@@ -4147,3 +4147,117 @@ html.dark body {
   flex-shrink: 0;
   display: block;
 }
+
+/* —— Auth (login / signup / forgot password) —— */
+.tiempos-auth-shell {
+  position: relative;
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  background: var(--primary);
+}
+
+.tiempos-auth-shell__backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 90% 70% at 50% -8%,
+      color-mix(in srgb, white 16%, transparent),
+      transparent 58%
+    ),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--primary) 84%, #000) 0%,
+      var(--primary) 48%,
+      color-mix(in srgb, var(--primary) 76%, #0c1929) 100%
+    );
+}
+
+.tiempos-auth-shell__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.09;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.9) 0.6px,
+    transparent 0.6px
+  );
+  background-size: 26px 26px;
+  mask-image: radial-gradient(
+    ellipse 85% 75% at 50% 45%,
+    black 15%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+.tiempos-auth-shell__glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(56px);
+  opacity: 0.5;
+}
+
+.tiempos-auth-shell__glow--tr {
+  width: min(55vw, 380px);
+  height: min(55vw, 380px);
+  top: -8%;
+  right: -6%;
+  background: color-mix(in srgb, white 22%, var(--primary));
+}
+
+.tiempos-auth-shell__glow--bl {
+  width: min(48vw, 320px);
+  height: min(48vw, 320px);
+  bottom: -12%;
+  left: -8%;
+  background: color-mix(in srgb, var(--primary) 40%, #000);
+  opacity: 0.65;
+  filter: blur(64px);
+}
+
+.tiempos-auth-shell__scroll {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: max(1.25rem, calc(0.5rem + env(safe-area-inset-top, 0px))) 1rem
+    max(1.25rem, calc(0.5rem + env(safe-area-inset-bottom, 0px)));
+}
+
+@media (min-width: 640px) {
+  .tiempos-auth-shell__scroll {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: max(2.5rem, calc(0.5rem + env(safe-area-inset-top, 0px)));
+    padding-bottom: max(2.5rem, calc(0.5rem + env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+.tiempos-auth-shell__inner {
+  width: 100%;
+  max-width: 28rem;
+  flex-shrink: 0;
+  padding: 0.25rem 0;
+}
+
+.tiempos-auth-shell__inner .rounded-3xl.shadow-2xl {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 20px 48px -16px rgba(0, 0, 0, 0.35);
+}

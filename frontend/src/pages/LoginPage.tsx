@@ -4,7 +4,7 @@ import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import type { PageType } from "../App";
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { PATHS } from "../navigation/paths";
 import { resolvePostAuthRedirect } from "../navigation/postAuthRedirect";
@@ -30,7 +30,6 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -40,10 +39,6 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
     const password = String(fd.get("password") || "");
     if (!email || !password) {
       setError(a.errorRequired);
-      return;
-    }
-    if (!acceptedTerms) {
-      setError(a.errorTermsRequired);
       return;
     }
     setLoading(true);
@@ -136,30 +131,6 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
               />
               <label htmlFor="remember" className="cursor-pointer text-sm text-muted-foreground">
                 {a.remember}
-              </label>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="login-terms"
-                className="mt-1"
-                checked={acceptedTerms}
-                onCheckedChange={(checked) => {
-                  const v = Boolean(checked);
-                  setAcceptedTerms(v);
-                  if (v) setError((prev) => (prev === a.errorTermsRequired ? null : prev));
-                }}
-              />
-              <label htmlFor="login-terms" className="cursor-pointer text-sm text-muted-foreground">
-                {t.auth.signup.termsPrefix}{" "}
-                <Link to={PATHS.terms} className="text-primary hover:underline">
-                  {t.auth.signup.terms}
-                </Link>
-                {" "}
-                {t.auth.signup.and}{" "}
-                <Link to={PATHS.privacy} className="text-primary hover:underline">
-                  {t.auth.signup.privacy}
-                </Link>
               </label>
             </div>
 

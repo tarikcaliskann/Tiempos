@@ -82,7 +82,12 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
 
     setLoading(true);
     try {
-      const created = await registerRequest({ fullName, email, password });
+      const created = await registerRequest({
+        fullName,
+        email,
+        password,
+        acceptedTerms: true,
+      });
       if (!created?.id) {
         throw new Error(a.errorFailed);
       }

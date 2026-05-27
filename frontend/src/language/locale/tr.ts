@@ -413,8 +413,6 @@ export const tr: Translation = {
         "Google ile giriş şu an kullanılamıyor. Proje .env dosyasına GOOGLE_CLIENT_ID ekleyip backend ve frontend'i yeniden başlatın.",
       errorGoogleFailed: "Google ile giriş tamamlanamadı. Tekrar deneyin.",
       errorRequired: "E-posta ve şifrenizi girin.",
-      errorTermsRequired:
-        "Devam etmek için kullanım şartları ve gizlilik politikasını onaylayın.",
       errorFailed: "Giriş yapılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
       resendVerification: "Doğrulama e-postasını tekrar gönder",
       verificationResentHint:
