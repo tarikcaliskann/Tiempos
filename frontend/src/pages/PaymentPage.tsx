@@ -139,7 +139,7 @@ export function PaymentPage({ onNavigate }: PaymentPageProps) {
   const features =
     p.packageFeatures?.[
       selectedPackage.id as keyof typeof p.packageFeatures
-    ] ?? selectedPackage.features;
+    ] ?? [];
 
   return (
     <PageLayout onNavigate={onNavigate} className="payment-page">

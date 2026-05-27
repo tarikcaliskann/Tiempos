@@ -1,4 +1,4 @@
-# Testcontainers PostgreSQL (ExchangeBookingIntegrationTest) — ana application.properties yüklenir, bu dosya ekler/üst yazar
+# Testcontainers PostgreSQL — ana application.properties yüklenir, bu dosya ekler/üst yazar
 spring:
   task:
     scheduling:
@@ -6,6 +6,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    show-sql: false
   mail:
     host: localhost
     port: 3025
+
+app:
+  jwt:
+    secret: test-jwt-secret-min-32-chars-long!!
+  payment:
+    mode: demo
+
+tiempos:
+  pre-session-demo: true

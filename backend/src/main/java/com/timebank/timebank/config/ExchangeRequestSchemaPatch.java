@@ -8,13 +8,16 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * Hibernate tabloyu oluşturduktan sonra çalışır ({@link DependsOn}).
  * Eski PostgreSQL volume'larında eksik sütunları idempotent ALTER ile tamamlar.
+ * Üretimde Flyway yeterli — {@code tiempos.schema-patch.enabled=false}.
  */
 @Component
+@ConditionalOnProperty(name = "tiempos.schema-patch.enabled", havingValue = "true")
 @DependsOn("entityManagerFactory")
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class ExchangeRequestSchemaPatch implements ApplicationRunner {
@@ -47,6 +50,18 @@ public class ExchangeRequestSchemaPatch implements ApplicationRunner {
         patch(
                 "ALTER TABLE exchange_requests ADD COLUMN IF NOT EXISTS requester_attendance_ack_at timestamptz",
                 "requester_attendance_ack_at");
+        patch(
+                "ALTER TABLE exchange_requests ADD COLUMN IF NOT EXISTS pre_session_confirm_sent BOOLEAN NOT NULL DEFAULT false",
+                "pre_session_confirm_sent");
+        patch(
+                "ALTER TABLE exchange_requests ADD COLUMN IF NOT EXISTS requester_pre_session_response VARCHAR(20)",
+                "requester_pre_session_response");
+        patch(
+                "ALTER TABLE exchange_requests ADD COLUMN IF NOT EXISTS owner_pre_session_response VARCHAR(20)",
+                "owner_pre_session_response");
+        patch(
+                "ALTER TABLE exchange_requests ADD COLUMN IF NOT EXISTS pre_session_both_confirmed_at TIMESTAMPTZ",
+                "pre_session_both_confirmed_at");
     }
 
     private void patch(String sql, String label) {

@@ -8,6 +8,21 @@ export type LoginResponse = {
   role: string;
 };
 
+export type SessionResponse = {
+  userId: string;
+  email: string;
+  fullName: string;
+  role: string;
+};
+
+export async function fetchSession(): Promise<SessionResponse> {
+  return apiFetch<SessionResponse>("/api/auth/session", { method: "GET" });
+}
+
+export async function logoutRequest(): Promise<void> {
+  return apiFetch<void>("/api/auth/logout", { method: "POST" });
+}
+
 export type RegisterResponse = {
   id: string;
   fullName: string;

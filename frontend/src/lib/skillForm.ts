@@ -83,7 +83,7 @@ export function skillDtoToFormValues(skill: SkillDto, a: Messages["addSkill"]): 
     .map((d) => API_DAY_TO_FORM[d.toUpperCase()])
     .filter((d): d is (typeof SKILL_DAY_KEYS)[number] => Boolean(d));
 
-  let locationType = [...(skill.sessionTypes ?? [])];
+  const locationType = [...(skill.sessionTypes ?? [])];
   if (locationType.length === 0) {
     const sessionLine = parseMetaField(meta, [a.sessionType, "Session Type", "Oturum türü"]);
     if (sessionLine) {

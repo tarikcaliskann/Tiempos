@@ -74,6 +74,7 @@ export async function apiFetch<T>(
     res = await fetch(url, {
       ...rest,
       headers: h,
+      credentials: "include",
       cache: "no-store",
       signal: controller.signal,
     });
@@ -116,10 +117,11 @@ export async function apiFetch<T>(
       !msgTrim ||
       msgTrim === "Forbidden" ||
       msgTrim === "Access Denied";
-    if (token && typeof window !== "undefined") {
-      if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      if (res.status === 401 && path.startsWith("/api/") && !path.startsWith("/api/auth/")) {
         window.dispatchEvent(new Event("tiempos:auth-expired"));
       } else if (
+        token &&
         res.status === 403 &&
         path.startsWith("/api/") &&
         !path.startsWith("/api/auth/") &&

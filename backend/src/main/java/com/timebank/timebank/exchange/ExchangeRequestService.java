@@ -1,9 +1,12 @@
 package com.timebank.timebank.exchange;
 
+import com.timebank.timebank.exchange.dto.CancelSurveyRequest;
 import com.timebank.timebank.exchange.dto.CreateExchangeMessageRequest;
 import com.timebank.timebank.exchange.dto.CreateExchangeRequestRequest;
 import com.timebank.timebank.exchange.dto.ExchangeMessageResponse;
 import com.timebank.timebank.exchange.dto.ExchangeRequestResponse;
+import com.timebank.timebank.exchange.dto.PendingCancelSurveyDockResponse;
+import com.timebank.timebank.exchange.dto.SessionProblemReportRequest;
 import com.timebank.timebank.exchange.dto.UpdateSessionMeetingRequest;
 import com.timebank.timebank.skill.Skill;
 import com.timebank.timebank.skill.SkillRepository;
@@ -14,6 +17,7 @@ import com.timebank.timebank.notification.NotificationService;
 import com.timebank.timebank.user.UserBlockRepository;
 import com.timebank.timebank.user.User;
 import com.timebank.timebank.user.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +27,12 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -38,6 +46,10 @@ public class ExchangeRequestService {
     private final TimeTransactionRepository timeTransactionRepository;
     private final NotificationService notificationService;
     private final UserBlockRepository userBlockRepository;
+    private final ExchangeCancelSurveyRepository exchangeCancelSurveyRepository;
+    private final boolean preSessionDemo;
+
+    private static final Set<String> CANCEL_SURVEY_REASONS = Set.of("SCHEDULE", "NOT_NEEDED", "OTHER");
 
     public ExchangeRequestService(
             ExchangeRequestRepository exchangeRequestRepository,
@@ -46,7 +58,9 @@ public class ExchangeRequestService {
             UserRepository userRepository,
             TimeTransactionRepository timeTransactionRepository,
             NotificationService notificationService,
-            UserBlockRepository userBlockRepository
+            UserBlockRepository userBlockRepository,
+            ExchangeCancelSurveyRepository exchangeCancelSurveyRepository,
+            @Value("${tiempos.pre-session-demo:false}") boolean preSessionDemo
     ) {
         this.exchangeRequestRepository = exchangeRequestRepository;
         this.exchangeMessageRepository = exchangeMessageRepository;
@@ -55,6 +69,8 @@ public class ExchangeRequestService {
         this.timeTransactionRepository = timeTransactionRepository;
         this.notificationService = notificationService;
         this.userBlockRepository = userBlockRepository;
+        this.exchangeCancelSurveyRepository = exchangeCancelSurveyRepository;
+        this.preSessionDemo = preSessionDemo;
     }
 
     @Transactional
@@ -106,14 +122,8 @@ public class ExchangeRequestService {
         exchangeRequest.setStartedPromptSent(false);
         exchangeRequest.setPendingFromOwner(false);
         exchangeRequest.setInquiryOnly(inquiry);
-        exchangeRequest.setRequesterCreditHeld(!inquiry);
+        exchangeRequest.setRequesterCreditHeld(false);
         exchangeRequest.setStatus(ExchangeRequestStatus.PENDING);
-
-        if (!inquiry) {
-            // Rezervasyon anında kredi askıya alınır: kullanıcı bu krediyi ikinci kez harcayamaz.
-            requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() - booked);
-            userRepository.save(requester);
-        }
 
         ExchangeRequest saved = exchangeRequestRepository.save(exchangeRequest);
         notificationService.notifyNewBookingRequest(saved);
@@ -158,6 +168,15 @@ public class ExchangeRequestService {
         }
 
         if (exchangeRequest.isInquiryOnly() && !exchangeRequest.isRequesterCreditHeld()) {
+            User requester = exchangeRequest.getRequester();
+            int booked = exchangeRequest.getBookedMinutes();
+            if (requester.getTimeCreditMinutes() < booked) {
+                throw new IllegalArgumentException("Saat bakiyeniz bu süre için yetersiz");
+            }
+            requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() - booked);
+            exchangeRequest.setRequesterCreditHeld(true);
+            userRepository.save(requester);
+        } else if (!exchangeRequest.isInquiryOnly() && !exchangeRequest.isRequesterCreditHeld()) {
             User requester = exchangeRequest.getRequester();
             int booked = exchangeRequest.getBookedMinutes();
             if (requester.getTimeCreditMinutes() < booked) {
@@ -254,8 +273,7 @@ public class ExchangeRequestService {
             throw new IllegalArgumentException("Bu durumdaki talep iptal edilemez");
         }
 
-        ex.setStatus(ExchangeRequestStatus.CANCELLED);
-        releaseHeldCreditIfAny(ex);
+        markCancelled(ex);
         exchangeRequestRepository.save(ex);
         notificationService.notifyExchangeCancelled(ex, userEmail);
         return mapToResponse(ex);
@@ -374,13 +392,10 @@ public class ExchangeRequestService {
         newReq.setReminderSent(false);
         newReq.setStartedPromptSent(false);
         newReq.setPendingFromOwner(false);
-        newReq.setRequesterCreditHeld(true);
+        newReq.setRequesterCreditHeld(false);
         newReq.setStatus(ExchangeRequestStatus.PENDING);
 
-        requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() - booked);
-
         ExchangeRequest saved = exchangeRequestRepository.save(newReq);
-        userRepository.save(requester);
         notificationService.notifyNewBookingRequest(saved);
         return mapToResponse(saved);
     }
@@ -471,6 +486,440 @@ public class ExchangeRequestService {
         settleIfBothAttendanceAcked(ex);
         exchangeRequestRepository.save(ex);
         return mapToResponse(ex);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExchangeRequestResponse> listOpenPreSessionConfirmations(String userEmail) {
+        String email = userEmail == null ? "" : userEmail.trim();
+        if (email.isEmpty()) {
+            return List.of();
+        }
+        Instant now = Instant.now();
+        return exchangeRequestRepository
+                .findOpenPreSessionConfirmationsForParticipant(ExchangeRequestStatus.ACCEPTED, email)
+                .stream()
+                .filter(ex -> shouldShowInSessionDock(ex, now))
+                .map(ex -> mapToResponse(ex, now))
+                .toList();
+    }
+
+    /**
+     * Oturum sırasında sorun bildirimi: geçen süre kadar kısmi saat aktarımı, kalan askı iade.
+     */
+    @Transactional
+    public ExchangeRequestResponse reportSessionProblem(
+            UUID requestId,
+            SessionProblemReportRequest req,
+            String userEmail
+    ) {
+        ExchangeRequest ex = exchangeRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Talep bulunamadı"));
+        if (!isParticipant(ex, userEmail)) {
+            throw new IllegalArgumentException("Bu oturumda değilsiniz");
+        }
+        if (ex.getStatus() != ExchangeRequestStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Sadece devam eden oturumlar için geçerlidir");
+        }
+        if (ex.getPreSessionBothConfirmedAt() == null) {
+            throw new IllegalArgumentException("Önce her iki tarafın seans öncesi onayı gerekir");
+        }
+        if (ex.getCreditsSettledAt() != null) {
+            throw new IllegalArgumentException("Bu oturumun saat aktarımı zaten yapıldı");
+        }
+        Instant now = Instant.now();
+        Instant start = ex.getScheduledStartAt();
+        if (start == null || now.isBefore(start)) {
+            throw new IllegalArgumentException("Sorun bildirimi yalnızca ders başladıktan sonra yapılabilir");
+        }
+        String message = req.getMessage() == null ? "" : req.getMessage().trim();
+        if (message.isEmpty()) {
+            throw new IllegalArgumentException("Lütfen bir açıklama yazın");
+        }
+        User actor = userRepository.findByEmailIgnoreCase(userEmail)
+                .orElseThrow(() -> new BadCredentialsException("Kullanıcı bulunamadı"));
+
+        int elapsed = computeElapsedSessionMinutes(start, now, ex.getBookedMinutes());
+        ex.setSessionStoppedAt(now);
+        ex.setSessionStopReason(message);
+        ex.setSessionStoppedBy(actor);
+        settleSessionCredits(ex, elapsed, "Oturum sorun bildirimi — kısmi aktarım");
+        ex.setStatus(ExchangeRequestStatus.COMPLETED);
+        exchangeRequestRepository.save(ex);
+
+        ExchangeMessage messageEntity = new ExchangeMessage();
+        messageEntity.setExchangeRequest(ex);
+        messageEntity.setSender(actor);
+        messageEntity.setBody("[Sorun bildirimi] " + message);
+        exchangeMessageRepository.save(messageEntity);
+
+        notificationService.notifySessionStoppedPartial(ex, userEmail, elapsed, message);
+        return mapToResponse(ex, now);
+    }
+
+    @Transactional
+    public void settleDueSessionsAtEnd() {
+        Instant now = Instant.now();
+        List<ExchangeRequest> pending = exchangeRequestRepository
+                .findPendingSessionCreditSettlement(ExchangeRequestStatus.ACCEPTED);
+        for (ExchangeRequest ex : pending) {
+            if (ex.getScheduledStartAt() == null) {
+                continue;
+            }
+            Instant end = ex.getScheduledStartAt().plus(ex.getBookedMinutes(), ChronoUnit.MINUTES);
+            if (now.isBefore(end)) {
+                continue;
+            }
+            try {
+                settleSessionCredits(ex, ex.getBookedMinutes(), "Oturum süresi tamamlandı");
+                ex.setStatus(ExchangeRequestStatus.COMPLETED);
+                exchangeRequestRepository.save(ex);
+                notificationService.notifySessionFullSettlement(ex);
+            } catch (Exception e) {
+                // tek kayıt diğerlerini engellemesin
+            }
+        }
+    }
+
+    /**
+     * Oturum öncesi katılım: CONFIRM veya DECLINE (DECLINE anında iptal değil; çift red / çelişki iptali ayrı).
+     */
+    @Transactional
+    public ExchangeRequestResponse submitPreSessionResponse(UUID requestId, String userEmail, String decisionRaw) {
+        String decision = decisionRaw == null ? "" : decisionRaw.trim().toUpperCase(Locale.ROOT);
+        if (!"CONFIRM".equals(decision) && !"DECLINE".equals(decision)) {
+            throw new IllegalArgumentException("Geçersiz karar");
+        }
+        ExchangeRequest ex = exchangeRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Talep bulunamadı"));
+        Instant now = Instant.now();
+        if (!canRespondPreSession(ex, now)) {
+            throw new IllegalArgumentException(
+                    "Bu oturum için seans onayı penceresi dışında yanıt veremezsiniz");
+        }
+        if (ex.getStatus() != ExchangeRequestStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Sadece onaylanmış oturumlar için geçerlidir");
+        }
+        boolean isRequester = ex.getRequester().getEmail().equalsIgnoreCase(userEmail);
+        boolean isOwner = ex.getSkill().getOwner().getEmail().equalsIgnoreCase(userEmail);
+        if (!isRequester && !isOwner) {
+            throw new IllegalArgumentException("Bu oturumda değilsiniz");
+        }
+
+        if ("DECLINE".equals(decision)) {
+            if (isRequester) {
+                if ("DECLINED".equalsIgnoreCase(ex.getRequesterPreSessionResponse())) {
+                    return mapToResponse(ex);
+                }
+                ex.setRequesterPreSessionResponse("DECLINED");
+            } else {
+                if ("DECLINED".equalsIgnoreCase(ex.getOwnerPreSessionResponse())) {
+                    return mapToResponse(ex);
+                }
+                ex.setOwnerPreSessionResponse("DECLINED");
+            }
+            exchangeRequestRepository.save(ex);
+            applyPreSessionDeclineResolution(ex, userEmail);
+            return mapToResponse(ex);
+        }
+
+        if (isRequester) {
+            if ("CONFIRMED".equalsIgnoreCase(ex.getRequesterPreSessionResponse())) {
+                return mapToResponse(ex);
+            }
+            ex.setRequesterPreSessionResponse("CONFIRMED");
+        } else {
+            if ("CONFIRMED".equalsIgnoreCase(ex.getOwnerPreSessionResponse())) {
+                return mapToResponse(ex);
+            }
+            ex.setOwnerPreSessionResponse("CONFIRMED");
+        }
+        exchangeRequestRepository.save(ex);
+        applyPreSessionConfirmResolution(ex, userEmail);
+        return mapToResponse(ex);
+    }
+
+    private void applyPreSessionDeclineResolution(ExchangeRequest ex, String actorEmail) {
+        String rq = ex.getRequesterPreSessionResponse();
+        String ow = ex.getOwnerPreSessionResponse();
+        boolean rDec = "DECLINED".equalsIgnoreCase(rq);
+        boolean oDec = "DECLINED".equalsIgnoreCase(ow);
+        boolean rConf = "CONFIRMED".equalsIgnoreCase(rq);
+        boolean oConf = "CONFIRMED".equalsIgnoreCase(ow);
+
+        if (rDec && oDec) {
+            cancelAcceptedExchangeAfterPreSession(ex);
+            notificationService.notifyPreSessionBothDeclined(ex);
+            return;
+        }
+        if ((rDec && oConf) || (oDec && rConf)) {
+            cancelAcceptedExchangeAfterPreSession(ex);
+            notificationService.notifyPreSessionCancelledIncompatible(ex);
+            return;
+        }
+        if (rDec || oDec) {
+            notificationService.notifyPreSessionPeerDeclined(ex, actorEmail);
+        }
+    }
+
+    private void applyPreSessionConfirmResolution(ExchangeRequest ex, String actorEmail) {
+        String rq = ex.getRequesterPreSessionResponse();
+        String ow = ex.getOwnerPreSessionResponse();
+        if (!"CONFIRMED".equalsIgnoreCase(rq) || !"CONFIRMED".equalsIgnoreCase(ow)) {
+            notificationService.notifyPreSessionPartnerConfirmed(ex, actorEmail);
+            return;
+        }
+        if (ex.getPreSessionBothConfirmedAt() != null) {
+            return;
+        }
+        ex.setPreSessionBothConfirmedAt(Instant.now());
+        exchangeRequestRepository.save(ex);
+        notificationService.notifyPreSessionBothReady(ex);
+    }
+
+    /**
+     * Kısmi veya tam aktarım: eğitmene {@code minutesToTransfer}, kalan askı öğrenciye iade.
+     */
+    private void settleSessionCredits(ExchangeRequest ex, int minutesToTransfer, String ledgerNote) {
+        if (ex.getCreditsSettledAt() != null) {
+            return;
+        }
+        int booked = ex.getBookedMinutes();
+        int transfer = Math.min(Math.max(0, minutesToTransfer), booked);
+        int refund = booked - transfer;
+
+        User provider = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+
+        if (transfer > 0) {
+            provider.setTimeCreditMinutes(provider.getTimeCreditMinutes() + transfer);
+            TimeTransaction earnTx = new TimeTransaction();
+            earnTx.setUser(provider);
+            earnTx.setExchangeRequest(ex);
+            earnTx.setType(TransactionType.EARN);
+            earnTx.setMinutes(transfer);
+            earnTx.setDescription(ledgerNote);
+            timeTransactionRepository.save(earnTx);
+            userRepository.save(provider);
+        }
+
+        if (refund > 0 && ex.isRequesterCreditHeld()) {
+            requester.setTimeCreditMinutes(requester.getTimeCreditMinutes() + refund);
+            userRepository.save(requester);
+        }
+
+        if (transfer > 0) {
+            TimeTransaction spendTx = new TimeTransaction();
+            spendTx.setUser(requester);
+            spendTx.setExchangeRequest(ex);
+            spendTx.setType(TransactionType.SPEND);
+            spendTx.setMinutes(transfer);
+            spendTx.setDescription(ledgerNote);
+            timeTransactionRepository.save(spendTx);
+        }
+
+        ex.setRequesterCreditHeld(false);
+        ex.setSettledMinutes(transfer);
+        ex.setCreditsSettledAt(Instant.now());
+        exchangeRequestRepository.save(ex);
+    }
+
+    private static int computeElapsedSessionMinutes(Instant start, Instant now, int bookedMinutes) {
+        long raw = ChronoUnit.MINUTES.between(start, now);
+        if (raw < 1) {
+            raw = 1;
+        }
+        return (int) Math.min(raw, bookedMinutes);
+    }
+
+    private void cancelAcceptedExchangeAfterPreSession(ExchangeRequest ex) {
+        if (ex.getStatus() != ExchangeRequestStatus.ACCEPTED) {
+            return;
+        }
+        markCancelled(ex);
+        exchangeRequestRepository.save(ex);
+    }
+
+    private void markCancelled(ExchangeRequest ex) {
+        ex.setStatus(ExchangeRequestStatus.CANCELLED);
+        if (ex.getCancelledAt() == null) {
+            ex.setCancelledAt(Instant.now());
+        }
+        releaseHeldCreditIfAny(ex);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PendingCancelSurveyDockResponse> listPendingCancelSurveysForDock(String userEmail) {
+        String email = userEmail == null ? "" : userEmail.trim();
+        if (email.isEmpty()) {
+            return List.of();
+        }
+        User me = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new BadCredentialsException("Kullanıcı bulunamadı"));
+
+        Instant since = Instant.now().minus(14, ChronoUnit.DAYS);
+        Map<UUID, PendingCancelSurveyDockResponse> out = new LinkedHashMap<>();
+
+        for (ExchangeRequest ex : exchangeRequestRepository.findByRequesterEmailOrderByCreatedAtDesc(email)) {
+            addPendingCancelSurveyIfNeeded(out, ex, me, since);
+        }
+        for (ExchangeRequest ex : exchangeRequestRepository.findBySkillOwnerEmailOrderByCreatedAtDesc(email)) {
+            addPendingCancelSurveyIfNeeded(out, ex, me, since);
+        }
+
+        return out.values().stream()
+                .sorted(Comparator.comparing(PendingCancelSurveyDockResponse::getCancelledAt).reversed())
+                .toList();
+    }
+
+    @Transactional
+    public void submitCancelSurvey(UUID exchangeId, CancelSurveyRequest req, String userEmail) {
+        User me = userRepository.findByEmailIgnoreCase(userEmail)
+                .orElseThrow(() -> new BadCredentialsException("Kullanıcı bulunamadı"));
+        ExchangeRequest ex = exchangeRequestRepository.findById(exchangeId)
+                .orElseThrow(() -> new IllegalArgumentException("Talep bulunamadı"));
+        if (!isParticipant(ex, userEmail)) {
+            throw new IllegalArgumentException("Bu oturumda değilsiniz");
+        }
+        if (!isEligibleForCancelSurvey(ex)) {
+            throw new IllegalArgumentException("Bu iptal için anket gönderilemez");
+        }
+        String code = req.getReasonCode() == null ? "" : req.getReasonCode().trim().toUpperCase(Locale.ROOT);
+        if (!CANCEL_SURVEY_REASONS.contains(code)) {
+            throw new IllegalArgumentException("Geçersiz iptal nedeni");
+        }
+        if (exchangeCancelSurveyRepository.existsByExchangeRequest_IdAndRespondent_Id(exchangeId, me.getId())) {
+            throw new IllegalArgumentException("Bu iptal için zaten yanıt verdiniz");
+        }
+        ExchangeCancelSurvey survey = new ExchangeCancelSurvey();
+        survey.setExchangeRequest(ex);
+        survey.setRespondent(me);
+        survey.setReasonCode(code);
+        String note = req.getNote() == null ? null : req.getNote().trim();
+        survey.setNote(note == null || note.isEmpty() ? null : note);
+        exchangeCancelSurveyRepository.save(survey);
+    }
+
+    private void addPendingCancelSurveyIfNeeded(
+            Map<UUID, PendingCancelSurveyDockResponse> out,
+            ExchangeRequest ex,
+            User me,
+            Instant since
+    ) {
+        if (!isEligibleForCancelSurvey(ex)) {
+            return;
+        }
+        if (exchangeCancelSurveyRepository.existsByExchangeRequest_IdAndRespondent_Id(ex.getId(), me.getId())) {
+            return;
+        }
+        Instant cancelled = ex.getCancelledAt();
+        if (cancelled == null || cancelled.isBefore(since)) {
+            return;
+        }
+        out.put(
+                ex.getId(),
+                new PendingCancelSurveyDockResponse(
+                        ex.getId(),
+                        ex.getSkill().getTitle(),
+                        cancelled
+                )
+        );
+    }
+
+    private static boolean isEligibleForCancelSurvey(ExchangeRequest ex) {
+        if (ex.isInquiryOnly() || ex.getStatus() != ExchangeRequestStatus.CANCELLED) {
+            return false;
+        }
+        if (ex.getCreditsSettledAt() != null) {
+            return false;
+        }
+        return ex.isPreSessionConfirmSent()
+                || ex.getRequesterPreSessionResponse() != null
+                || ex.getOwnerPreSessionResponse() != null;
+    }
+
+    /** Kart: dersden 10 dk önce → ders bitene kadar (saat kesinleşene kadar). */
+    private boolean shouldShowInSessionDock(ExchangeRequest ex, Instant now) {
+        if (ex.getStatus() != ExchangeRequestStatus.ACCEPTED || ex.isInquiryOnly()) {
+            return false;
+        }
+        if (ex.getScheduledStartAt() == null || ex.getCreditsSettledAt() != null) {
+            return false;
+        }
+        Instant start = ex.getScheduledStartAt();
+        Instant end = start.plus(ex.getBookedMinutes(), ChronoUnit.MINUTES);
+        Instant dockOpens = start.minus(10, ChronoUnit.MINUTES);
+        if (now.isAfter(end)) {
+            return false;
+        }
+        if (preSessionDemo) {
+            return ex.isPreSessionConfirmSent() || ex.getPreSessionBothConfirmedAt() != null;
+        }
+        if (now.isBefore(dockOpens)) {
+            return false;
+        }
+        return ex.isPreSessionConfirmSent() || ex.getPreSessionBothConfirmedAt() != null;
+    }
+
+    private boolean canRespondPreSession(ExchangeRequest ex, Instant now) {
+        if (!shouldShowInSessionDock(ex, now)) {
+            return false;
+        }
+        if (ex.getScheduledStartAt() == null || !now.isBefore(ex.getScheduledStartAt())) {
+            return false;
+        }
+        return isPreSessionExchangeStillOpen(ex);
+    }
+
+    /** Seans öncesi kabul/red penceresi (ders başlamadan önce). */
+    private boolean isPreSessionExchangeStillOpen(ExchangeRequest ex) {
+        if (ex.getStatus() != ExchangeRequestStatus.ACCEPTED) {
+            return false;
+        }
+        if (ex.getPreSessionBothConfirmedAt() != null) {
+            return false;
+        }
+        String rq = ex.getRequesterPreSessionResponse();
+        String ow = ex.getOwnerPreSessionResponse();
+        boolean rDec = "DECLINED".equalsIgnoreCase(rq);
+        boolean oDec = "DECLINED".equalsIgnoreCase(ow);
+        boolean rConf = "CONFIRMED".equalsIgnoreCase(rq);
+        boolean oConf = "CONFIRMED".equalsIgnoreCase(ow);
+        if (rDec && oDec) {
+            return false;
+        }
+        if ((rDec && oConf) || (oDec && rConf)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static String resolveSessionDockPhase(
+            ExchangeRequest ex,
+            Instant now,
+            Instant start,
+            Instant end
+    ) {
+        if (ex.getCreditsSettledAt() != null) {
+            return "DONE";
+        }
+        if (start == null) {
+            return "PRE_CONFIRM";
+        }
+        if (now.isBefore(start)) {
+            return ex.getPreSessionBothConfirmedAt() != null ? "WAITING_START" : "PRE_CONFIRM";
+        }
+        if (end != null && !now.isAfter(end)) {
+            return "LIVE";
+        }
+        return "ENDED";
+    }
+
+    private static boolean stillWithinSessionWindowForPreSessionUi(ExchangeRequest ex, Instant now) {
+        if (ex.getScheduledStartAt() == null) {
+            return false;
+        }
+        Instant end = ex.getScheduledStartAt().plus(ex.getBookedMinutes(), ChronoUnit.MINUTES);
+        return !now.isAfter(end);
     }
 
     @Transactional(readOnly = true)
@@ -607,24 +1056,45 @@ public class ExchangeRequestService {
     }
 
     private ExchangeRequestResponse mapToResponse(ExchangeRequest exchangeRequest) {
+        return mapToResponse(exchangeRequest, Instant.now());
+    }
+
+    private ExchangeRequestResponse mapToResponse(ExchangeRequest exchangeRequest, Instant now) {
+        Instant start = exchangeRequest.getScheduledStartAt();
+        Instant end = start == null
+                ? null
+                : start.plus(exchangeRequest.getBookedMinutes(), ChronoUnit.MINUTES);
+        String phase = resolveSessionDockPhase(exchangeRequest, now, start, end);
         return new ExchangeRequestResponse(
                 exchangeRequest.getId(),
                 exchangeRequest.getSkill().getId(),
                 exchangeRequest.getSkill().getTitle(),
                 exchangeRequest.getRequester().getId(),
                 exchangeRequest.getRequester().getFullName(),
+                exchangeRequest.getRequester().getEmail(),
                 exchangeRequest.getSkill().getOwner().getId(),
                 exchangeRequest.getSkill().getOwner().getFullName(),
+                exchangeRequest.getSkill().getOwner().getEmail(),
                 exchangeRequest.getMessage(),
                 exchangeRequest.getBookedMinutes(),
-                exchangeRequest.getScheduledStartAt(),
+                start,
                 exchangeRequest.isPendingFromOwner(),
                 exchangeRequest.getStatus(),
                 exchangeRequest.getCreatedAt(),
                 exchangeRequest.getSessionMeetingUrl(),
                 exchangeRequest.getRequesterAttendanceAckAt(),
                 exchangeRequest.getOwnerAttendanceAckAt(),
-                exchangeRequest.isInquiryOnly()
+                exchangeRequest.isInquiryOnly(),
+                exchangeRequest.isPreSessionConfirmSent(),
+                exchangeRequest.getRequesterPreSessionResponse(),
+                exchangeRequest.getOwnerPreSessionResponse(),
+                exchangeRequest.getPreSessionBothConfirmedAt(),
+                phase,
+                end,
+                exchangeRequest.getCreditsSettledAt(),
+                exchangeRequest.getSettledMinutes(),
+                exchangeRequest.getSessionStoppedAt(),
+                exchangeRequest.getSessionStopReason()
         );
     }
 
@@ -645,29 +1115,13 @@ public class ExchangeRequestService {
         if (exchangeRequest.getRequesterAttendanceAckAt() == null || exchangeRequest.getOwnerAttendanceAckAt() == null) {
             return;
         }
-        User provider = exchangeRequest.getSkill().getOwner();
-        User requester = exchangeRequest.getRequester();
-        int minutes = exchangeRequest.getBookedMinutes();
-        provider.setTimeCreditMinutes(provider.getTimeCreditMinutes() + minutes);
-        exchangeRequest.setRequesterCreditHeld(false);
+        if (exchangeRequest.getCreditsSettledAt() != null) {
+            exchangeRequest.setStatus(ExchangeRequestStatus.COMPLETED);
+            exchangeRequestRepository.save(exchangeRequest);
+            return;
+        }
+        settleSessionCredits(exchangeRequest, exchangeRequest.getBookedMinutes(), "Katılım onayı — tam aktarım");
         exchangeRequest.setStatus(ExchangeRequestStatus.COMPLETED);
-
-        TimeTransaction spendTx = new TimeTransaction();
-        spendTx.setUser(requester);
-        spendTx.setExchangeRequest(exchangeRequest);
-        spendTx.setType(TransactionType.SPEND);
-        spendTx.setMinutes(minutes);
-        spendTx.setDescription("Onaylanan oturum için askıdaki kredi kesinleşti");
-
-        TimeTransaction earnTx = new TimeTransaction();
-        earnTx.setUser(provider);
-        earnTx.setExchangeRequest(exchangeRequest);
-        earnTx.setType(TransactionType.EARN);
-        earnTx.setMinutes(minutes);
-        earnTx.setDescription("Onaylanan oturum için kredi kazanıldı");
-
-        userRepository.save(provider);
-        timeTransactionRepository.save(spendTx);
-        timeTransactionRepository.save(earnTx);
+        exchangeRequestRepository.save(exchangeRequest);
     }
 }

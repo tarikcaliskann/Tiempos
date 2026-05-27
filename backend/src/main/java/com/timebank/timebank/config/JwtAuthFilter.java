@@ -21,9 +21,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final AuthCookieService authCookieService;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, AuthCookieService authCookieService) {
         this.jwtService = jwtService;
+        this.authCookieService = authCookieService;
     }
 
     @Override
@@ -32,14 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-        if (auth == null || !auth.startsWith("Bearer ")) {
+        boolean bearerPresent = hasBearerHeader(request);
+        String token = resolveToken(request);
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = auth.substring(7);
 
         try {
             Jws<Claims> parsed = jwtService.parse(token);
@@ -57,13 +57,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (JwtException e) {
-            // Bearer vardı ama JWT geçersiz/süresi doldu → anonim gibi zincire devam edilirse
-            // tüm /api/** uçları 403 verir; istemci 401 ile oturumu temizleyebilsin.
             SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            if (bearerPresent) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+            authCookieService.clearAccessTokenCookie(response);
+            filterChain.doFilter(request, response);
             return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private static boolean hasBearerHeader(HttpServletRequest request) {
+        String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+        return auth != null && auth.startsWith("Bearer ") && auth.length() > 7;
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (auth != null && auth.startsWith("Bearer ")) {
+            String bearer = auth.substring(7).trim();
+            if (!bearer.isEmpty()) {
+                return bearer;
+            }
+        }
+        return authCookieService.readAccessToken(request).orElse(null);
     }
 }

@@ -59,3 +59,25 @@ export function createReview(
     body: JSON.stringify(body),
   });
 }
+
+export type PendingReviewDockDto = {
+  exchangeRequestId: string;
+  skillTitle: string;
+  reviewedUserId: string;
+  reviewedUserName: string;
+  exchangeStatus: string;
+  settledMinutes: number | null;
+  bookedMinutes: number;
+  sessionEndedAt: string;
+  /** COMPLETED | PARTIAL | CANCELLED */
+  outcomeLabel: string;
+  /** QUICK | DETAIL */
+  uiMode?: string | null;
+};
+
+export function fetchPendingReviewsForDock(token: string) {
+  return apiFetch<PendingReviewDockDto[]>("/api/reviews/pending-dock", {
+    method: "GET",
+    token,
+  });
+}

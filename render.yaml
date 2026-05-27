@@ -7,9 +7,9 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: frontend/dist
     envVars:
-      # Sadece API kökü; sonunda /api YOK (aksi halde istekler /api/api/... olur ve 403).
-      - key: VITE_API_BASE_URL
-        value: https://tiempos-backend-w26e.onrender.com
+      # Boş bırakın: aynı origin /api rewrite + HttpOnly oturum çerezi. Doğrudan backend URL kullanmayın.
+      # - key: VITE_API_BASE_URL
+      #   value: https://tiempos-backend-w26e.onrender.com
       # Google OAuth Web client (public) — Google Console authorized origins: www.tiempos.site
       - key: VITE_GOOGLE_CLIENT_ID
         value: 793509542213-2uce3cqll9shf9o0b3agv9eb637haio1.apps.googleusercontent.com

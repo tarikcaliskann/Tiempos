@@ -4,14 +4,21 @@ import com.timebank.timebank.exchange.ExchangeRequest;
 import com.timebank.timebank.exchange.ExchangeRequestRepository;
 import com.timebank.timebank.exchange.ExchangeRequestStatus;
 import com.timebank.timebank.review.dto.CreateReviewRequest;
+import com.timebank.timebank.review.dto.PendingReviewDockResponse;
 import com.timebank.timebank.review.dto.ReviewResponse;
 import com.timebank.timebank.review.dto.UserRatingSummaryResponse;
 import com.timebank.timebank.user.User;
 import com.timebank.timebank.user.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,6 +38,7 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public ReviewResponse createReview(UUID exchangeRequestId, CreateReviewRequest req, String reviewerEmail) {
         User reviewer = userRepository.findByEmailIgnoreCase(reviewerEmail)
                 .orElseThrow(() -> new BadCredentialsException("Kullanıcı bulunamadı"));
@@ -38,19 +46,23 @@ public class ReviewService {
         ExchangeRequest exchangeRequest = exchangeRequestRepository.findById(exchangeRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("Exchange request bulunamadı"));
 
-        if (exchangeRequest.getStatus() != ExchangeRequestStatus.COMPLETED) {
-            throw new IllegalArgumentException("Sadece tamamlanan işlemler için yorum yapılabilir");
+        if (!isEligibleForReview(exchangeRequest)) {
+            throw new IllegalArgumentException("Bu oturum için değerlendirme yapılamaz");
         }
 
-        if (!exchangeRequest.getRequester().getEmail().equals(reviewerEmail)) {
-            throw new IllegalArgumentException("Bu işlem için sadece talep sahibi yorum bırakabilir");
+        boolean isRequester = exchangeRequest.getRequester().getEmail().equalsIgnoreCase(reviewerEmail);
+        boolean isOwner = exchangeRequest.getSkill().getOwner().getEmail().equalsIgnoreCase(reviewerEmail);
+        if (!isRequester && !isOwner) {
+            throw new IllegalArgumentException("Bu oturumda değilsiniz");
         }
 
-        if (reviewRepository.existsByExchangeRequestId(exchangeRequestId)) {
-            throw new IllegalArgumentException("Bu işlem için zaten yorum yapılmış");
+        if (reviewRepository.existsByExchangeRequest_IdAndReviewer_Id(exchangeRequestId, reviewer.getId())) {
+            throw new IllegalArgumentException("Bu oturum için zaten değerlendirme yaptınız");
         }
 
-        User reviewedUser = exchangeRequest.getSkill().getOwner();
+        User reviewedUser = isRequester
+                ? exchangeRequest.getSkill().getOwner()
+                : exchangeRequest.getRequester();
 
         Review review = new Review();
         review.setExchangeRequest(exchangeRequest);
@@ -61,6 +73,106 @@ public class ReviewService {
 
         Review saved = reviewRepository.save(review);
         return mapToResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PendingReviewDockResponse> listPendingReviewsForDock(String userEmail) {
+        String email = userEmail == null ? "" : userEmail.trim();
+        if (email.isEmpty()) {
+            return List.of();
+        }
+        User me = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new BadCredentialsException("Kullanıcı bulunamadı"));
+
+        List<ExchangeRequest> asRequester = exchangeRequestRepository
+                .findByRequesterEmailOrderByCreatedAtDesc(email);
+        List<ExchangeRequest> asOwner = exchangeRequestRepository
+                .findBySkillOwnerEmailOrderByCreatedAtDesc(email);
+
+        Map<UUID, PendingReviewDockResponse> out = new LinkedHashMap<>();
+        for (ExchangeRequest ex : asRequester) {
+            addPendingIfNeeded(out, ex, me, true);
+        }
+        for (ExchangeRequest ex : asOwner) {
+            addPendingIfNeeded(out, ex, me, false);
+        }
+
+        return out.values().stream()
+                .sorted(Comparator.comparing(PendingReviewDockResponse::getSessionEndedAt).reversed())
+                .toList();
+    }
+
+    private void addPendingIfNeeded(
+            Map<UUID, PendingReviewDockResponse> out,
+            ExchangeRequest ex,
+            User me,
+            boolean iAmRequester
+    ) {
+        if (!isEligibleForReview(ex)) {
+            return;
+        }
+        if (reviewRepository.existsByExchangeRequest_IdAndReviewer_Id(ex.getId(), me.getId())) {
+            return;
+        }
+        Instant ended = sessionEndedAt(ex);
+        if (ended == null || ended.isBefore(Instant.now().minus(14, ChronoUnit.DAYS))) {
+            return;
+        }
+        User reviewed = iAmRequester ? ex.getSkill().getOwner() : ex.getRequester();
+        String outcome = buildOutcomeLabel(ex);
+        String uiMode = "COMPLETED".equals(outcome) ? "QUICK" : "DETAIL";
+        out.put(
+                ex.getId(),
+                new PendingReviewDockResponse(
+                        ex.getId(),
+                        ex.getSkill().getTitle(),
+                        reviewed.getId(),
+                        reviewed.getFullName(),
+                        ex.getStatus(),
+                        ex.getSettledMinutes(),
+                        ex.getBookedMinutes(),
+                        ended,
+                        outcome,
+                        uiMode
+                )
+        );
+    }
+
+    private static boolean isEligibleForReview(ExchangeRequest ex) {
+        if (ex.isInquiryOnly()) {
+            return false;
+        }
+        if (ex.getStatus() == ExchangeRequestStatus.COMPLETED) {
+            return true;
+        }
+        if (ex.getStatus() == ExchangeRequestStatus.CANCELLED && ex.getCreditsSettledAt() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private static Instant sessionEndedAt(ExchangeRequest ex) {
+        if (ex.getCreditsSettledAt() != null) {
+            return ex.getCreditsSettledAt();
+        }
+        if (ex.getSessionStoppedAt() != null) {
+            return ex.getSessionStoppedAt();
+        }
+        if (ex.getStatus() == ExchangeRequestStatus.COMPLETED && ex.getScheduledStartAt() != null) {
+            return ex.getScheduledStartAt().plus(ex.getBookedMinutes(), ChronoUnit.MINUTES);
+        }
+        return null;
+    }
+
+    private static String buildOutcomeLabel(ExchangeRequest ex) {
+        if (ex.getStatus() == ExchangeRequestStatus.CANCELLED) {
+            int settled = ex.getSettledMinutes() != null ? ex.getSettledMinutes() : 0;
+            if (settled > 0) {
+                return "PARTIAL";
+            }
+            return "CANCELLED";
+        }
+        return "COMPLETED";
     }
 
     public List<ReviewResponse> getReviewsForUser(String email) {
@@ -80,7 +192,6 @@ public class ReviewService {
         );
     }
 
-    /** Öğrencinin eğitmenlere bıraktığı yorumlar (verdiği puanlar) */
     public List<ReviewResponse> getReviewsWrittenByUser(String reviewerEmail) {
         return reviewRepository.findByReviewer_EmailOrderByCreatedAtDesc(reviewerEmail)
                 .stream()
@@ -88,7 +199,6 @@ public class ReviewService {
                 .toList();
     }
 
-    /** Verdiğin yorumların ortalama yıldızı ve adedi */
     public UserRatingSummaryResponse getRatingSummaryForReviewsGiven(String reviewerEmail) {
         long total = reviewRepository.countByReviewer_Email(reviewerEmail);
         Double avg = reviewRepository.findAverageRatingByReviewerEmail(reviewerEmail);

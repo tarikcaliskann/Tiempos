@@ -10,6 +10,7 @@ import com.timebank.timebank.skill.SkillRepository;
 import com.timebank.timebank.transaction.TimeTransactionRepository;
 import com.timebank.timebank.user.dto.LoginRequest;
 import com.timebank.timebank.user.dto.LoginResponse;
+import com.timebank.timebank.user.dto.SessionResponse;
 import com.timebank.timebank.user.dto.RegisterRequest;
 import com.timebank.timebank.user.dto.RegistrationOutcome;
 import com.timebank.timebank.user.dto.SocialLoginRequest;
@@ -72,6 +73,9 @@ public class UserService {
 
     @Value("${app.google.client-id:}")
     private String googleClientId;
+
+    @Value("${app.google.require-client-id:false}")
+    private boolean requireGoogleClientId;
 
     /** OAuth Web client id (public) — frontend Google giriş butonu için. */
     public Optional<String> getGoogleOAuthClientId() {
@@ -486,9 +490,22 @@ public class UserService {
         }
     }
 
+    public SessionResponse getSessionForEmail(String email) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new BadCredentialsException("Kullanıcı bulunamadı"));
+        String role = user.getRole();
+        if (role == null || role.isBlank()) {
+            role = "USER";
+        }
+        return new SessionResponse(user.getId(), user.getEmail(), user.getFullName(), role);
+    }
+
     private void verifyGoogleAudience(JsonNode tokenInfo) {
         String configured = googleClientId == null ? "" : googleClientId.trim();
         if (configured.isEmpty()) {
+            if (requireGoogleClientId) {
+                throw new IllegalStateException("Google client-id yapılandırılmamış");
+            }
             return;
         }
         String aud = text(tokenInfo, "aud");

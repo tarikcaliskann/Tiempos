@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
+import { SessionPreConfirmDock } from "./components/session/SessionPreConfirmDock";
 import { useTheme } from "next-themes";
 import { Toaster } from "sonner";
 import { AppRoutes } from "./navigation/AppRoutes";
@@ -39,14 +40,21 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-view">
-        <AppRoutes />
+      <div className="flex h-full min-h-0 w-full flex-1 flex-col">
+        <div className="app-view">
+          <AppRoutes />
+        </div>
+        <Toaster
+          position="top-right"
+          richColors
+          theme={(resolvedTheme as "light" | "dark") ?? "dark"}
+        />
+        {/*
+          Seans öncesi onay dock’u: route’tan bağımsız, girişli tüm sayfalarda aktif.
+          Davranış / env: docs/session-pre-confirm-dock.md
+        */}
+        <SessionPreConfirmDock />
       </div>
-      <Toaster
-        position="top-right"
-        richColors
-        theme={(resolvedTheme as "light" | "dark") ?? "dark"}
-      />
     </BrowserRouter>
   );
 }

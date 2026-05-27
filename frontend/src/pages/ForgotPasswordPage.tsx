@@ -5,6 +5,7 @@ import { Label } from "../components/ui/label";
 import { ArrowLeft, Mail, CheckCircle, Loader2 } from "lucide-react";
 import type { PageType } from "../App";
 import { useLanguage } from "../contexts/LanguageContext";
+import { AuthPageShell } from "../components/auth/AuthPageShell";
 import { BrandLogo } from "../components/common/BrandLogo";
 import { forgotPasswordRequest } from "../api/auth";
 
@@ -25,7 +26,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
     try {
       await forgotPasswordRequest(email);
       setEmailSent(true);
-    } catch (err) {
+    } catch {
       setEmailSent(true);
     } finally {
       setLoading(false);
@@ -44,30 +45,29 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <AuthPageShell>
+        <div className="mb-4 text-center min-[height:760px]:mb-8">
           <button 
             onClick={() => onNavigate?.("landing")}
-            className="inline-flex items-center gap-2 mb-4"
+            className="mb-3 inline-flex items-center gap-2 min-[height:760px]:mb-4"
           >
-            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm min-[height:760px]:h-14 min-[height:760px]:w-14">
               <BrandLogo className="h-full w-full object-cover" />
             </div>
-            <span className="text-2xl text-white">Tiempos</span>
+            <span className="text-xl text-white min-[height:760px]:text-2xl">Tiempos</span>
           </button>
-          <h1 className="text-3xl text-white mb-2">
+          <h1 className="mb-1 text-2xl text-white min-[height:760px]:mb-2 min-[height:760px]:text-3xl">
             {emailSent ? a.titleSent : a.title}
           </h1>
-          <p className="text-white/80">
+          <p className="text-sm text-white/80 min-[height:760px]:text-base">
             {emailSent ? a.subtitleSent : a.subtitle}
           </p>
         </div>
 
-        <div className="rounded-3xl bg-card p-8 text-card-foreground shadow-2xl">
+        <div className="rounded-3xl bg-card p-5 text-card-foreground shadow-2xl sm:p-8">
           {!emailSent ? (
             <>
-              <form className="space-y-5" onSubmit={(e) => void handleSubmit(e)}>
+              <form className="space-y-4 max-[height:700px]:space-y-3" onSubmit={(e) => void handleSubmit(e)}>
                 <div>
                   <Label htmlFor="email">{t.auth.login.email}</Label>
                   <Input 
@@ -83,7 +83,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
 
                 <Button 
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-6"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
                   disabled={loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -91,7 +91,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                 </Button>
               </form>
 
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center min-[height:760px]:mt-6">
                 <button 
                   onClick={() => onNavigate?.("login")}
                   className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -101,7 +101,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                 </button>
               </div>
 
-              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/40">
+              <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/40 min-[height:760px]:mt-6 min-[height:760px]:p-4">
                 <p className="text-sm text-foreground/90">
                   <strong>{t.common.note}:</strong> {a.noteBox}
                 </p>
@@ -122,7 +122,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
 
                 <div className="space-y-3">
                   <Button 
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-6"
+                    className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
                     onClick={() => {
                       sessionStorage.setItem("tiempos_reset_email", email);
                       onNavigate?.("reset-password");
@@ -144,7 +144,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                 </div>
               </div>
 
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center min-[height:760px]:mt-6">
                 <button 
                   onClick={() => onNavigate?.("login")}
                   className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -156,7 +156,6 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
             </>
           )}
         </div>
-      </div>
-    </div>
+    </AuthPageShell>
   );
 }

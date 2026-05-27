@@ -155,6 +155,185 @@ public class NotificationService {
         userNotificationRepository.save(new UserNotification(requester, title, body, ex));
     }
 
+    @Transactional
+    public void sendPreSessionConfirmationPrompt(ExchangeRequest ex) {
+        User owner = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+        String when = formatWhen(ex.getScheduledStartAt());
+        String title = "Seans onayı";
+        String body = String.format(
+                "\"%s\" oturumunuz yaklaşık 10 dakika sonra (%s). Katılacağınızı onaylayın veya iptal edin.",
+                ex.getSkill().getTitle(),
+                when
+        );
+        userNotificationRepository.save(new UserNotification(owner, title, body, ex));
+        userNotificationRepository.save(new UserNotification(requester, title, body, ex));
+    }
+
+    @Transactional
+    public void notifyPreSessionPartnerConfirmed(ExchangeRequest ex, String actorEmail) {
+        if (ex.getRequester() == null || ex.getSkill() == null || ex.getSkill().getOwner() == null) {
+            return;
+        }
+        User requester = ex.getRequester();
+        User owner = ex.getSkill().getOwner();
+        String e = actorEmail == null ? "" : actorEmail.trim();
+        User actor;
+        User peer;
+        if (requester.getEmail().equalsIgnoreCase(e)) {
+            actor = requester;
+            peer = owner;
+        } else if (owner.getEmail().equalsIgnoreCase(e)) {
+            actor = owner;
+            peer = requester;
+        } else {
+            return;
+        }
+        String when = formatWhen(ex.getScheduledStartAt());
+        String title = "Seans katılım onayı";
+        String body = String.format(
+                "%s \"%s\" (%s) oturumuna katılacağını onayladı.",
+                actor.getFullName(),
+                ex.getSkill().getTitle(),
+                when
+        );
+        userNotificationRepository.save(new UserNotification(peer, title, body, ex));
+    }
+
+    @Transactional
+    public void notifyPreSessionBothReady(ExchangeRequest ex) {
+        User owner = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+        String when = formatWhen(ex.getScheduledStartAt());
+        String title = "Seans onaylandı";
+        String body = String.format(
+                "Her iki taraf da \"%s\" (%s) oturumuna katılacağını onayladı. Ders başlayınca süre işleyecek; "
+                        + "süre sonunda veya sorun bildiriminde saat aktarımı yapılır.",
+                ex.getSkill().getTitle(),
+                when
+        );
+        userNotificationRepository.save(new UserNotification(owner, title, body, ex));
+        userNotificationRepository.save(new UserNotification(requester, title, body, ex));
+    }
+
+    @Transactional
+    public void notifySessionStoppedPartial(
+            ExchangeRequest ex,
+            String actorEmail,
+            int settledMinutes,
+            String reason
+    ) {
+        User owner = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+        String when = formatWhen(ex.getScheduledStartAt());
+        User actor = resolveActor(ex, actorEmail);
+        User peer = actor.getId().equals(owner.getId()) ? requester : owner;
+        String title = "Seans durduruldu — kısmi saat aktarımı";
+        String snippet = reason == null || reason.isBlank() ? "" : " Gerekçe: \"" + truncate(reason, 120) + "\"";
+        String body = String.format(
+                "%s \"%s\" (%s) oturumunu durdurdu. Bu ana kadar geçen süre için %d dakika aktarıldı.%s",
+                actor.getFullName(),
+                ex.getSkill().getTitle(),
+                when,
+                settledMinutes,
+                snippet
+        );
+        userNotificationRepository.save(new UserNotification(peer, title, body, ex));
+        userNotificationRepository.save(new UserNotification(actor, title, body, ex));
+    }
+
+    @Transactional
+    public void notifySessionFullSettlement(ExchangeRequest ex) {
+        User owner = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+        String when = formatWhen(ex.getScheduledStartAt());
+        int minutes = ex.getSettledMinutes() != null ? ex.getSettledMinutes() : ex.getBookedMinutes();
+        String title = "Seans tamamlandı";
+        String body = String.format(
+                "\"%s\" (%s) oturumu sona erdi. %d dakikalık saat aktarımı tamamlandı.",
+                ex.getSkill().getTitle(),
+                when,
+                minutes
+        );
+        userNotificationRepository.save(new UserNotification(owner, title, body, ex));
+        userNotificationRepository.save(new UserNotification(requester, title, body, ex));
+    }
+
+    private static User resolveActor(ExchangeRequest ex, String actorEmail) {
+        String e = actorEmail == null ? "" : actorEmail.trim();
+        if (ex.getRequester().getEmail().equalsIgnoreCase(e)) {
+            return ex.getRequester();
+        }
+        return ex.getSkill().getOwner();
+    }
+
+    private static String truncate(String s, int max) {
+        if (s == null || s.length() <= max) {
+            return s == null ? "" : s;
+        }
+        return s.substring(0, max - 1) + "…";
+    }
+
+    @Transactional
+    public void notifyPreSessionBothDeclined(ExchangeRequest ex) {
+        User owner = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+        String when = formatWhen(ex.getScheduledStartAt());
+        String title = "Seans reddedildi";
+        String body = String.format(
+                "Her iki taraf da \"%s\" (%s) oturumuna katılmayı reddetti. Rezervasyon iptal edildi; askıdaki saat iade edildi.",
+                ex.getSkill().getTitle(),
+                when
+        );
+        userNotificationRepository.save(new UserNotification(owner, title, body, ex));
+        userNotificationRepository.save(new UserNotification(requester, title, body, ex));
+    }
+
+    @Transactional
+    public void notifyPreSessionPeerDeclined(ExchangeRequest ex, String actorEmail) {
+        if (ex.getRequester() == null || ex.getSkill() == null || ex.getSkill().getOwner() == null) {
+            return;
+        }
+        User requester = ex.getRequester();
+        User owner = ex.getSkill().getOwner();
+        String e = actorEmail == null ? "" : actorEmail.trim();
+        User actor;
+        User peer;
+        if (requester.getEmail().equalsIgnoreCase(e)) {
+            actor = requester;
+            peer = owner;
+        } else if (owner.getEmail().equalsIgnoreCase(e)) {
+            actor = owner;
+            peer = requester;
+        } else {
+            return;
+        }
+        String when = formatWhen(ex.getScheduledStartAt());
+        String title = "Seans katılımı reddedildi";
+        String body = String.format(
+                "%s \"%s\" (%s) oturumuna katılmayacağını bildirdi. Kararınızı verebilirsiniz.",
+                actor.getFullName(),
+                ex.getSkill().getTitle(),
+                when
+        );
+        userNotificationRepository.save(new UserNotification(peer, title, body, ex));
+    }
+
+    @Transactional
+    public void notifyPreSessionCancelledIncompatible(ExchangeRequest ex) {
+        User owner = ex.getSkill().getOwner();
+        User requester = ex.getRequester();
+        String when = formatWhen(ex.getScheduledStartAt());
+        String title = "Seans iptal edildi";
+        String body = String.format(
+                "\"%s\" (%s) için seans öncesi onaylar uyuşmadı. Rezervasyon iptal edildi; askıdaki saat iade edildi.",
+                ex.getSkill().getTitle(),
+                when
+        );
+        userNotificationRepository.save(new UserNotification(owner, title, body, ex));
+        userNotificationRepository.save(new UserNotification(requester, title, body, ex));
+    }
+
     private static String formatWhen(Instant scheduledStartAt) {
         if (scheduledStartAt == null) {
             return "(tarih seçilmedi)";

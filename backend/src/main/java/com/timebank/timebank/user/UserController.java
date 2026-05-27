@@ -16,12 +16,16 @@ import com.timebank.timebank.user.dto.PublicUserProfileResponse;
 import com.timebank.timebank.user.dto.UserProfileResponse;
 import com.timebank.timebank.user.dto.MailDeliveryStatusResponse;
 import com.timebank.timebank.user.dto.UserResponse;
+import com.timebank.timebank.user.dto.SessionResponse;
+import com.timebank.timebank.config.AuthCookieService;
 import com.timebank.timebank.mail.RegistrationMailService;
 import com.timebank.timebank.user.dto.RegistrationOutcome;
 import com.timebank.timebank.user.dto.VerifyEmailCodeRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -32,10 +36,16 @@ public class UserController {
 
     private final UserService userService;
     private final RegistrationMailService registrationMailService;
+    private final AuthCookieService authCookieService;
 
-    public UserController(UserService userService, RegistrationMailService registrationMailService) {
+    public UserController(
+            UserService userService,
+            RegistrationMailService registrationMailService,
+            AuthCookieService authCookieService
+    ) {
         this.userService = userService;
         this.registrationMailService = registrationMailService;
+        this.authCookieService = authCookieService;
     }
 
     @PostMapping("/auth/register")
@@ -69,10 +79,11 @@ public class UserController {
 
     @PostMapping("/auth/verify-email")
     public ResponseEntity<LoginResponse> verifyEmailWithCode(
-            @Valid @RequestBody VerifyEmailCodeRequest req
+            @Valid @RequestBody VerifyEmailCodeRequest req,
+            HttpServletResponse httpResponse
     ) {
         LoginResponse response = userService.verifyEmailWithCode(req.getEmail(), req.getCode());
-        return ResponseEntity.ok(response);
+        return withAuthCookie(httpResponse, response);
     }
 
     @GetMapping("/auth/mail-status")
@@ -94,9 +105,28 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest req,
+            HttpServletResponse httpResponse
+    ) {
         LoginResponse response = userService.login(req);
-        return ResponseEntity.ok(response);
+        return withAuthCookie(httpResponse, response);
+    }
+
+    @GetMapping("/auth/session")
+    public ResponseEntity<SessionResponse> session() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getName() == null || auth.getName().isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(userService.getSessionForEmail(auth.getName()));
+    }
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse httpResponse) {
+        authCookieService.clearAccessTokenCookie(httpResponse);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/auth/google-config")
@@ -106,8 +136,21 @@ public class UserController {
     }
 
     @PostMapping("/auth/social-login")
-    public ResponseEntity<LoginResponse> socialLogin(@Valid @RequestBody SocialLoginRequest req) {
-        return ResponseEntity.ok(userService.socialLogin(req));
+    public ResponseEntity<LoginResponse> socialLogin(
+            @Valid @RequestBody SocialLoginRequest req,
+            HttpServletResponse httpResponse
+    ) {
+        return withAuthCookie(httpResponse, userService.socialLogin(req));
+    }
+
+    private ResponseEntity<LoginResponse> withAuthCookie(
+            HttpServletResponse httpResponse,
+            LoginResponse body
+    ) {
+        if (body != null && body.getToken() != null && !body.getToken().isBlank()) {
+            authCookieService.setAccessTokenCookie(httpResponse, body.getToken());
+        }
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("/auth/forgot-password")
@@ -143,9 +186,7 @@ public class UserController {
         );
     }
 
-    /**
-     * Başka üyenin herkese açık profil özeti; giriş gerekir, e-posta/telefon dönmez.
-     */
+    /** Başka üyenin herkese açık profil özeti; e-posta/telefon dönmez. */
     @GetMapping("/users/{userId}/public")
     public ResponseEntity<PublicUserProfileResponse> getPublicUserProfile(
             @PathVariable UUID userId

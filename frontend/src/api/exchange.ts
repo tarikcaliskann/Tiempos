@@ -6,8 +6,10 @@ export type ExchangeRequestDto = {
   skillTitle: string;
   requesterId: string;
   requesterName: string;
+  requesterEmail?: string;
   ownerId: string;
   ownerName: string;
+  ownerEmail?: string;
   message: string;
   bookedMinutes: number;
   /** ISO-8601 instant */
@@ -20,6 +22,17 @@ export type ExchangeRequestDto = {
   sessionMeetingUrl?: string | null;
   requesterAttendanceAckAt?: string | null;
   ownerAttendanceAckAt?: string | null;
+  preSessionConfirmSent?: boolean;
+  requesterPreSessionResponse?: string | null;
+  ownerPreSessionResponse?: string | null;
+  preSessionBothConfirmedAt?: string | null;
+  /** PRE_CONFIRM | WAITING_START | LIVE | DONE | ENDED */
+  sessionDockPhase?: string | null;
+  scheduledEndAt?: string | null;
+  creditsSettledAt?: string | null;
+  settledMinutes?: number | null;
+  sessionStoppedAt?: string | null;
+  sessionStopReason?: string | null;
 };
 
 export type ExchangeMessageDto = {
@@ -181,6 +194,69 @@ export function acknowledgeOwnerAttendance(token: string, exchangeId: string) {
     {
       method: "POST",
       token,
+    },
+  );
+}
+
+export function fetchOpenPreSessionConfirmations(token: string) {
+  return apiFetch<ExchangeRequestDto[]>("/api/exchange-requests/pre-session-open", {
+    method: "GET",
+    token,
+  });
+}
+
+export function submitPreSessionResponse(
+  token: string,
+  exchangeId: string,
+  decision: "CONFIRM" | "DECLINE",
+) {
+  return apiFetch<ExchangeRequestDto>(
+    `/api/exchange-requests/${encodeURIComponent(exchangeId)}/pre-session-response`,
+    {
+      method: "POST",
+      token,
+      body: JSON.stringify({ decision }),
+    },
+  );
+}
+
+export function reportSessionProblem(token: string, exchangeId: string, message: string) {
+  return apiFetch<ExchangeRequestDto>(
+    `/api/exchange-requests/${encodeURIComponent(exchangeId)}/report-session-problem`,
+    {
+      method: "POST",
+      token,
+      body: JSON.stringify({ message }),
+    },
+  );
+}
+
+export type PendingCancelSurveyDto = {
+  exchangeRequestId: string;
+  skillTitle: string;
+  cancelledAt: string;
+};
+
+export type CancelSurveyReasonCode = "SCHEDULE" | "NOT_NEEDED" | "OTHER";
+
+export function fetchPendingCancelSurveys(token: string) {
+  return apiFetch<PendingCancelSurveyDto[]>("/api/exchange-requests/pending-cancel-survey", {
+    method: "GET",
+    token,
+  });
+}
+
+export function submitCancelSurvey(
+  token: string,
+  exchangeId: string,
+  body: { reasonCode: CancelSurveyReasonCode; note?: string },
+) {
+  return apiFetch<void>(
+    `/api/exchange-requests/${encodeURIComponent(exchangeId)}/cancel-survey`,
+    {
+      method: "POST",
+      token,
+      body: JSON.stringify(body),
     },
   );
 }

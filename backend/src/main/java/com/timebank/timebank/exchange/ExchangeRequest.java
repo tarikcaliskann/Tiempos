@@ -71,9 +71,47 @@ public class ExchangeRequest {
     @Column(name = "inquiry_only", nullable = false)
     private boolean inquiryOnly;
 
+    /** Oturumdan ~10 dk önce "katılıyor musunuz?" bildirimi gönderildi mi */
+    @Column(name = "pre_session_confirm_sent", nullable = false)
+    private boolean preSessionConfirmSent;
+
+    /** Öğrenci: CONFIRMED veya null (bekliyor) */
+    @Column(name = "requester_pre_session_response", length = 20)
+    private String requesterPreSessionResponse;
+
+    /** Eğitmen: CONFIRMED veya null (bekliyor) */
+    @Column(name = "owner_pre_session_response", length = 20)
+    private String ownerPreSessionResponse;
+
+    /** İki taraf da seans öncesi katılımı onayladığında kredi kesinleştirme anı */
+    @Column(name = "pre_session_both_confirmed_at")
+    private Instant preSessionBothConfirmedAt;
+
     /** Oturum başlangıcında "başladı mı?" bildirimi gönderildi mi */
     @Column(name = "started_prompt_sent", nullable = false)
     private boolean startedPromptSent;
+
+    /** Askıdaki / aktarılan dakikaların kesinleştiği an */
+    @Column(name = "credits_settled_at")
+    private Instant creditsSettledAt;
+
+    /** Eğitmene aktarılan dakika (kısmi veya tam) */
+    @Column(name = "settled_minutes")
+    private Integer settledMinutes;
+
+    /** Sorun bildirimi veya erken bitiş anı */
+    @Column(name = "session_stopped_at")
+    private Instant sessionStoppedAt;
+
+    @Column(name = "session_stop_reason", length = 2000)
+    private String sessionStopReason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_stopped_by_id")
+    private User sessionStoppedBy;
+
+    @Column(name = "cancelled_at")
+    private Instant cancelledAt;
 
     @PrePersist
     public void prePersist() {
@@ -211,5 +249,85 @@ public class ExchangeRequest {
 
     public void setStartedPromptSent(boolean startedPromptSent) {
         this.startedPromptSent = startedPromptSent;
+    }
+
+    public boolean isPreSessionConfirmSent() {
+        return preSessionConfirmSent;
+    }
+
+    public void setPreSessionConfirmSent(boolean preSessionConfirmSent) {
+        this.preSessionConfirmSent = preSessionConfirmSent;
+    }
+
+    public String getRequesterPreSessionResponse() {
+        return requesterPreSessionResponse;
+    }
+
+    public void setRequesterPreSessionResponse(String requesterPreSessionResponse) {
+        this.requesterPreSessionResponse = requesterPreSessionResponse;
+    }
+
+    public String getOwnerPreSessionResponse() {
+        return ownerPreSessionResponse;
+    }
+
+    public void setOwnerPreSessionResponse(String ownerPreSessionResponse) {
+        this.ownerPreSessionResponse = ownerPreSessionResponse;
+    }
+
+    public Instant getPreSessionBothConfirmedAt() {
+        return preSessionBothConfirmedAt;
+    }
+
+    public void setPreSessionBothConfirmedAt(Instant preSessionBothConfirmedAt) {
+        this.preSessionBothConfirmedAt = preSessionBothConfirmedAt;
+    }
+
+    public Instant getCreditsSettledAt() {
+        return creditsSettledAt;
+    }
+
+    public void setCreditsSettledAt(Instant creditsSettledAt) {
+        this.creditsSettledAt = creditsSettledAt;
+    }
+
+    public Integer getSettledMinutes() {
+        return settledMinutes;
+    }
+
+    public void setSettledMinutes(Integer settledMinutes) {
+        this.settledMinutes = settledMinutes;
+    }
+
+    public Instant getSessionStoppedAt() {
+        return sessionStoppedAt;
+    }
+
+    public void setSessionStoppedAt(Instant sessionStoppedAt) {
+        this.sessionStoppedAt = sessionStoppedAt;
+    }
+
+    public String getSessionStopReason() {
+        return sessionStopReason;
+    }
+
+    public void setSessionStopReason(String sessionStopReason) {
+        this.sessionStopReason = sessionStopReason;
+    }
+
+    public User getSessionStoppedBy() {
+        return sessionStoppedBy;
+    }
+
+    public void setSessionStoppedBy(User sessionStoppedBy) {
+        this.sessionStoppedBy = sessionStoppedBy;
+    }
+
+    public Instant getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Instant cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 }

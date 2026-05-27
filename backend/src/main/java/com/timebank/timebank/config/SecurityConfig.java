@@ -1,5 +1,6 @@
 package com.timebank.timebank.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,9 +24,14 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final boolean swaggerUiEnabled;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            @Value("${springdoc.swagger-ui.enabled:false}") boolean swaggerUiEnabled
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.swaggerUiEnabled = swaggerUiEnabled;
     }
 
 
@@ -39,23 +45,35 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> {
+                    var chain = auth
                         // Hata yönlendirmesi (ERROR dispatch) aksi halde bazı ortamlarda 401 dönebiliyor
                         .requestMatchers(new DispatcherTypeRequestMatcher(DispatcherType.ERROR)).permitAll()
                         .requestMatchers("/error", "/error/**").permitAll()
                         // CORS preflight (Authorization olmadan); aksi halde 403 → tarayıcı isteği bloklar
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/session").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").denyAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/public").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/skills/mine").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/skills").permitAll()
                         // Kapak proxy: /api/skills/{uuid}/cover — /** ile tüm alt yollar (mine önce ele alındı)
                         .requestMatchers(HttpMethod.GET, "/api/skills/**").permitAll()
                         // Tüm /api/public/* uçları (GET /stats, POST /contact) anonim erişilebilir
-                        .requestMatchers("/api/public/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/public/**").permitAll();
+                    if (swaggerUiEnabled) {
+                        chain.requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll();
+                    }
+                    chain.anyRequest().authenticated();
+                })
                 // Giriş yokken 403 yerine 401: istemci tiempos:auth-expired ile oturumu sıfırlar
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint(apiAuthenticationEntryPoint())

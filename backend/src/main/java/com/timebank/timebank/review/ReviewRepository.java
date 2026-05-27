@@ -15,6 +15,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     boolean existsByExchangeRequestId(UUID exchangeRequestId);
 
+    boolean existsByExchangeRequest_IdAndReviewer_Id(UUID exchangeRequestId, UUID reviewerId);
+
     @EntityGraph(attributePaths = {"reviewer", "reviewedUser", "exchangeRequest", "exchangeRequest.skill"})
     List<Review> findByReviewedUserEmailOrderByCreatedAtDesc(String email);
 

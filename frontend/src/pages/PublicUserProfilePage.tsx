@@ -96,7 +96,7 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchPublicUserProfile(token, id);
+      const data = await fetchPublicUserProfile(id, token);
       setProfile(data);
     } catch (e) {
       setError(apiErrorDisplayMessage(e, pub.loadError));

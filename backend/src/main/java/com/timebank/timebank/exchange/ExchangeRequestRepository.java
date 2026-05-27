@@ -40,7 +40,32 @@ public interface ExchangeRequestRepository extends JpaRepository<ExchangeRequest
             Instant end
     );
 
-    /** Aynı kullanıcının kesişen kabul edilmiş oturumlarını ararken. */
+    @EntityGraph(attributePaths = {"skill", "skill.owner", "requester"})
+    List<ExchangeRequest> findByStatusAndPreSessionConfirmSentFalseAndScheduledStartAtBetween(
+            ExchangeRequestStatus status,
+            Instant start,
+            Instant end
+    );
+
+    @EntityGraph(attributePaths = {"skill", "skill.owner", "requester"})
+    @Query("SELECT DISTINCT e FROM ExchangeRequest e JOIN e.skill s "
+            + "WHERE e.status = :st AND e.inquiryOnly = false "
+            + "AND e.scheduledStartAt IS NOT NULL "
+            + "AND e.creditsSettledAt IS NULL "
+            + "AND (LOWER(e.requester.email) = LOWER(:email) OR LOWER(s.owner.email) = LOWER(:email))")
+    List<ExchangeRequest> findOpenPreSessionConfirmationsForParticipant(
+            @Param("st") ExchangeRequestStatus st,
+            @Param("email") String email
+    );
+
+    @EntityGraph(attributePaths = {"skill", "skill.owner", "requester"})
+    @Query("SELECT e FROM ExchangeRequest e WHERE e.status = :st "
+            + "AND e.inquiryOnly = false "
+            + "AND e.preSessionBothConfirmedAt IS NOT NULL "
+            + "AND e.creditsSettledAt IS NULL")
+    List<ExchangeRequest> findPendingSessionCreditSettlement(
+            @Param("st") ExchangeRequestStatus st
+    );
     @EntityGraph(attributePaths = {"skill", "skill.owner", "requester"})
     @Query("SELECT e FROM ExchangeRequest e JOIN e.skill s " +
             "WHERE e.status = :st " +

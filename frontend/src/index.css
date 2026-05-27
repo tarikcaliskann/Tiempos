@@ -3695,11 +3695,365 @@ html.dark {
   color: #8b8b9a !important;
 }
 
+/* Portal hedefi: #root transform/overflow zincirinden bağımsız sabit UI */
+#tiempos-overlays {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  pointer-events: none;
+  contain: none;
+}
+
+/* Seans öncesi onay — sağ altta yüzen kart */
+@keyframes tiempos-session-pre-dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tiempos-session-pre-dock-root {
+  position: fixed;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tiempos-session-pre-dock-stack {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(20rem, calc(100vw - 1.5rem));
+  max-height: min(32rem, calc(100dvh - 5.5rem));
+  overflow-y: auto;
+  scrollbar-width: thin;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+.tiempos-session-pre-dock-root--minimized .tiempos-session-pre-dock-stack {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.5rem);
+}
+
+.tiempos-session-pre-dock-tab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 2.25rem;
+  min-height: 5.5rem;
+  padding: 0.625rem 0.375rem;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow:
+    -4px 0 12px rgb(0 0 0 / 0.12),
+    0 8px 20px -6px rgb(0 0 0 / 0.2);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background 0.15s ease,
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+.tiempos-session-pre-dock-tab:hover {
+  background: color-mix(in srgb, var(--muted) 40%, var(--card));
+  transform: translateY(-50%) translateX(-3px);
+}
+.tiempos-session-pre-dock-tab:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.tiempos-session-pre-dock-tab__label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  max-height: 4.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tiempos-session-pre-dock-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.tiempos-session-pre-dock-root:not(.tiempos-session-pre-dock-root--minimized) .tiempos-session-pre-dock-tab {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(100%);
+}
+
+.tiempos-session-pre-dock-card {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.12),
+    0 12px 28px -6px rgb(0 0 0 / 0.28);
+  animation: tiempos-session-pre-dock-in 0.35s ease-out;
+}
+.dark .tiempos-session-pre-dock-card {
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.35),
+    0 16px 32px -8px rgb(0 0 0 / 0.55);
+}
+.tiempos-session-pre-dock-card--preview {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+}
+.tiempos-session-pre-dock-card--cancel-survey {
+  border-color: color-mix(in srgb, var(--muted-foreground) 25%, var(--border));
+  background: color-mix(in srgb, var(--muted) 18%, var(--card));
+}
+.tiempos-session-pre-dock-card__reason-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+.tiempos-session-pre-dock-card__reason-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tiempos-session-pre-dock-card__reason-option:has(input:checked) {
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.tiempos-session-pre-dock-card__reason-option input {
+  accent-color: var(--primary);
+}
+.tiempos-session-pre-dock-card--feedback {
+  border-color: color-mix(in srgb, var(--amber-500, #f59e0b) 35%, var(--border));
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--card) 92%, #f59e0b 8%) 0%,
+    var(--card) 55%
+  );
+}
+.tiempos-session-pre-dock-card__feedback-meta {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+}
+.tiempos-session-pre-dock-card__profile-link {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+}
+.tiempos-session-pre-dock-card__profile-link:hover {
+  text-decoration: underline;
+}
+
+.tiempos-session-pre-dock-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.tiempos-session-pre-dock-card__head-main {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+.tiempos-session-pre-dock-card__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.tiempos-session-pre-dock-card__subtitle {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--muted-foreground);
+}
+.tiempos-session-pre-dock-card__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.tiempos-session-pre-dock-card__close:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.tiempos-session-pre-dock-card__skill {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.tiempos-session-pre-dock-card__time {
+  margin: 0.125rem 0 0;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+}
+.tiempos-session-pre-dock-card__status {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+  font-size: 0.6875rem;
+}
+.tiempos-session-pre-dock-card__status--highlight {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+  background: color-mix(in srgb, var(--primary) 8%, var(--muted));
+}
+.tiempos-session-pre-dock-card__status-title {
+  margin: 0 0 0.375rem;
+  font-weight: 600;
+  font-size: 0.6875rem;
+}
+.tiempos-session-pre-dock-card__status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+.tiempos-session-pre-dock-card__status-row + .tiempos-session-pre-dock-card__status-row {
+  margin-top: 0.25rem;
+}
+.tiempos-session-pre-dock-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tiempos-session-pre-dock-card__actions > * {
+  flex: 1 1 45%;
+  min-width: 0;
+}
+.tiempos-session-pre-dock-card__hint {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+}
+.tiempos-session-pre-dock-card__countdown {
+  text-align: center;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.tiempos-session-pre-dock-card__countdown-label {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+}
+.tiempos-session-pre-dock-card__countdown-value {
+  margin: 0.25rem 0 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.tiempos-session-pre-dock-card__quick-rating {
+  display: flex;
+  justify-content: center;
+  padding: 0.25rem 0 0.5rem;
+}
+.tiempos-session-pre-dock-card__optional-toggle {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary);
+  cursor: pointer;
+  text-align: left;
+}
+.tiempos-session-pre-dock-card__optional-toggle:hover {
+  text-decoration: underline;
+}
+.tiempos-session-pre-dock-card__report-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.tiempos-session-pre-dock-card__report-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 4rem;
+}
+.tiempos-session-pre-dock-card__report-input:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.tiempos-session-pre-dock-card__preview-tag {
+  margin: 0 0 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
 /* --- App shell: yükseklik zinciri (#root → route → PageLayout) --- */
 html,
 body {
   height: 100%;
+  min-height: 100dvh;
   margin: 0;
+}
+html.dark body {
+  /* Auth / kısa sayfalarda flex zinciri altında kalan boşlukta siyah şerit yerine nötr ton */
+  background-color: #1e1b4b;
 }
 #root {
   height: 100%;

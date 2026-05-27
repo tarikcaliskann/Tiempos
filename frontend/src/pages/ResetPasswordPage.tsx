@@ -5,6 +5,7 @@ import { Label } from "../components/ui/label";
 import { CheckCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import type { PageType } from "../App";
 import { useLanguage } from "../contexts/LanguageContext";
+import { AuthPageShell } from "../components/auth/AuthPageShell";
 import { BrandLogo } from "../components/common/BrandLogo";
 import { resetPasswordRequest } from "../api/auth";
 import { apiErrorDisplayMessage } from "../api/client";
@@ -48,30 +49,29 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
   const passwordLengthValid = password.length >= 8;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <AuthPageShell>
+        <div className="mb-4 text-center min-[height:760px]:mb-8">
           <button 
             onClick={() => onNavigate?.("landing")}
-            className="inline-flex items-center gap-2 mb-4"
+            className="mb-3 inline-flex items-center gap-2 min-[height:760px]:mb-4"
           >
-            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm min-[height:760px]:h-14 min-[height:760px]:w-14">
               <BrandLogo className="h-full w-full object-cover" />
             </div>
-            <span className="text-2xl text-white">Tiempos</span>
+            <span className="text-xl text-white min-[height:760px]:text-2xl">Tiempos</span>
           </button>
-          <h1 className="text-3xl text-white mb-2">
+          <h1 className="mb-1 text-2xl text-white min-[height:760px]:mb-2 min-[height:760px]:text-3xl">
             {passwordReset ? a.titleDone : a.title}
           </h1>
-          <p className="text-white/80">
+          <p className="text-sm text-white/80 min-[height:760px]:text-base">
             {passwordReset ? a.subtitleDone : a.subtitle}
           </p>
         </div>
 
-        <div className="rounded-3xl bg-card p-8 text-card-foreground shadow-2xl">
+        <div className="rounded-3xl bg-card p-5 text-card-foreground shadow-2xl sm:p-8">
           {!passwordReset ? (
             <>
-              <form className="space-y-5" onSubmit={(e) => void handleSubmit(e)}>
+              <form className="space-y-4 max-[height:700px]:space-y-3" onSubmit={(e) => void handleSubmit(e)}>
                 <div>
                   <Label htmlFor="email">{t.auth.login.email}</Label>
                   <Input
@@ -176,7 +176,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
 
                 <Button 
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-6"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
                   disabled={!passwordsMatch || !passwordLengthValid || !email || code.length < 6 || loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -184,7 +184,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                 </Button>
               </form>
 
-              <div className="mt-6 rounded-xl border border-border bg-muted/50 p-4">
+              <div className="mt-4 rounded-xl border border-border bg-muted/50 p-3 min-[height:760px]:mt-6 min-[height:760px]:p-4">
                 <p className="mb-2 text-sm text-foreground/90">
                   {a.reqTitle}
                 </p>
@@ -213,7 +213,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                 </p>
 
                 <Button 
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-6"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
                   onClick={() => onNavigate?.("login")}
                 >
                   {a.continueSignIn}
@@ -222,7 +222,6 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
             </>
           )}
         </div>
-      </div>
-    </div>
+    </AuthPageShell>
   );
 }

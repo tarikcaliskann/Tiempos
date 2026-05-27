@@ -7,13 +7,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { fetchSession, logoutRequest } from "../api/auth";
 import { fetchMyProfile } from "../api/user";
 
 const AUTH_STORAGE_KEY = "tiempos_auth";
 const AUTH_SESSION_KEY = "tiempos_auth_session";
 const LEGACY_USER_KEY = "tiempos_user";
 
-/** localStorage ~5MB; base64 profil fotoğrafı diske yazılmaz (API tek kaynak). Bellekte tam URL kalır. */
+/** Bellekte Bearer (eski oturum); yeni oturumlar HttpOnly çerez kullanır. */
 function userForLocalStorage(u: AuthUser): AuthUser {
   const av = u.avatarUrl;
   if (av != null && av.startsWith("data:")) {
@@ -23,93 +24,83 @@ function userForLocalStorage(u: AuthUser): AuthUser {
 }
 
 export type AuthUser = {
-  /** Backend user id (UUID string) when logged in via API */
   id?: string;
   name: string;
   email: string;
   role?: string;
-  /** Profil fotoğrafı (data URL veya URL), isteğe bağlı */
   avatarUrl?: string | null;
 };
 
 type AuthContextValue = {
   user: AuthUser | null;
+  /** Opsiyonel Bearer; çoğu istekte HttpOnly çerez yeterli. */
   token: string | null;
   isAuthenticated: boolean;
-  login: (user: AuthUser, token: string, rememberMe?: boolean) => void;
+  authReady: boolean;
+  login: (user: AuthUser, token?: string | null, rememberMe?: boolean) => void;
   logout: () => void;
-  /** Oturumdaki kullanıcıyı günceller (ör. profil kaydından sonra ad). */
   patchUser: (patch: Partial<AuthUser>) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readStoredSession(): { user: AuthUser; token: string } | null {
-  const tryParse = (raw: string | null) => {
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as {
-      token?: string;
-      user?: AuthUser;
-    };
-    if (parsed?.token && parsed?.user?.email && parsed?.user?.name) {
-      return { token: parsed.token, user: parsed.user };
-    }
-    return null;
-  };
-
+function readLegacyStoredUser(): AuthUser | null {
   try {
-    const persistent = tryParse(localStorage.getItem(AUTH_STORAGE_KEY));
-    if (persistent) return persistent;
-
-    const session = tryParse(sessionStorage.getItem(AUTH_SESSION_KEY));
-    if (session) return session;
-
-    if (localStorage.getItem(LEGACY_USER_KEY)) {
-      localStorage.removeItem(LEGACY_USER_KEY);
-    }
+    const tryParse = (raw: string | null) => {
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { user?: AuthUser; token?: string };
+      if (parsed?.user?.email && parsed?.user?.name) {
+        return parsed.user;
+      }
+      return null;
+    };
+    return (
+      tryParse(localStorage.getItem(AUTH_STORAGE_KEY)) ??
+      tryParse(sessionStorage.getItem(AUTH_SESSION_KEY))
+    );
   } catch {
-    /* ignore */
+    return null;
   }
-  return null;
+}
+
+function clearLegacyAuthStorage() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  sessionStorage.removeItem(AUTH_SESSION_KEY);
+  localStorage.removeItem(LEGACY_USER_KEY);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window === "undefined") return null;
-    return readStoredSession()?.user ?? null;
-  });
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return readStoredSession()?.token ?? null;
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  const persistUserOnly = useCallback((next: AuthUser, rememberMe: boolean) => {
+    const payload = JSON.stringify({ user: userForLocalStorage(next) });
+    if (rememberMe) {
+      localStorage.setItem(AUTH_STORAGE_KEY, payload);
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+    } else {
+      sessionStorage.setItem(AUTH_SESSION_KEY, payload);
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, []);
 
   const login = useCallback(
-    (next: AuthUser, nextToken: string, rememberMe = true) => {
-      const payload = JSON.stringify({
-        user: userForLocalStorage(next),
-        token: nextToken,
-      });
-
+    (next: AuthUser, nextToken?: string | null, rememberMe = true) => {
       setUser(next);
-      setToken(nextToken);
-      if (rememberMe) {
-        localStorage.setItem(AUTH_STORAGE_KEY, payload);
-        sessionStorage.removeItem(AUTH_SESSION_KEY);
-      } else {
-        sessionStorage.setItem(AUTH_SESSION_KEY, payload);
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-      }
-      localStorage.removeItem(LEGACY_USER_KEY);
+      setToken(nextToken?.trim() ? nextToken.trim() : null);
+      persistUserOnly(next, rememberMe);
     },
-    [],
+    [persistUserOnly],
   );
 
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    sessionStorage.removeItem(AUTH_SESSION_KEY);
-    localStorage.removeItem(LEGACY_USER_KEY);
+    clearLegacyAuthStorage();
+    void logoutRequest().catch(() => {
+      /* ağ hatası — yerel durum zaten temiz */
+    });
   }, []);
 
   useEffect(() => {
@@ -119,42 +110,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("tiempos:auth-expired", onAuthExpired);
   }, [logout]);
 
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const session = await fetchSession();
+        if (cancelled) return;
+        setUser({
+          id: session.userId,
+          name: session.fullName,
+          email: session.email,
+          role: session.role,
+        });
+        setToken(null);
+        clearLegacyAuthStorage();
+      } catch {
+        const legacy = readLegacyStoredUser();
+        if (!cancelled && legacy) {
+          setUser(legacy);
+        }
+      } finally {
+        if (!cancelled) setAuthReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const patchUser = useCallback((patch: Partial<AuthUser>) => {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...patch };
       try {
-        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+        const raw =
+          localStorage.getItem(AUTH_STORAGE_KEY) ??
+          sessionStorage.getItem(AUTH_SESSION_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw) as {
-            token?: string;
-            user?: AuthUser;
-          };
-          if (parsed?.token) {
-            localStorage.setItem(
-              AUTH_STORAGE_KEY,
-              JSON.stringify({
-                user: userForLocalStorage(next),
-                token: parsed.token,
-              }),
-            );
-          }
-        }
-        const sessionRaw = sessionStorage.getItem(AUTH_SESSION_KEY);
-        if (sessionRaw) {
-          const parsed = JSON.parse(sessionRaw) as {
-            token?: string;
-            user?: AuthUser;
-          };
-          if (parsed?.token) {
-            sessionStorage.setItem(
-              AUTH_SESSION_KEY,
-              JSON.stringify({
-                user: userForLocalStorage(next),
-                token: parsed.token,
-              }),
-            );
-          }
+          const storage = localStorage.getItem(AUTH_STORAGE_KEY)
+            ? localStorage
+            : sessionStorage;
+          storage.setItem(
+            storage === localStorage ? AUTH_STORAGE_KEY : AUTH_SESSION_KEY,
+            JSON.stringify({ user: userForLocalStorage(next) }),
+          );
         }
       } catch {
         /* ignore */
@@ -163,9 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  /** Eski kayıtlı oturumlarda `id` eksik olabilir; UUID olmadan talep sahibi eşleşmesi çalışmaz (ör. mesajlar rezervasyon modalı). */
   useEffect(() => {
-    if (!token || !user || user.id) return;
+    if (!authReady || !user || user.id) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -174,24 +172,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           patchUser({ id: p.id });
         }
       } catch {
-        /* ağ / 401 — sessiz */
+        /* ignore */
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [token, user, patchUser]);
+  }, [authReady, user, token, patchUser]);
 
   const value = useMemo(
     () => ({
       user,
       token,
-      isAuthenticated: user !== null && token !== null,
+      isAuthenticated: user !== null,
+      authReady,
       login,
       logout,
       patchUser,
     }),
-    [user, token, login, logout, patchUser],
+    [user, token, authReady, login, logout, patchUser],
   );
 
   return (

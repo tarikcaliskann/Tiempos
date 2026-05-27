@@ -8,9 +8,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reviews", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "exchange_request_id")
-})
+@Table(
+        name = "reviews",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"exchange_request_id", "reviewer_id"})
+        }
+)
 public class Review {
 
     @Id

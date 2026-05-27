@@ -14,6 +14,8 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { formatTemplate } from "../language";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { apiErrorDisplayMessage } from "../api/client";
 import { fetchMyDashboard, type UserDashboardDto } from "../api/user";
 import {
   fetchReceivedExchangeRequests,
@@ -78,8 +80,11 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
       try {
         const data = await fetchMyDashboard(token);
         if (!cancelled) setDash(data);
-      } catch {
-        if (!cancelled) setDash(null);
+      } catch (err) {
+        if (!cancelled) {
+          setDash(null);
+          toast.error(apiErrorDisplayMessage(err, d.loadError));
+        }
       }
     };
     void loadDashboard();
@@ -111,8 +116,11 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         if (!cancelled) setUpcoming(accepted);
-      } catch {
-        if (!cancelled) setUpcoming([]);
+      } catch (err) {
+        if (!cancelled) {
+          setUpcoming([]);
+          toast.error(apiErrorDisplayMessage(err, d.loadError));
+        }
       }
     };
     void loadUpcoming();

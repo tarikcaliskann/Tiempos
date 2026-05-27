@@ -105,7 +105,7 @@ function PackageCard({
   onSelect: () => void;
 }) {
   const features =
-    b.packageFeatures[pkg.id as keyof typeof b.packageFeatures] ?? pkg.features;
+    b.packageFeatures[pkg.id as keyof typeof b.packageFeatures] ?? [];
   const badge =
     pkg.badge && (b.badges[pkg.id as keyof typeof b.badges] ?? pkg.badge);
 

@@ -105,6 +105,37 @@ CREATE DATABASE timebank OWNER timebank_user;
 | `npm run docker:db` | Docker: sadece PostgreSQL |
 | `npm run docker:down` | Docker servislerini durdur |
 | `npm run docker:stop-api` | Sadece API konteynerini durdurur (8080 boşalır; yerel `backend:run` için) |
+| `npm run test:unit` | Frontend birim testleri (Vitest) |
+| `npm run test:e2e` | Frontend smoke e2e (Playwright + `vite preview`) |
+| `npm run test:backend` | Backend entegrasyon testleri (Testcontainers; Docker gerekir) |
+| `npm run ci` | Lint + unit + build + backend test (yerelde tam CI benzeri) |
+
+## Canlı yapılandırma (Render API)
+
+`application.properties` varsayılanları üretim içindir. Render’da API servisinde önerilen ortam değişkenleri:
+
+| Değişken | Canlı değer |
+|----------|-------------|
+| `TIEMPOS_PRE_SESSION_DEMO` | `false` (varsayılan) |
+| `PAYMENT_MODE` | `redirect` |
+| `PAYMENT_REDIRECT_URL_TEMPLATE` | PSP checkout URL (`{sessionId}`, `{amountTry}`, `{packageId}`, `{returnUrl}`) |
+| `JPA_SHOW_SQL` | `false` (varsayılan) |
+| `CORS_ALLOWED_ORIGINS` | `https://www.tiempos.site,https://tiempos.site` |
+
+Yerelde `SPRING_PROFILES_ACTIVE=local` (`.env.example`) → demo ödeme, SQL log, geniş CORS, seans onayı demo penceresi.
+
+## Test ve CI
+
+**GitHub Actions** (`.github/workflows/ci.yml`): her push/PR’da backend `mvn test` (Docker + Testcontainers) ve frontend lint, Vitest, production build, Playwright smoke.
+
+Yerelde backend testleri için **Docker Desktop** açık olmalı; kapalıysa Testcontainers testleri atlanır (`disabledWithoutDocker`).
+
+```bash
+npm run test:unit          # frontend
+npm run test:backend       # backend (Docker)
+npm run test:e2e           # playwright (build sonrası preview)
+npm run ci                 # lint + unit + build + backend
+```
 
 İsteğe bağlı: `frontend/.env` → `VITE_API_BASE_URL=http://localhost:8080`
 

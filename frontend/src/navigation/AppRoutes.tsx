@@ -84,15 +84,9 @@ function AppRoutesContent() {
 
   const openSkill = useCallback(
     (skillId: string) => {
-      if (!isAuthenticated) {
-        navigate(PATHS.login, {
-          state: { from: { pathname: PATHS.skill(skillId) } },
-        });
-        return;
-      }
       navigate(PATHS.skill(skillId));
     },
-    [isAuthenticated, navigate],
+    [navigate],
   );
 
   const openEditSkill = useCallback(
@@ -293,11 +287,7 @@ function AppRoutesContent() {
       />
       <Route
         path="/u/:userId"
-        element={
-          <ProtectedRoute>
-            <PublicUserProfilePage onNavigate={onPage} />
-          </ProtectedRoute>
-        }
+        element={<PublicUserProfilePage onNavigate={onPage} />}
       />
 
       <Route path="*" element={<NotFoundPage onNavigate={onPage} />} />

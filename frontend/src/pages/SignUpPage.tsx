@@ -18,6 +18,7 @@ import {
 import { apiErrorDisplayMessage } from "../api/client";
 import { formatTemplate } from "../language";
 import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
+import { AuthPageShell } from "../components/auth/AuthPageShell";
 import { BrandLogo } from "../components/common/BrandLogo";
 
 const RESEND_COOLDOWN_SEC = 60;
@@ -162,25 +163,24 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <AuthPageShell>
+        <div className="mb-4 text-center min-[height:760px]:mb-8">
           <button 
             onClick={() => onNavigate?.("landing")}
-            className="inline-flex items-center gap-2 mb-4"
+            className="mb-3 inline-flex items-center gap-2 min-[height:760px]:mb-4"
           >
-            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm min-[height:760px]:h-14 min-[height:760px]:w-14">
               <BrandLogo className="h-full w-full object-cover" />
             </div>
-            <span className="text-2xl text-white">Tiempos</span>
+            <span className="text-xl text-white min-[height:760px]:text-2xl">Tiempos</span>
           </button>
-          <h1 className="text-3xl text-white mb-2">{a.title}</h1>
-          <p className="text-white/80">{a.subtitle}</p>
+          <h1 className="mb-1 text-2xl text-white min-[height:760px]:mb-2 min-[height:760px]:text-3xl">{a.title}</h1>
+          <p className="text-sm text-white/80 min-[height:760px]:text-base">{a.subtitle}</p>
         </div>
 
-        <div className="rounded-3xl bg-card p-8 text-card-foreground shadow-2xl">
+        <div className="rounded-3xl bg-card p-5 text-card-foreground shadow-2xl sm:p-8">
           {awaitingVerification ? (
-            <div className="space-y-4">
+            <div className="space-y-4 max-[height:700px]:space-y-3">
               <div className="text-center">
                 <h2 className="text-xl font-semibold text-foreground">{a.verifySentTitle}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{a.verifySentBody}</p>
@@ -265,7 +265,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
           ) : null}
           {!awaitingVerification ? (
           <>
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-4 max-[height:700px]:space-y-3" onSubmit={handleSubmit}>
             <div>
               <Label htmlFor="name">{a.fullName}</Label>
               <Input
@@ -345,13 +345,13 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-6"
+              className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
             >
               {loading ? t.common.loading : a.createAccount}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center min-[height:760px]:mt-6">
             <p className="text-sm text-muted-foreground">
               {a.hasAccount}{" "}
               <button 
@@ -365,7 +365,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
             </p>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-4 min-[height:760px]:mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border"></div>
@@ -375,7 +375,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-4 min-[height:760px]:mt-6">
               <GoogleSignInButton
                 disabled={loading}
                 onError={(msg) => {
@@ -402,7 +402,6 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
           </>
           ) : null}
         </div>
-      </div>
-    </div>
+    </AuthPageShell>
   );
 }

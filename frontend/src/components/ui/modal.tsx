@@ -7,13 +7,15 @@ interface ModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  /** false: arka plan tıklaması kapatmaz (zorunlu onay diyalogları) */
+  closeOnBackdropClick?: boolean;
 }
 
 /**
  * Tam ekran diyalog. `document.body` üzerine portallanır (stacking / overflow sorunlarını azaltır).
  * z-index: 1200–1201 — sayfa içeriği üstünde; takvim popover’ı (PopoverContent ~1300) modal panelinin üstünde kalır.
  */
-export function Modal({ open, onOpenChange, children }: ModalProps) {
+export function Modal({ open, onOpenChange, children, closeOnBackdropClick = true }: ModalProps) {
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -34,7 +36,11 @@ export function Modal({ open, onOpenChange, children }: ModalProps) {
     >
       <div
         className="fixed inset-0 z-[1200] bg-black/50 backdrop-blur-sm dark:bg-black/70"
-        onClick={() => onOpenChange(false)}
+        onClick={() => {
+          if (closeOnBackdropClick) {
+            onOpenChange(false);
+          }
+        }}
         aria-hidden
       />
       <div

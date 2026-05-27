@@ -32,10 +32,10 @@ export type UpdateUserProfileBody = {
   avatarUrl?: string | null;
 };
 
-export function fetchMyProfile(token: string) {
+export function fetchMyProfile(token?: string | null) {
   return apiFetch<UserProfileDto>("/api/users/me/profile", {
     method: "GET",
-    token,
+    token: token ?? undefined,
   });
 }
 
@@ -96,10 +96,10 @@ export type PublicUserProfileDto = {
   totalReviews: number;
 };
 
-export function fetchPublicUserProfile(token: string, userId: string) {
+export function fetchPublicUserProfile(userId: string, token?: string | null) {
   return apiFetch<PublicUserProfileDto>(`/api/users/${encodeURIComponent(userId)}/public`, {
     method: "GET",
-    token,
+    token: token ?? undefined,
   });
 }
 

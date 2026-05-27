@@ -7,13 +7,15 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * Flyway migrasyonlarından sonra ek güvence (eski volume'larda eksik sütun).
- * flywayInitializer bean adına bağlanma — Spring Boot sürümüne göre değişebilir.
+ * Üretimde kapalı — {@code tiempos.schema-patch.enabled=false}.
  */
 @Component
+@ConditionalOnProperty(name = "tiempos.schema-patch.enabled", havingValue = "true")
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
 public class UserSchemaPatch implements ApplicationRunner {
 

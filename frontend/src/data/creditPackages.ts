@@ -1,4 +1,4 @@
-/** Zaman kredisi paketleri — görüntüleme; fiyat/dakika sunucuda doğrulanır */
+/** Zaman kredisi paketleri — görüntüleme; fiyat/dakika sunucuda doğrulanır. Metinler locale dosyalarında. */
 export interface CreditPackage {
   id: string;
   hours: number;
@@ -6,7 +6,6 @@ export interface CreditPackage {
   discountedPrice: number;
   discount: number;
   badge?: string;
-  features: string[];
 }
 
 export const CREDIT_PACKAGES: CreditPackage[] = [
@@ -16,12 +15,6 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     originalPrice: 100,
     discountedPrice: 100,
     discount: 0,
-    features: [
-      "1 saatlik zaman kredisi",
-      "Tüm becerilere erişim",
-      "Anında aktivasyon",
-      "7/24 destek",
-    ],
   },
   {
     id: "popular",
@@ -30,13 +23,6 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     discountedPrice: 150,
     discount: 25,
     badge: "En Popüler",
-    features: [
-      "2 saatlik zaman kredisi",
-      "Tüm becerilere erişim",
-      "Anında aktivasyon",
-      "7/24 öncelikli destek",
-      "Bonus: +15 dakika hediye",
-    ],
   },
   {
     id: "premium",
@@ -45,14 +31,6 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     discountedPrice: 350,
     discount: 30,
     badge: "En Avantajlı",
-    features: [
-      "5 saatlik zaman kredisi",
-      "Tüm becerilere erişim",
-      "Anında aktivasyon",
-      "7/24 öncelikli destek",
-      "Bonus: +1 saat hediye",
-      "Özel etkinliklere erişim",
-    ],
   },
   {
     id: "ultimate",
@@ -60,15 +38,6 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     originalPrice: 1000,
     discountedPrice: 600,
     discount: 40,
-    features: [
-      "10 saatlik zaman kredisi",
-      "Tüm becerilere erişim",
-      "Anında aktivasyon",
-      "7/24 VIP destek",
-      "Bonus: +2 saat hediye",
-      "Özel etkinliklere erişim",
-      "1 aylık premium üyelik",
-    ],
   },
 ];
 

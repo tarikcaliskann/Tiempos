@@ -1,6 +1,7 @@
 package com.timebank.timebank.review;
 
 import com.timebank.timebank.review.dto.CreateReviewRequest;
+import com.timebank.timebank.review.dto.PendingReviewDockResponse;
 import com.timebank.timebank.review.dto.ReviewResponse;
 import com.timebank.timebank.review.dto.UserRatingSummaryResponse;
 import jakarta.validation.Valid;
@@ -57,6 +58,16 @@ public class ReviewController {
     public ResponseEntity<UserRatingSummaryResponse> getMyGivenReviewsSummary(Authentication authentication) {
         return ResponseEntity.ok(
                 reviewService.getRatingSummaryForReviewsGiven(authentication.getName())
+        );
+    }
+
+    /** Tamamlanan / kısmi biten oturumlar için bekleyen değerlendirme kartları (sağ dock). */
+    @GetMapping("/pending-dock")
+    public ResponseEntity<List<PendingReviewDockResponse>> listPendingReviewsForDock(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                reviewService.listPendingReviewsForDock(authentication.getName())
         );
     }
 }

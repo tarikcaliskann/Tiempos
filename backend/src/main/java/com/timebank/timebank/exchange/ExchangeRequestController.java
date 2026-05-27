@@ -1,9 +1,13 @@
 package com.timebank.timebank.exchange;
 
+import com.timebank.timebank.exchange.dto.CancelSurveyRequest;
 import com.timebank.timebank.exchange.dto.CreateExchangeMessageRequest;
 import com.timebank.timebank.exchange.dto.CreateExchangeRequestRequest;
 import com.timebank.timebank.exchange.dto.ExchangeMessageResponse;
 import com.timebank.timebank.exchange.dto.ExchangeRequestResponse;
+import com.timebank.timebank.exchange.dto.PendingCancelSurveyDockResponse;
+import com.timebank.timebank.exchange.dto.PreSessionDecisionRequest;
+import com.timebank.timebank.exchange.dto.SessionProblemReportRequest;
 import com.timebank.timebank.exchange.dto.UpdateSessionMeetingRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -157,6 +161,27 @@ public class ExchangeRequestController {
         );
     }
 
+    @GetMapping("/pre-session-open")
+    public ResponseEntity<List<ExchangeRequestResponse>> listOpenPreSessionConfirmations(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                exchangeRequestService.listOpenPreSessionConfirmations(authentication.getName())
+        );
+    }
+
+    @PostMapping("/{requestId}/pre-session-response")
+    public ResponseEntity<ExchangeRequestResponse> submitPreSessionResponse(
+            @PathVariable UUID requestId,
+            @Valid @RequestBody PreSessionDecisionRequest req,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                exchangeRequestService.submitPreSessionResponse(
+                        requestId, authentication.getName(), req.getDecision())
+        );
+    }
+
     @PostMapping("/{requestId}/ack-owner-attendance")
     public ResponseEntity<ExchangeRequestResponse> acknowledgeOwnerAttendance(
             @PathVariable UUID requestId,
@@ -167,5 +192,36 @@ public class ExchangeRequestController {
                         requestId, authentication.getName()
                 )
         );
+    }
+
+    @PostMapping("/{requestId}/report-session-problem")
+    public ResponseEntity<ExchangeRequestResponse> reportSessionProblem(
+            @PathVariable UUID requestId,
+            @Valid @RequestBody SessionProblemReportRequest req,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                exchangeRequestService.reportSessionProblem(
+                        requestId, req, authentication.getName())
+        );
+    }
+
+    @GetMapping("/pending-cancel-survey")
+    public ResponseEntity<List<PendingCancelSurveyDockResponse>> listPendingCancelSurveys(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                exchangeRequestService.listPendingCancelSurveysForDock(authentication.getName())
+        );
+    }
+
+    @PostMapping("/{requestId}/cancel-survey")
+    public ResponseEntity<Void> submitCancelSurvey(
+            @PathVariable UUID requestId,
+            @Valid @RequestBody CancelSurveyRequest req,
+            Authentication authentication
+    ) {
+        exchangeRequestService.submitCancelSurvey(requestId, req, authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 }
