@@ -11,8 +11,8 @@ import '../app/app_state.dart';
 import '../auth/google_sign_in_render_button.dart';
 import '../config/api_config.dart';
 import '../language/auth_l10n.dart';
-import '../theme/app_colors.dart';
 import '../widgets/app_chrome.dart';
+import '../widgets/gradient_stat_card.dart';
 import 'forgot_password_screen.dart';
 import 'reset_password_screen.dart';
 import 'signup_screen.dart';
@@ -81,8 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       if (cfg.clientId.isEmpty) {
         setState(() {
-          _googleWebSetupError =
-              'Google sign-in is not configured on the server (missing client ID).';
+          _googleWebSetupError = AuthL10n.of(context).googleNotConfigured;
           _googleWebSetupInProgress = false;
         });
         return;
@@ -157,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
             setState(() {
               _error = kIsWeb
                   ? AuthL10n.of(context).googleOAuthWebHint(Uri.base.origin)
-                  : 'Google did not return an ID token. Check OAuth web client / authorized JavaScript origins.';
+                  : AuthL10n.of(context).googleNoIdTokenWebCheck;
             });
           }
           return;
@@ -226,8 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final cfg = await fetchGoogleAuthConfig();
       if (cfg.clientId.isEmpty) {
         setState(() {
-          _error =
-              'Google sign-in is not configured on the server (missing client ID).';
+          _error = AuthL10n.of(context).googleNotConfigured;
         });
         return;
       }
@@ -235,8 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!GoogleSignIn.instance.supportsAuthenticate()) {
         setState(() {
-          _error =
-              'Google sign-in is not available on this device. Try updating the app or use email sign-in.';
+          _error = AuthL10n.of(context).googleNotAvailableDevice;
         });
         return;
       }
@@ -247,8 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final idToken = account.authentication.idToken;
       if (idToken == null || idToken.isEmpty) {
         setState(() {
-          _error =
-              'Google did not return an ID token. For Android/iOS, ensure the Web OAuth client ID is set as serverClientId (backend GOOGLE_CLIENT_ID).';
+          _error = AuthL10n.of(context).googleNoIdTokenNative;
         });
         return;
       }
@@ -283,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'Preparing Google sign-in…',
+              a.preparingGoogle,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -315,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       unawaited(_setupGoogleWebIfNeeded());
                     },
               child: Text(
-                'Retry',
+                a.retry,
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
             ),
@@ -359,20 +355,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     final a = AuthL10n.of(context);
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          DecoratedBox(
-            decoration: const BoxDecoration(gradient: AppChrome.heroGradientLinear),
-            child: SafeArea(
+      resizeToAvoidBottomInset: true,
+      body: AppChrome.authScreenBackdrop(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 22),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Tiempos',
+                      a.appBrandName,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 28,
@@ -393,32 +389,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(top: -20),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 20,
-                    offset: const Offset(0, -6),
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-                  child: Center(
+            Expanded(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Transform.translate(
+                  offset: const Offset(0, -10),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 400),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
+                      child: AppChrome.webStyleAuthCard(
+                        theme: theme,
+                        child: SafeArea(
+                          top: false,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
                           _buildGoogleEntry(theme, a),
                   const SizedBox(height: 22),
                   Row(
@@ -452,7 +440,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     autocorrect: false,
                     decoration: InputDecoration(
                       labelText: a.email,
-                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -461,7 +448,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: a.password,
-                      border: const OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _loading ? null : _submit(),
                   ),
@@ -527,25 +513,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ],
                   const SizedBox(height: 24),
-                  FilledButton(
+                  GradientCtaButton(
+                    label: a.signIn,
+                    icon: Icons.login_rounded,
+                    busy: _loading,
                     onPressed: _loading ? null : _submit,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: AppColors.primary,
-                    ),
-                    child: _loading
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            a.signIn,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
-                          ),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -566,15 +538,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
                     ),
                   ),
-                        ],
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

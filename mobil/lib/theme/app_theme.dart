@@ -28,6 +28,12 @@ abstract final class AppTheme {
       inputDecorationTheme: _inputDecorationLight(),
       chipTheme: _chipThemeLight(),
       segmentedButtonTheme: _segmentedLight(),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.lightCard,
         elevation: 4,
@@ -61,6 +67,12 @@ abstract final class AppTheme {
       inputDecorationTheme: _inputDecorationDark(),
       chipTheme: _chipThemeDark(),
       segmentedButtonTheme: _segmentedDark(),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.darkCard,
         elevation: 0,

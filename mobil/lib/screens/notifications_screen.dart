@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../api/notifications_api.dart';
 import '../app/app_state.dart';
+import '../language/shell_l10n.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_chrome.dart';
 
@@ -28,7 +29,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _load() async {
     final t = widget.appState.token;
-    if (t == null) return;
+    if (t == null) {
+      if (!mounted) return;
+      setState(() {
+        _items = [];
+        _loading = false;
+        _error = null;
+      });
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -73,14 +82,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sh = ShellL10n.of(context);
     return Scaffold(
       appBar: AppChrome.gradientAppBar(
-        title: 'Notifications',
+        title: sh.notificationsTitle,
         actions: [
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.white),
             onPressed: _items.any(isNotificationUnread) ? _markAllRead : null,
-            child: const Text('Mark all read'),
+            child: Text(sh.notificationsMarkAllRead),
           ),
         ],
       ),
@@ -101,7 +111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(height: 80),
                   Center(
                     child: Text(
-                      'No notifications yet.',
+                      sh.notificationsEmpty,
                       style: GoogleFonts.inter(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
                       ),

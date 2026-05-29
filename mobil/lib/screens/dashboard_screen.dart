@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/exchange_api.dart';
 import '../api/user_api.dart';
 import '../app/app_state.dart';
+import '../language/shell_l10n.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_surfaces.dart';
 import '../util/formatting.dart';
 import '../widgets/gradient_stat_card.dart';
 
@@ -89,45 +91,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  List<_StatRow> _statRows() {
+  List<_StatRow> _statRows(ShellL10n s) {
     final d = _dash;
     if (d == null && !_loading) {
-      return const [
-        _StatRow('Hours balance', '—', Icons.schedule_rounded, AppColors.statGradient1),
-        _StatRow('Skills you offer', '—', Icons.menu_book_rounded, AppColors.statGradient2),
-        _StatRow('Requests you sent', '—', Icons.trending_up_rounded, AppColors.statGradient3),
-        _StatRow('Requests you received', '—', Icons.workspace_premium_rounded, AppColors.statGradient4),
+      return [
+        _StatRow(s.statHoursBalance, s.dashPlaceholderDash, Icons.schedule_rounded, AppColors.statGradient1),
+        _StatRow(s.statSkillsOffered, s.dashPlaceholderDash, Icons.menu_book_rounded, AppColors.statGradient2),
+        _StatRow(s.statRequestsSent, s.dashPlaceholderDash, Icons.trending_up_rounded, AppColors.statGradient3),
+        _StatRow(s.statRequestsReceived, s.dashPlaceholderDash, Icons.workspace_premium_rounded, AppColors.statGradient4),
       ];
     }
     if (d == null) {
-      return const [
-        _StatRow('Hours balance', '…', Icons.schedule_rounded, AppColors.statGradient1),
-        _StatRow('Skills you offer', '…', Icons.menu_book_rounded, AppColors.statGradient2),
-        _StatRow('Requests you sent', '…', Icons.trending_up_rounded, AppColors.statGradient3),
-        _StatRow('Requests you received', '…', Icons.workspace_premium_rounded, AppColors.statGradient4),
+      return [
+        _StatRow(s.statHoursBalance, s.dashPlaceholderLoading, Icons.schedule_rounded, AppColors.statGradient1),
+        _StatRow(s.statSkillsOffered, s.dashPlaceholderLoading, Icons.menu_book_rounded, AppColors.statGradient2),
+        _StatRow(s.statRequestsSent, s.dashPlaceholderLoading, Icons.trending_up_rounded, AppColors.statGradient3),
+        _StatRow(s.statRequestsReceived, s.dashPlaceholderLoading, Icons.workspace_premium_rounded, AppColors.statGradient4),
       ];
     }
     return [
       _StatRow(
-        'Hours balance',
+        s.statHoursBalance,
         formatDashCreditsEn(d.timeCreditMinutes),
         Icons.schedule_rounded,
         AppColors.statGradient1,
       ),
       _StatRow(
-        'Skills you offer',
+        s.statSkillsOffered,
         '${d.mySkillsCount}',
         Icons.menu_book_rounded,
         AppColors.statGradient2,
       ),
       _StatRow(
-        'Requests you sent',
+        s.statRequestsSent,
         '${d.sentRequestsCount}',
         Icons.trending_up_rounded,
         AppColors.statGradient3,
       ),
       _StatRow(
-        'Requests you received',
+        s.statRequestsReceived,
         '${d.receivedRequestsCount}',
         Icons.workspace_premium_rounded,
         AppColors.statGradient4,
@@ -135,10 +137,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
   }
 
-  String _welcomeFirstName() {
+  String _welcomeFirstName(ShellL10n s) {
     final fromDash = _dash?.fullName;
     final fromAuth = widget.appState.fullName;
-    return firstNameFromFullName((fromDash ?? fromAuth ?? '').trim().isEmpty ? 'there' : (fromDash ?? fromAuth!));
+    final raw = (fromDash ?? fromAuth ?? '').trim();
+    if (raw.isEmpty) {
+      return firstNameFromFullName(s.dashboardGuestFirstName);
+    }
+    return firstNameFromFullName(raw);
   }
 
   String _partnerName(ExchangeRequestDto ex) {
@@ -151,18 +157,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final stats = _statRows();
+    final sh = ShellL10n.of(context);
+    final stats = _statRows(sh);
 
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: CustomScrollView(
+    final scroll = CustomScrollView(
         clipBehavior: Clip.none,
         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         slivers: [
           SliverToBoxAdapter(
             child: DashboardHero(
-              title: 'Welcome back, ${_welcomeFirstName()}! 👋',
-              subtitle: "Here's what's happening with your learning journey",
+              title: sh.dashboardWelcome(_welcomeFirstName(sh)),
+              subtitle: sh.dashboardSubtitle,
               onOpenNotifications: widget.onOpenNotifications,
               onOpenProfile: widget.onOpenProfile,
             ),
@@ -231,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Upcoming Sessions',
+                                  sh.upcomingSessions,
                                   style: GoogleFonts.inter(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
@@ -242,7 +247,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               FilledButton.tonalIcon(
                                 onPressed: widget.onBrowseSkills,
                                 icon: const Icon(Icons.add, size: 18),
-                                label: const Text('Book New'),
+                                label: Text(sh.bookNew),
                                 style: FilledButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
@@ -258,7 +263,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(height: 14),
                           if (_upcoming.isEmpty)
                             Text(
-                              'No upcoming sessions. Book a skill from Browse when you’re ready.',
+                              sh.noUpcomingSessions,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                 fontSize: 14,
@@ -294,7 +299,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'With ${_partnerName(ex)}',
+                                          sh.dashWithPartner(_partnerName(ex)),
                                           style: GoogleFonts.inter(
                                             fontSize: 13,
                                             color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
@@ -302,7 +307,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Booked: ${formatBookedDurationEn(ex.bookedMinutes)}',
+                                          sh.dashBooked(formatBookedDurationEn(ex.bookedMinutes)),
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
@@ -318,7 +323,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           TextButton(
                             onPressed: widget.onPastSessions,
                             child: Text(
-                              'View All Sessions',
+                              sh.viewAllSessions,
                               style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                             ),
                           ),
@@ -331,7 +336,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Quick Actions',
+                            sh.quickActions,
                             style: GoogleFonts.inter(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -340,27 +345,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           const SizedBox(height: 14),
                           GradientCtaButton(
-                            label: 'Offer a New Skill',
+                            label: sh.offerNewSkill,
                             icon: Icons.add_rounded,
                             onPressed: widget.onOfferSkill,
                           ),
                           const SizedBox(height: 12),
                           _OutlineAction(
-                            label: 'Browse Skills',
+                            label: sh.browseSkills,
                             icon: Icons.menu_book_outlined,
                             onPressed: widget.onBrowseSkills,
                           ),
                           if (widget.onBuyCredits != null) ...[
                             const SizedBox(height: 10),
                             _OutlineAction(
-                              label: 'Buy time credits',
+                              label: sh.buyTimeCredits,
                               icon: Icons.credit_card_outlined,
                               onPressed: widget.onBuyCredits,
                             ),
                           ],
                           const SizedBox(height: 10),
                           _OutlineAction(
-                            label: 'View Past Sessions',
+                            label: sh.viewPastSessions,
                             icon: Icons.history_rounded,
                             onPressed: widget.onPastSessions,
                           ),
@@ -373,7 +378,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Learning Progress',
+                            sh.learningProgress,
                             style: GoogleFonts.inter(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -382,7 +387,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No learning progress to show yet.',
+                            sh.noLearningProgressYet,
                             style: GoogleFonts.inter(
                               fontSize: 14,
                               height: 1.5,
@@ -401,7 +406,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 4)),
         ],
-      ),
+    );
+
+    final body = RefreshIndicator(
+      onRefresh: _load,
+      child: scroll,
+    );
+    if (!isDark) return body;
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: AppSurfaces.darkScaffoldDepth),
+      child: body,
     );
   }
 }

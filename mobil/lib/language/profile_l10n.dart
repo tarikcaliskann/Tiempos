@@ -139,4 +139,20 @@ class ProfileL10n {
   String get twitterLabel => _e('Twitter / X', 'Twitter / X');
   String get twitterHint => _e('@username', '@kullanici');
   String get saveFailed => _e('Could not save profile.', 'Profil kaydedilemedi.');
+
+  // --- Public member profile (viewing someone else) ---
+  String get publicMemberTitle => _e('Member profile', 'Üye profili');
+  String get publicProfileLoading => _e('Loading profile…', 'Profil yükleniyor…');
+  String get publicNotSignedIn => _e('Not signed in', 'Oturum açık değil');
+  String get sectionAbout => _e('ABOUT', 'HAKKINDA');
+  String get sectionDetails => _e('DETAILS', 'DETAYLAR');
+  String get sectionLinks => _e('LINKS', 'BAĞLANTILAR');
+  String get memberSinceLabel => _e('Member since', 'Üyelik tarihi');
+  String get websiteLink => _e('Website', 'Web sitesi');
+  String get linkedInLink => _e('LinkedIn', 'LinkedIn');
+  String get xTwitterLink => _e('X / Twitter', 'X / Twitter');
+  String reviewsCount(int n) => n == 1 ? _e('1 review', '1 değerlendirme') : _e('$n reviews', '$n değerlendirme');
+
+  String get rateThisSession => _e('Rate this session', 'Bu oturumu değerlendir');
+  String get thankYouForReview => _e('Thank you for your review', 'Değerlendirmeniz için teşekkürler');
 }

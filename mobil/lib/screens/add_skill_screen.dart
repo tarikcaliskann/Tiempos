@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/api_exception.dart';
 import '../api/skills_api.dart';
 import '../app/app_state.dart';
+import '../language/skill_flow_l10n.dart';
 import '../util/booking_utils.dart';
 import '../util/skill_description.dart';
 import '../widgets/app_chrome.dart';
@@ -34,8 +35,6 @@ const _dayApi = [
   'SATURDAY',
   'SUNDAY',
 ];
-
-const _dayShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 class AddSkillScreen extends StatefulWidget {
   const AddSkillScreen({super.key, required this.appState, this.skillId});
@@ -161,37 +160,38 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
   List<String> _timeOptions() => buildHalfHourSlots('06:00', '23:30');
 
   Future<void> _submit() async {
+    final sf = SkillFlowL10n.of(context);
     final t = widget.appState.token;
     if (t == null) {
-      setState(() => _error = 'Not signed in');
+      setState(() => _error = sf.errNotSignedIn);
       return;
     }
     if (_title.text.trim().isEmpty) {
-      setState(() => _error = 'Title is required');
+      setState(() => _error = sf.errTitleRequired);
       return;
     }
     if (_sessionTypes.isEmpty) {
-      setState(() => _error = 'Select at least one session type (online / in-person)');
+      setState(() => _error = sf.errSessionType);
       return;
     }
     if (_sessionTypes.any((e) => e.toLowerCase().contains('person')) &&
         _locationText.text.trim().isEmpty) {
-      setState(() => _error = 'In-person location is required when offering in-person sessions');
+      setState(() => _error = sf.errInPersonLocation);
       return;
     }
     if (_selectedDays.isEmpty) {
-      setState(() => _error = 'Select at least one available day');
+      setState(() => _error = sf.errPickDay);
       return;
     }
     if (_startTime.compareTo(_endTime) >= 0) {
-      setState(() => _error = 'Available “until” time must be after “from”');
+      setState(() => _error = sf.errTimeOrder);
       return;
     }
 
     final resolvedCategory =
         _category == 'Other' ? _customCategory.text.trim() : _category;
     if (_category == 'Other' && resolvedCategory.isEmpty) {
-      setState(() => _error = 'Please enter a custom category');
+      setState(() => _error = sf.errCustomCategory);
       return;
     }
 
@@ -206,7 +206,7 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
       sessionTypes: _sessionTypes.toList(),
       inPersonLocation: _locationText.text,
       selectedDaysDisplay: _selectedDays.toList(),
-      dayLabels: _dayShort,
+      dayLabels: List.generate(_dayApi.length, (i) => sf.dayShort(i)),
       startTime: _startTime,
       endTime: _endTime,
       tags: tagList,
@@ -251,11 +251,12 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sf = SkillFlowL10n.of(context);
     final times = _timeOptions();
 
     return Scaffold(
       appBar: AppChrome.gradientAppBar(
-        title: _isEdit ? 'Edit skill' : 'Offer a skill',
+        title: _isEdit ? sf.editSkillTitle : sf.offerSkillTitle,
       ),
       body: _loadingSkill
           ? const Center(child: CircularProgressIndicator())
@@ -274,9 +275,8 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                     ),
                   TextField(
                     controller: _title,
-                    decoration: const InputDecoration(
-                      labelText: 'Skill title',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: sf.skillTitleLabel,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -284,21 +284,24 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                     controller: _description,
                     minLines: 4,
                     maxLines: 10,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
+                    decoration: InputDecoration(
+                      labelText: sf.description,
                       alignLabelWithHint: true,
-                      border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: sf.category,
                     ),
                     value: _categories.contains(_category) ? _category : 'Other',
                     items: _categories
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c,
+                            child: Text(sf.categoryLabelForApiValue(c)),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) {
                       if (v != null) setState(() => _category = v);
@@ -308,21 +311,24 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _customCategory,
-                      decoration: const InputDecoration(
-                        labelText: 'Custom category',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: sf.customCategory,
                       ),
                     ),
                   ],
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Level',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: sf.level,
                     ),
                     value: _levels.contains(_level) ? _level : 'Intermediate',
                     items: _levels
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c,
+                            child: Text(sf.levelLabelForApiValue(c)),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) {
                       if (v != null) setState(() => _level = v);
@@ -330,9 +336,8 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(
-                      labelText: 'Session length (minutes)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: sf.sessionLengthMinutes,
                     ),
                     value: [30, 45, 60, 90, 120, 180].contains(_durationMinutes)
                         ? _durationMinutes
@@ -341,7 +346,7 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                         .map(
                           (m) => DropdownMenuItem(
                             value: m,
-                            child: Text('$m min'),
+                            child: Text(sf.minutesOption(m)),
                           ),
                         )
                         .toList(),
@@ -351,14 +356,14 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Session type',
+                    sf.sessionType,
                     style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                   ),
                   Wrap(
                     spacing: 8,
                     children: [
                       FilterChip(
-                        label: const Text('Online'),
+                        label: Text(sf.online),
                         selected: _sessionTypes.contains('online'),
                         onSelected: (v) {
                           setState(() {
@@ -371,7 +376,7 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                         },
                       ),
                       FilterChip(
-                        label: const Text('In-person'),
+                        label: Text(sf.inPerson),
                         selected: _sessionTypes.any((e) => e.contains('person')),
                         onSelected: (v) {
                           setState(() {
@@ -391,15 +396,14 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _locationText,
-                      decoration: const InputDecoration(
-                        labelText: 'In-person location',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: sf.inPersonLocation,
                       ),
                     ),
                   ],
                   const SizedBox(height: 16),
                   Text(
-                    'Available days',
+                    sf.availableDays,
                     style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                   ),
                   Wrap(
@@ -407,7 +411,7 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                     runSpacing: 6,
                     children: List.generate(_dayApi.length, (i) {
                       final d = _dayApi[i];
-                      final label = _dayShort[i];
+                      final label = sf.dayShort(i);
                       return FilterChip(
                         label: Text(label),
                         selected: _selectedDays.contains(d),
@@ -428,9 +432,8 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          decoration: const InputDecoration(
-                            labelText: 'Available from',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: sf.availableFrom,
                           ),
                           value: times.contains(_startTime) ? _startTime : times.first,
                           items: times
@@ -444,9 +447,8 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          decoration: const InputDecoration(
-                            labelText: 'Available until',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: sf.availableUntil,
                           ),
                           value: times.contains(_endTime) ? _endTime : times.last,
                           items: times
@@ -462,9 +464,8 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _tags,
-                    decoration: const InputDecoration(
-                      labelText: 'Tags (optional, comma-separated)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: sf.tagsOptional,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -476,7 +477,7 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                             width: 22,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Text(_isEdit ? 'Save changes' : 'Publish skill'),
+                        : Text(_isEdit ? sf.saveChanges : sf.publishSkill),
                   ),
                 ],
               ),

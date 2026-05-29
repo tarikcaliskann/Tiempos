@@ -227,14 +227,17 @@ class GradientCtaButton extends StatelessWidget {
     required this.label,
     required this.icon,
     this.onPressed,
+    this.busy = false,
   });
 
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
+    final enabled = onPressed != null && !busy;
     return SizedBox(
       width: double.infinity,
       child: Material(
@@ -242,7 +245,7 @@ class GradientCtaButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         elevation: 0,
         child: InkWell(
-          onTap: onPressed,
+          onTap: enabled ? onPressed : null,
           child: Ink(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -254,17 +257,28 @@ class GradientCtaButton extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon, color: Colors.white, size: 21),
-                  const SizedBox(width: 10),
-                  Text(
-                    label,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      letterSpacing: -0.2,
+                  if (busy)
+                    const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  else ...[
+                    Icon(icon, color: Colors.white, size: 21),
+                    const SizedBox(width: 10),
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        letterSpacing: -0.2,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

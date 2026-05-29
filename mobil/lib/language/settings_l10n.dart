@@ -22,6 +22,8 @@ class SettingsL10n {
   String get confirmPassword => _e('Confirm new password', 'Yeni şifre (tekrar)');
   String get updatePassword => _e('Update password', 'Şifreyi güncelle');
   String get passwordMismatch => _e('New passwords do not match.', 'Yeni şifreler eşleşmiyor.');
+  String get notSignedIn =>
+      _e('You are not signed in. Sign in again to change your password.', 'Oturum açık değil. Şifre değiştirmek için tekrar giriş yapın.');
   String get passwordTooShort => _e('Password must be at least 8 characters.', 'Şifre en az 8 karakter olmalıdır.');
   String get passwordSuccess => _e('Password updated successfully.', 'Şifre başarıyla güncellendi.');
   String get languageTitle => _e('Language', 'Dil');

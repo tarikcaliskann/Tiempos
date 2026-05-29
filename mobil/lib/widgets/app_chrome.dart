@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_surfaces.dart';
 
 /// Web’deki mavi–mor gradient ve tipografi ile hizalı ortak üst çubuk / şerit.
 abstract final class AppChrome {
@@ -132,6 +133,63 @@ abstract final class AppChrome {
           child: SizedBox(width: diameter, height: diameter, child: child),
         ),
       ),
+    );
+  }
+
+  /// Giriş / kayıt gövdesi — web `tiempos-auth-shell` tam ekran gradient.
+  static Widget authScreenBackdrop({required Widget child}) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: AppSurfaces.brandBluePurple),
+      child: child,
+    );
+  }
+
+  /// Web’deki `rounded-3xl` kart + ince border + gölge.
+  static Widget webStyleAuthCard({
+    required ThemeData theme,
+    required Widget child,
+  }) {
+    final isDark = theme.brightness == Brightness.dark;
+    return Material(
+      color: theme.colorScheme.surface,
+      elevation: isDark ? 18 : 12,
+      shadowColor: Colors.black.withValues(alpha: 0.38),
+      borderRadius: BorderRadius.circular(24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.12)
+              : theme.colorScheme.outline.withValues(alpha: 0.14),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+
+  /// Browse / liste kartları — web `rounded-2xl` + ince border + hafif gölge.
+  static Widget webStyleSurfaceCard({
+    required ThemeData theme,
+    required Widget child,
+    double borderRadius = 20,
+  }) {
+    final isDark = theme.brightness == Brightness.dark;
+    return Material(
+      color: theme.colorScheme.surface,
+      elevation: isDark ? 14 : 8,
+      shadowColor: Colors.black.withValues(alpha: 0.22),
+      borderRadius: BorderRadius.circular(borderRadius),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadius),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.10)
+              : theme.colorScheme.outline.withValues(alpha: 0.12),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
     );
   }
 

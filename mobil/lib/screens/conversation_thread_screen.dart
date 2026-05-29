@@ -10,6 +10,8 @@ import '../api/skills_api.dart';
 import '../api/user_api.dart';
 import '../app/app_state.dart';
 import '../exchange/exchange_ui_logic.dart';
+import '../language/conversation_l10n.dart';
+import '../language/profile_l10n.dart';
 import '../widgets/app_chrome.dart';
 import '../util/booking_availability.dart' hide buildHalfHourSlots;
 import '../util/booking_utils.dart';
@@ -149,6 +151,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
       setState(() => _timeline = []);
       return;
     }
+    if (!mounted) return;
+    final c = ConversationL10n.of(context);
     final chrono = List<ExchangeRequestDto>.from(r.exchanges)
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     final items = <_TimelineItem>[];
@@ -177,7 +181,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             isMine: false,
             title: ex.skillTitle,
             body:
-                'Offer · ${_fmtSchedule(ex.scheduledStartAt)} · ${ex.bookedMinutes} min',
+                c.offerLine(_fmtSchedule(ex.scheduledStartAt), ex.bookedMinutes),
             timeLabel: timeLabel,
             sortMs: createdMs + 1,
             offerStatus: st,
@@ -289,13 +293,14 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
   Future<void> _cancel() async {
     final t = widget.appState.token;
     if (t == null) return;
+    final c = ConversationL10n.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel request?'),
+        title: Text(c.cancelRequestTitle),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Yes')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(c.no)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(c.yes)),
         ],
       ),
     );
@@ -318,11 +323,13 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
       skill = await fetchSkillById(_active.skillId);
     } catch (_) {}
     if (!mounted) return;
+    final c = ConversationL10n.of(context);
+    final lang = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('tr') ? 'tr' : 'en';
     var bookDate = tomorrowDateStr();
     var bookTime = '10:00';
     var bookMinutes = _active.bookedMinutes > 0 ? _active.bookedMinutes : 60;
     final msgCtrl = TextEditingController(
-      text: 'Alternative time for ${_active.skillTitle}',
+      text: c.counterOfferDefaultMessage(_active.skillTitle),
     );
 
     List<String> timeOpts() {
@@ -335,7 +342,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
 
     List<String> dateOpts() {
       if (skill != null && hasSkillAvailabilityConstraints(skill)) {
-        return buildSkillDateOptions(skill, 'en', bookingHorizonDays)
+        return buildSkillDateOptions(skill, lang, bookingHorizonDays)
             .map((e) => e.value)
             .toList();
       }
@@ -373,15 +380,14 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Propose new time',
+                      c.proposeNewTime,
                       style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                     if (dates.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: 'Date',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: c.dateLabel,
                         ),
                         value: dates.contains(bookDate) ? bookDate : dates.first,
                         items: dates
@@ -393,7 +399,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                       ),
                     ] else ...[
                       ListTile(
-                        title: const Text('Date'),
+                        title: Text(c.dateLabel),
                         subtitle: Text(bookDate),
                         trailing: const Icon(Icons.calendar_today_rounded),
                         onTap: () async {
@@ -416,9 +422,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                     ],
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: 'Time',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: c.timeLabel,
                       ),
                       value: effTime,
                       items: slots
@@ -430,9 +435,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: 'Minutes',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: c.minutesLabel,
                       ),
                       value: [30, 45, 60, 90, 120].contains(bookMinutes)
                           ? bookMinutes
@@ -450,16 +454,15 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                     TextField(
                       controller: msgCtrl,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Message',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: c.messageLabel,
                       ),
                     ),
                     if (!within)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'Outside skill availability window.',
+                          c.outsideAvailability,
                           style: TextStyle(color: Theme.of(ctx).colorScheme.error),
                         ),
                       ),
@@ -471,7 +474,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                               bookTime = effTime;
                               Navigator.pop(ctx, true);
                             },
-                      child: const Text('Send counter-offer'),
+                      child: Text(c.sendCounterOffer),
                     ),
                   ],
                 ),
@@ -541,7 +544,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
       await _refresh();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meeting link saved')),
+          SnackBar(content: Text(ConversationL10n.of(context).meetingLinkSaved)),
         );
       }
     } on ApiException catch (e) {
@@ -580,6 +583,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
   Future<void> _leaveReview() async {
     final t = widget.appState.token;
     if (t == null) return;
+    final p = ProfileL10n.of(context);
+    final c = ConversationL10n.of(context);
     var rating = 5;
     final commentCtrl = TextEditingController();
     final ok = await showDialog<bool>(
@@ -588,10 +593,15 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
         return StatefulBuilder(
           builder: (ctx, setD) {
             return AlertDialog(
-            title: const Text('Rate this session'),
+            title: Text(p.rateThisSession),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Text(
+                  p.tapStarsHint,
+                  style: GoogleFonts.inter(fontSize: 13),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(5, (i) {
@@ -609,23 +619,22 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                 TextField(
                   controller: commentCtrl,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Comment (optional)',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: p.commentOptional,
                   ),
                 ),
               ],
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit')),
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(c.cancelAction)),
+              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(c.dialogSubmit)),
             ],
           );
         },
       );
     },
     );
-    final c = commentCtrl.text.trim();
+    final comment = commentCtrl.text.trim();
     commentCtrl.dispose();
     if (ok != true) return;
     try {
@@ -633,11 +642,11 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
         token: t,
         exchangeRequestId: _active.id,
         rating: rating,
-        comment: c.isEmpty ? null : c,
+        comment: comment.isEmpty ? null : comment,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thank you for your review')),
+          SnackBar(content: Text(p.thankYouForReview)),
         );
       }
     } on ApiException catch (e) {
@@ -674,10 +683,11 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final conv = ConversationL10n.of(context);
     if (_row == null) {
       return Scaffold(
-        appBar: AppChrome.gradientAppBar(title: 'Conversation'),
-        body: const Center(child: Text('Conversation not found')),
+        appBar: AppChrome.gradientAppBar(title: conv.conversationTitle),
+        body: Center(child: Text(conv.conversationNotFound)),
       );
     }
     final r = _row!;
@@ -706,7 +716,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             ),
             if (r.exchanges.length > 1)
               Text(
-                '${r.exchanges.length} requests',
+                conv.requestsCount(r.exchanges.length),
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   color: Colors.white.withValues(alpha: 0.85),
@@ -716,7 +726,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Profile',
+            tooltip: conv.profileTooltip,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -745,7 +755,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.white),
               onPressed: _toggleBlock,
-              child: Text(blocked ? 'Unblock' : 'Block'),
+              child: Text(blocked ? conv.unblock : conv.block),
             ),
         ],
       ),
@@ -757,9 +767,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Active request',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: conv.activeRequest,
                   isDense: true,
                 ),
                 value: _active.id,
@@ -768,7 +777,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                       (e) => DropdownMenuItem(
                         value: e.id,
                         child: Text(
-                          '${e.skillTitle} · ${e.status}',
+                          '${e.skillTitle} · ${conv.apiExchangeStatus(e.status)}',
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -797,6 +806,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             isOwner,
             isRequester,
             theme,
+            conv,
           ),
           Expanded(
             child: RefreshIndicator(
@@ -810,11 +820,16 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                 itemBuilder: (context, i) {
                   final it = _timeline[i];
                   if (it.isOffer) {
+                    final statusLine = (it.offerStatus != null && it.offerStatus!.isNotEmpty)
+                        ? conv.listUiStatusLabel(it.offerStatus!)
+                        : '';
                     return Card(
                       color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.35),
                       child: ListTile(
                         title: Text(it.title),
-                        subtitle: Text('${it.body}\n${it.offerStatus ?? ""}'),
+                        subtitle: Text(
+                          statusLine.isEmpty ? it.body : '${it.body}\n$statusLine',
+                        ),
                         isThreeLine: true,
                       ),
                     );
@@ -868,7 +883,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
               child: TextField(
                 controller: _meetingUrlCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Meeting URL (Zoom, Meet…)',
+                  labelText: conv.meetingUrlLabel,
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.save_outlined),
@@ -889,9 +904,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                         controller: _composer,
                         minLines: 1,
                         maxLines: 4,
-                        decoration: const InputDecoration(
-                          hintText: 'Message…',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: conv.messageHint,
                         ),
                       ),
                     ),
@@ -920,6 +934,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
     bool isOwner,
     bool isRequester,
     ThemeData theme,
+    ConversationL10n c,
   ) {
     if (ui == 'pending-incoming') {
       return Material(
@@ -931,8 +946,8 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             children: [
               Text(
                 _active.pendingFromOwner
-                    ? 'The instructor proposed a new time slot.'
-                    : '${_row!.otherName} wants to connect.',
+                    ? c.instructorProposedSlot
+                    : c.otherWantsToConnect(_row!.otherName),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -940,11 +955,11 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  FilledButton(onPressed: _accept, child: const Text('Accept')),
-                  OutlinedButton(onPressed: _reject, child: const Text('Decline')),
+                  FilledButton(onPressed: _accept, child: Text(c.accept)),
+                  OutlinedButton(onPressed: _reject, child: Text(c.decline)),
                   OutlinedButton(
                     onPressed: _rejectAndCounter,
-                    child: const Text('Decline & propose time'),
+                    child: Text(c.declineAndPropose),
                   ),
                 ],
               ),
@@ -962,13 +977,13 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Waiting for ${_row!.otherName} to respond.',
+                c.waitingForResponse(_row!.otherName),
                 style: GoogleFonts.inter(),
               ),
               if (canCancel &&
                   normalizeExchangeStatus(_active.status) == 'PENDING') ...[
                 const SizedBox(height: 8),
-                OutlinedButton(onPressed: _cancel, child: const Text('Cancel request')),
+                OutlinedButton(onPressed: _cancel, child: Text(c.cancelRequest)),
               ],
             ],
           ),
@@ -982,13 +997,13 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'This request was declined. You can send a new proposal.',
+              c.rejectedBanner,
               style: GoogleFonts.inter(color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: _openBookingCounterSheet,
-              child: const Text('Send new proposal'),
+              child: Text(c.sendNewProposal),
             ),
           ],
         ),
@@ -1004,17 +1019,17 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             if (canCancel)
               OutlinedButton(
                 onPressed: _cancel,
-                child: const Text('Cancel session'),
+                child: Text(c.cancelSession),
               ),
             if (isRequester && (_active.requesterAttendanceAckAt == null))
               FilledButton.tonal(
                 onPressed: _ackRequester,
-                child: const Text('I started (learner)'),
+                child: Text(c.iStartedLearner),
               ),
             if (isOwner && (_active.ownerAttendanceAckAt == null))
               FilledButton.tonal(
                 onPressed: _ackOwner,
-                child: const Text('I started (instructor)'),
+                child: Text(c.iStartedInstructor),
               ),
           ],
         ),
@@ -1026,7 +1041,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
         child: OutlinedButton.icon(
           onPressed: _leaveReview,
           icon: const Icon(Icons.rate_review_outlined),
-          label: const Text('Leave a review'),
+          label: Text(c.leaveReview),
         ),
       );
     }

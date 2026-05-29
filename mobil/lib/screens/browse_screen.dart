@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../api/skills_api.dart';
 import '../app/app_state.dart';
+import '../language/shell_l10n.dart';
 import '../widgets/app_chrome.dart';
+import '../widgets/gradient_stat_card.dart';
 import 'public_profile_screen.dart';
 import 'skill_detail_screen.dart';
 
@@ -113,6 +115,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sh = ShellL10n.of(context);
     final items = _filteredSorted();
     final myId = widget.appState.userId;
 
@@ -125,8 +128,8 @@ class _BrowseScreenState extends State<BrowseScreen> {
         slivers: [
           AppChrome.gradientSliverHeader(
             context: context,
-            title: 'Explore Skills',
-            subtitle: 'Discover skills from the Tiempos community',
+            title: sh.browseTitle,
+            subtitle: sh.browseSubtitle,
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -138,14 +141,14 @@ class _BrowseScreenState extends State<BrowseScreen> {
                     controller: _search,
                     decoration: AppChrome.searchDecoration(
                       context,
-                      hintText: 'Search skills, instructors, categories…',
+                      hintText: sh.browseSearchHint,
                     ),
                   ),
                   const SizedBox(height: 22),
                   Row(
                     children: [
                       Text(
-                        'Sort by',
+                        sh.browseSortBy,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
@@ -154,14 +157,14 @@ class _BrowseScreenState extends State<BrowseScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: SegmentedButton<_SortOption>(
-                          segments: const [
+                          segments: [
                             ButtonSegment(
                               value: _SortOption.newest,
-                              label: Text('Newest'),
+                              label: Text(sh.browseNewest),
                             ),
                             ButtonSegment(
                               value: _SortOption.title,
-                              label: Text('A–Z'),
+                              label: Text(sh.browseSortTitle),
                             ),
                           ],
                           selected: {_sort},
@@ -201,9 +204,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
-                    _catalog.isEmpty
-                        ? 'No skills are listed yet. Offer one from Home!'
-                        : 'No matches for your search.',
+                    _catalog.isEmpty ? sh.browseEmptyCatalog : sh.browseEmptySearch,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 15,
@@ -229,6 +230,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                         isOwnListing: own,
                         onOpen: () => _openSkill(s.id),
                         onInstructor: () => _openInstructor(s.ownerId),
+                        l10n: sh,
                       ),
                     );
                   },
@@ -248,12 +250,14 @@ class _BrowseSkillCard extends StatelessWidget {
     required this.isOwnListing,
     required this.onOpen,
     required this.onInstructor,
+    required this.l10n,
   });
 
   final SkillDto skill;
   final bool isOwnListing;
   final VoidCallback onOpen;
   final VoidCallback onInstructor;
+  final ShellL10n l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -263,8 +267,8 @@ class _BrowseSkillCard extends StatelessWidget {
     final online = types.any((e) => e.toLowerCase() == 'online');
     final inPerson = types.any((e) => e.toLowerCase().contains('person'));
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return AppChrome.webStyleSurfaceCard(
+      theme: theme,
       child: InkWell(
         onTap: onOpen,
         child: Column(
@@ -323,18 +327,18 @@ class _BrowseSkillCard extends StatelessWidget {
                           padding: EdgeInsets.zero,
                         ),
                       if (online)
-                        const Chip(
-                          label: Text('Online', style: TextStyle(fontSize: 12)),
+                        Chip(
+                          label: Text(l10n.browseOnline, style: const TextStyle(fontSize: 12)),
                           visualDensity: VisualDensity.compact,
                         ),
                       if (inPerson)
-                        const Chip(
-                          label: Text('In-person', style: TextStyle(fontSize: 12)),
+                        Chip(
+                          label: Text(l10n.browseInPerson, style: const TextStyle(fontSize: 12)),
                           visualDensity: VisualDensity.compact,
                         ),
                       Chip(
                         label: Text(
-                          '${skill.durationMinutes} min / session',
+                          l10n.browseMinutesPerSession(skill.durationMinutes),
                           style: const TextStyle(fontSize: 12),
                         ),
                         visualDensity: VisualDensity.compact,
@@ -343,9 +347,10 @@ class _BrowseSkillCard extends StatelessWidget {
                   ),
                   if (!isOwnListing) ...[
                     const SizedBox(height: 12),
-                    FilledButton(
+                    GradientCtaButton(
+                      label: l10n.browseBookNow,
+                      icon: Icons.event_available_rounded,
                       onPressed: onOpen,
-                      child: const Text('Book now'),
                     ),
                   ],
                 ],

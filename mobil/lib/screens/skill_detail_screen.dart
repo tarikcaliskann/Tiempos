@@ -7,6 +7,7 @@ import '../api/api_exception.dart';
 import '../api/exchange_api.dart';
 import '../api/skills_api.dart';
 import '../app/app_state.dart';
+import '../language/skill_flow_l10n.dart';
 import '../widgets/app_chrome.dart';
 import '../util/booking_availability.dart' hide buildHalfHourSlots;
 import '../util/booking_utils.dart';
@@ -66,10 +67,12 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
   }
 
   Future<void> _openBook(SkillDto s) async {
+    final sf = SkillFlowL10n.of(context);
+    final lang = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('tr') ? 'tr' : 'en';
     final token = widget.appState.token;
     if (token == null || token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in again.')),
+        SnackBar(content: Text(sf.signInAgainSnack)),
       );
       return;
     }
@@ -78,12 +81,12 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
 
     var bookDate = tomorrowDateStr();
     if (hasSkillAvailabilityConstraints(s)) {
-      final ds = buildSkillDateOptions(s, 'en', bookingHorizonDays);
+      final ds = buildSkillDateOptions(s, lang, bookingHorizonDays);
       if (ds.isNotEmpty) bookDate = ds.first.value;
     }
     var bookMinutes = s.durationMinutes > 0 ? s.durationMinutes : 60;
     final messageCtrl = TextEditingController(
-      text: "I'd like to book a session with you.",
+      text: sf.defaultBookMessage,
     );
     List<String> initialChoices() {
       if (hasSkillAvailabilityConstraints(s)) {
@@ -97,9 +100,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
     final initialSlots = initialChoices();
     if (initialSlots.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No bookable slots match this skill’s calendar. Try another day or contact the instructor.'),
-        ),
+        SnackBar(content: Text(sf.noBookableSlots)),
       );
       return;
     }
@@ -147,7 +148,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Book session',
+                      sf.bookSession,
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -156,18 +157,17 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                     const SizedBox(height: 16),
                     if (hasSkillAvailabilityConstraints(s)) ...[
                       DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: 'Date',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: sf.dateLabel,
                         ),
                         value: () {
                           final opts =
-                              buildSkillDateOptions(s, 'en', bookingHorizonDays);
+                              buildSkillDateOptions(s, lang, bookingHorizonDays);
                           final vals = opts.map((e) => e.value).toList();
                           if (vals.contains(bookDate)) return bookDate;
                           return vals.isNotEmpty ? vals.first : bookDate;
                         }(),
-                        items: buildSkillDateOptions(s, 'en', bookingHorizonDays)
+                        items: buildSkillDateOptions(s, lang, bookingHorizonDays)
                             .map(
                               (o) => DropdownMenuItem(
                                 value: o.value,
@@ -183,7 +183,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                     ] else
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Date'),
+                        title: Text(sf.dateLabel),
                         subtitle: Text(bookDate),
                         trailing: const Icon(Icons.calendar_today_rounded),
                         onTap: () async {
@@ -204,9 +204,8 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                         },
                       ),
                     DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: 'Start time',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: sf.startTime,
                       ),
                       value: choices.contains(bookTime) ? bookTime : choices.first,
                       items: choices
@@ -220,9 +219,8 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: 'Session length (minutes)',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: sf.sessionLengthMinutes,
                       ),
                       value: [30, 45, 60, 90, 120].contains(bookMinutes)
                           ? bookMinutes
@@ -231,7 +229,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                           .map(
                             (m) => DropdownMenuItem(
                               value: m,
-                              child: Text('$m minutes'),
+                              child: Text(sf.minutesOption(m)),
                             ),
                           )
                           .toList(),
@@ -243,15 +241,14 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                     TextField(
                       controller: messageCtrl,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Message to instructor',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: sf.messageToInstructor,
                       ),
                     ),
                     if (!within) ...[
                       const SizedBox(height: 12),
                       Text(
-                        'Selected time is outside this skill’s published availability.',
+                        sf.outsideAvailability,
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: Theme.of(ctx).colorScheme.error,
@@ -266,7 +263,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                               bookTime = effTime;
                               Navigator.of(ctx).pop(true);
                             },
-                      child: const Text('Send request'),
+                      child: Text(sf.sendRequest),
                     ),
                   ],
                 ),
@@ -292,7 +289,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking request sent. Check Messages.')),
+        SnackBar(content: Text(SkillFlowL10n.of(context).bookingSentSnack)),
       );
       Navigator.of(context).pop();
     } on ApiException catch (e) {
@@ -311,6 +308,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sf = SkillFlowL10n.of(context);
     final s = _skill;
     final myId = widget.appState.userId;
     final isOwner = s != null && myId != null && myId == s.ownerId;
@@ -323,7 +321,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  _error ?? 'Skill not found.',
+                  _error ?? sf.skillNotFound,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -371,7 +369,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                             ),
                           ),
                           title: Text(s.ownerName),
-                          subtitle: const Text('Instructor'),
+                          subtitle: Text(sf.instructor),
                           trailing: const Icon(Icons.chevron_right_rounded),
                           onTap: () {
                             final t = widget.appState.token;
@@ -404,7 +402,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                         if (!isOwner)
                           FilledButton(
                             onPressed: () => _openBook(s),
-                            child: const Text('Book this skill'),
+                            child: Text(sf.bookThisSkill),
                           ),
                       ],
                     ),

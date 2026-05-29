@@ -10,6 +10,7 @@ import '../app/app_state.dart';
 import '../config/app_web_config.dart';
 import '../language/auth_l10n.dart';
 import '../widgets/app_chrome.dart';
+import '../widgets/gradient_stat_card.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key, required this.appState});
@@ -202,11 +203,23 @@ class _SignupScreenState extends State<SignupScreen> {
     final theme = Theme.of(context);
     final a = AuthL10n.of(context);
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppChrome.gradientAppBar(title: a.signupTitle),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
+      backgroundColor: Colors.transparent,
+      body: AppChrome.authScreenBackdrop(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: AppChrome.webStyleAuthCard(
+                  theme: theme,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
             Text(
               _awaitingVerification ? a.verifySentTitle : a.signupTitle,
               style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800),
@@ -237,7 +250,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 maxLength: 6,
                 decoration: InputDecoration(
                   labelText: a.codeLabel,
-                  border: const OutlineInputBorder(),
                   counterText: '',
                 ),
                 onChanged: (v) {
@@ -257,7 +269,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   labelText: a.fullName,
-                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 14),
@@ -267,7 +278,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 autocorrect: false,
                 decoration: InputDecoration(
                   labelText: a.email,
-                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 14),
@@ -276,7 +286,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: a.password,
-                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 14),
@@ -285,7 +294,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: a.confirmPassword,
-                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
@@ -337,15 +345,11 @@ class _SignupScreenState extends State<SignupScreen> {
             ],
             const SizedBox(height: 20),
             if (_awaitingVerification) ...[
-              FilledButton(
+              GradientCtaButton(
+                label: a.verifyAccountBtn,
+                icon: Icons.verified_user_outlined,
+                busy: _loading,
                 onPressed: _loading ? null : () => _verify(a),
-                child: _loading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(a.verifyAccountBtn),
               ),
               const SizedBox(height: 10),
               OutlinedButton(
@@ -359,22 +363,24 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Text(a.goToSignIn),
               ),
             ] else ...[
-              FilledButton(
+              GradientCtaButton(
+                label: a.createAccount,
+                icon: Icons.person_add_alt_1_rounded,
+                busy: _loading,
                 onPressed: _loading ? null : () => _register(a),
-                child: _loading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(a.createAccount),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(a.alreadyHaveAccount),
               ),
             ],
-          ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

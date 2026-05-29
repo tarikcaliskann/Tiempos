@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_state.dart';
+import '../language/shell_l10n.dart';
 import '../theme/app_colors.dart';
 import 'add_skill_screen.dart';
 import 'browse_screen.dart';
@@ -49,6 +50,7 @@ class _RootScaffoldState extends State<RootScaffold> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sh = ShellL10n.of(context);
 
     return Scaffold(
       body: IndexedStack(
@@ -93,26 +95,26 @@ class _RootScaffoldState extends State<RootScaffold> {
             elevation: 0,
             indicatorShape: const StadiumBorder(),
             onDestinationSelected: (i) => setState(() => _index = i),
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.grid_view_outlined),
-                selectedIcon: Icon(Icons.grid_view_rounded),
-                label: 'Home',
+                icon: const Icon(Icons.grid_view_outlined),
+                selectedIcon: const Icon(Icons.grid_view_rounded),
+                label: sh.navHome,
               ),
               NavigationDestination(
-                icon: Icon(Icons.explore_outlined),
-                selectedIcon: Icon(Icons.explore_rounded),
-                label: 'Browse',
+                icon: const Icon(Icons.explore_outlined),
+                selectedIcon: const Icon(Icons.explore_rounded),
+                label: sh.navBrowse,
               ),
               NavigationDestination(
-                icon: Icon(Icons.chat_bubble_outline_rounded),
-                selectedIcon: Icon(Icons.chat_rounded),
-                label: 'Messages',
+                icon: const Icon(Icons.chat_bubble_outline_rounded),
+                selectedIcon: const Icon(Icons.chat_rounded),
+                label: sh.navMessages,
               ),
               NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
+                icon: const Icon(Icons.person_outline_rounded),
+                selectedIcon: const Icon(Icons.person_rounded),
+                label: sh.navProfile,
               ),
             ],
           ),

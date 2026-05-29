@@ -59,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
     if (token == null || token.isEmpty) {
-      setState(() => _passwordError = s.passwordMismatch);
+      setState(() => _passwordError = s.notSignedIn);
       return;
     }
     setState(() => _passwordLoading = true);

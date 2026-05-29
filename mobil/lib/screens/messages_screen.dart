@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/exchange_api.dart';
 import '../app/app_state.dart';
 import '../exchange/exchange_ui_logic.dart';
+import '../language/conversation_l10n.dart';
+import '../language/shell_l10n.dart';
 import '../widgets/app_chrome.dart';
 import 'conversation_thread_screen.dart';
 
@@ -44,7 +46,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Future<void> _load() async {
     final t = widget.appState.token;
     final myId = widget.appState.userId;
-    if (t == null || myId == null) return;
+    if (t == null || myId == null) {
+      if (!mounted) return;
+      setState(() {
+        _rows = [];
+        _loading = false;
+        _error = null;
+      });
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -85,6 +95,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sh = ShellL10n.of(context);
     final list = _filtered();
 
     return RefreshIndicator(
@@ -96,8 +107,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
         slivers: [
           AppChrome.gradientSliverHeader(
             context: context,
-            title: 'Messages',
-            subtitle: 'Chats grouped by person',
+            title: sh.messagesTitle,
+            subtitle: sh.messagesSubtitle,
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
@@ -106,7 +117,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 controller: _search,
                 decoration: AppChrome.searchDecoration(
                   context,
-                  hintText: 'Search conversations…',
+                  hintText: sh.messagesSearchHint,
                 ),
               ),
             ),
@@ -136,14 +147,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No conversations yet.',
+                      sh.messagesEmptyTitle,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Book a skill from Browse — threads are grouped by person.',
+                      sh.messagesEmptyBody,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
@@ -190,7 +201,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           ),
                           trailing: Chip(
                             label: Text(
-                              conv.listUiStatus,
+                              ConversationL10n.of(context).listUiStatusLabel(conv.listUiStatus),
                               style: const TextStyle(fontSize: 11),
                             ),
                           ),

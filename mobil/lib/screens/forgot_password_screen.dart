@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/auth_api.dart';
 import '../language/auth_l10n.dart';
 import '../widgets/app_chrome.dart';
+import '../widgets/gradient_stat_card.dart';
 import 'reset_password_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -45,11 +46,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final theme = Theme.of(context);
     final a = AuthL10n.of(context);
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppChrome.gradientAppBar(title: a.forgotTitle),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
+      backgroundColor: Colors.transparent,
+      body: AppChrome.authScreenBackdrop(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: AppChrome.webStyleAuthCard(
+                  theme: theme,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
             Text(
               _sent ? a.forgotTitleSent : a.forgotTitle,
               style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800),
@@ -72,20 +85,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: a.email,
-                  border: const OutlineInputBorder(),
                   helperText: a.enterEmail,
                 ),
               ),
               const SizedBox(height: 20),
-              FilledButton(
+              GradientCtaButton(
+                label: a.sendResetLink,
+                icon: Icons.mark_email_unread_outlined,
+                busy: _loading,
                 onPressed: _loading || _email.text.trim().isEmpty ? null : _submit,
-                child: _loading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(a.sendResetLink),
               ),
             ] else ...[
               TextButton.icon(
@@ -107,7 +115,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(a.backSignIn),
             ),
-          ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

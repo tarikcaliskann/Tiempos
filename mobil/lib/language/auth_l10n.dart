@@ -101,4 +101,22 @@ class AuthL10n {
   String get resetBtn => _e('Reset password', 'Şifreyi sıfırla');
   String get continueSignIn => _e('Continue to sign in', 'Girişe devam et');
   String get pwdMismatch => _e('Passwords do not match.', 'Şifreler eşleşmiyor.');
+
+  String get googleNotConfigured =>
+      _e('Google sign-in is not configured on the server (missing client ID).', 'Google girişi sunucuda yapılandırılmamış (istemci kimliği eksik).');
+  String get googleNotAvailableDevice => _e(
+        'Google sign-in is not available on this device. Try updating the app or use email sign-in.',
+        'Google girişi bu cihazda kullanılamıyor. Uygulamayı güncelleyin veya e-posta ile giriş yapın.',
+      );
+  String get googleNoIdTokenNative => _e(
+        'Google did not return an ID token. For Android/iOS, ensure the Web OAuth client ID is set as serverClientId (backend GOOGLE_CLIENT_ID).',
+        'Google kimlik jetonu döndürmedi. Android/iOS için Web OAuth istemci kimliğinin serverClientId olarak ayarlandığından emin olun (GOOGLE_CLIENT_ID).',
+      );
+  String get googleNoIdTokenWebCheck => _e(
+        'Google did not return an ID token. Check OAuth web client / authorized JavaScript origins.',
+        'Google kimlik jetonu döndürmedi. OAuth web istemcisi ve yetkili JavaScript kökenlerini kontrol edin.',
+      );
+  String get preparingGoogle => _e('Preparing Google sign-in…', 'Google girişi hazırlanıyor…');
+  String get retry => _e('Retry', 'Yeniden dene');
+  String get appBrandName => 'Tiempos';
 }

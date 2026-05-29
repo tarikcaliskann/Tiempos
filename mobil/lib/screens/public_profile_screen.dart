@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/user_api.dart';
 import '../app/app_state.dart';
+import '../language/profile_l10n.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_chrome.dart';
 
@@ -38,9 +39,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Future<void> _load() async {
     final t = widget.appState.token;
     if (t == null || t.isEmpty) {
+      if (!mounted) return;
+      final pl = ProfileL10n.of(context);
       setState(() {
         _loading = false;
-        _error = 'Not signed in';
+        _error = pl.publicNotSignedIn;
       });
       return;
     }
@@ -169,9 +172,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final pl = ProfileL10n.of(context);
 
     return Scaffold(
-      appBar: AppChrome.gradientAppBar(title: 'Member profile'),
+      appBar: AppChrome.gradientAppBar(title: pl.publicMemberTitle),
       body: _loading
           ? Center(
               child: Column(
@@ -187,7 +191,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Loading profile…',
+                    pl.publicProfileLoading,
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
@@ -335,7 +339,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            '${_profile!.totalReviews} ${_profile!.totalReviews == 1 ? 'review' : 'reviews'}',
+                                            pl.reviewsCount(_profile!.totalReviews),
                                             style: GoogleFonts.inter(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -357,7 +361,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               if (_profile!.bio != null && _profile!.bio!.trim().isNotEmpty) ...[
-                                _sectionLabel(theme, 'ABOUT'),
+                                _sectionLabel(theme, pl.sectionAbout),
                                 const SizedBox(height: 8),
                                 _surfaceCard(
                                   theme,
@@ -375,7 +379,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 ),
                                 const SizedBox(height: 20),
                               ],
-                              _sectionLabel(theme, 'DETAILS'),
+                              _sectionLabel(theme, pl.sectionDetails),
                               const SizedBox(height: 8),
                               _surfaceCard(
                                 theme,
@@ -388,7 +392,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                         color: theme.colorScheme.primary.withValues(alpha: 0.9),
                                       ),
                                       title: Text(
-                                        'Member since',
+                                        pl.memberSinceLabel,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -421,7 +425,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                           color: theme.colorScheme.primary.withValues(alpha: 0.9),
                                         ),
                                         title: Text(
-                                          'Languages',
+                                          pl.languagesLabel,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -443,7 +447,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                               ),
                               if (_hasAnyLink(_profile!)) ...[
                                 const SizedBox(height: 20),
-                                _sectionLabel(theme, 'LINKS'),
+                                _sectionLabel(theme, pl.sectionLinks),
                                 const SizedBox(height: 8),
                                 _surfaceCard(
                                   theme,
@@ -455,7 +459,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                                           leading: const Icon(Icons.link_rounded),
                                           title: Text(
-                                            'Website',
+                                            pl.websiteLink,
                                             style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                                           ),
                                           subtitle: Text(
@@ -481,7 +485,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                                           leading: const Icon(Icons.work_outline_rounded),
                                           title: Text(
-                                            'LinkedIn',
+                                            pl.linkedInLink,
                                             style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                                           ),
                                           subtitle: Text(
@@ -510,7 +514,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                                           leading: const Icon(Icons.tag_rounded),
                                           title: Text(
-                                            'X / Twitter',
+                                            pl.xTwitterLink,
                                             style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                                           ),
                                           subtitle: Text(
