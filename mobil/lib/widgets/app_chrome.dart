@@ -154,7 +154,6 @@ abstract final class AppChrome {
       color: theme.colorScheme.surface,
       elevation: isDark ? 18 : 12,
       shadowColor: Colors.black.withValues(alpha: 0.38),
-      borderRadius: BorderRadius.circular(24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
@@ -179,7 +178,6 @@ abstract final class AppChrome {
       color: theme.colorScheme.surface,
       elevation: isDark ? 14 : 8,
       shadowColor: Colors.black.withValues(alpha: 0.22),
-      borderRadius: BorderRadius.circular(borderRadius),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
         side: BorderSide(
