@@ -20,7 +20,8 @@ class ExchangeBookingIntegrationTest extends AbstractPostgresIntegrationTest {
         String skillId = createSkill();
         String exchangeId = createBookingRequest(skillId);
         accept(exchangeId);
-        complete(exchangeId);
+        ownerMarksSessionComplete(exchangeId);
+        requesterAcknowledgesAttendance(exchangeId);
         postReview(exchangeId);
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/api/reviews/me/given")
@@ -43,10 +44,21 @@ class ExchangeBookingIntegrationTest extends AbstractPostgresIntegrationTest {
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
     }
 
-    private void complete(String exchangeId) throws Exception {
+    /** Eğitmen tamamlar (katılım onayı); durum ACCEPTED kalır. */
+    private void ownerMarksSessionComplete(String exchangeId) throws Exception {
         mockMvc.perform(
                         put("/api/exchange-requests/{id}/complete", exchangeId)
                                 .header("Authorization", "Bearer " + ownerToken)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("ACCEPTED"));
+    }
+
+    /** Talep sahibi katılım onayı — her iki onay sonrası COMPLETED. */
+    private void requesterAcknowledgesAttendance(String exchangeId) throws Exception {
+        mockMvc.perform(
+                        post("/api/exchange-requests/{id}/ack-attendance", exchangeId)
+                                .header("Authorization", "Bearer " + requesterToken)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"));

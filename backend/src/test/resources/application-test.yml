@@ -1,11 +1,16 @@
 # Testcontainers PostgreSQL — ana application.properties yüklenir, bu dosya ekler/üst yazar
+#
+# Boş DB: Flyway betikleri çoğunlukla ALTER (tablo Hibernate ile hiç oluşmamış prod geçmişi varsayar);
+# entegrasyon testinde şema entity'lerden üretilir/güncellenir (ddl-auto: update), Flyway kapalıdır.
 spring:
   task:
     scheduling:
       enabled: false
+  flyway:
+    enabled: false
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
   mail:
     host: localhost

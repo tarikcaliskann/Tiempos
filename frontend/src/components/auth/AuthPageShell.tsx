@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Auth screens: primary-blue backdrop with light depth (no heavy effects).
+ * Auth screens: blue–purple gradient (Tailwind from-blue-500 to-purple-600) + light depth.
  */
 export function AuthPageShell({ children }: { children: ReactNode }) {
   return (

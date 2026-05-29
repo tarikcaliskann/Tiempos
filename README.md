@@ -80,6 +80,7 @@ Veritabanı dosyalarını da silmek için: `docker compose down -v`
 - **`Dockerfile: no such file or directory`** — `backend/Dockerfile` eksikse repodaki dosyayı kullanın; `docker compose up -d --build` kök dizinden çalıştırılmalıdır.
 - **`role "timebank_user" does not exist`** — Spring yanlış Postgres’e bağlanıyor olabilir (ör. Docker DB çalışmıyorken `localhost:5432`). Önce `docker compose up -d db`, ardından `npm run backend:run`. Ya da kendi Postgres’inizde kullanıcı oluşturun (aşağı).
 - **`Port 8080 was already in use` / `Web server failed to start`** — Aynı anda hem Docker’daki **`tiempos-api`** hem de **`npm run backend:run`** çalışıyor. İkisinden birini seçin: ya sadece Docker (`docker compose up -d --build`, yerel Maven yok), ya da API konteynerini durdurun (`npm run docker:stop-api`) sonra `npm run backend:run`.
+- **Backend `./mvnw test` — Testcontainers / `ContainerLaunchException` / Docker 400 (boş gövde)** — Docker **29+** eski Docker API istemcisiyle uyumsuz olabiliyor. Repoda `backend/src/test/resources/docker-java.properties` (`api.version=1.44`) ve güncel Testcontainers sürümü kullanılır; yine de hata alırsanız Docker Desktop’ı güncelleyin. Entegrasyon testleri **çalışan bir Docker daemon** ister: `docker info` sorunsuz, ardından `cd backend && ./mvnw test`. Docker yokken testler **sessizce atlanmaz**, hata verir.
 
 ## PostgreSQL’i Docker kullanmadan kurduysan
 

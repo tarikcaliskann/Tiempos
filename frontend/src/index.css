@@ -4149,6 +4149,7 @@ html.dark body {
 }
 
 /* —— Auth (login / signup / forgot password) —— */
+/* Tailwind eşleniği: bg-gradient-to-br from-blue-500 to-purple-600 */
 .tiempos-auth-shell {
   position: relative;
   display: flex;
@@ -4156,7 +4157,8 @@ html.dark body {
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background: var(--primary);
+  /* blue-500 */
+  background: #3b82f6;
 }
 
 .tiempos-auth-shell__backdrop {
@@ -4166,15 +4168,10 @@ html.dark body {
   background:
     radial-gradient(
       ellipse 90% 70% at 50% -8%,
-      color-mix(in srgb, white 16%, transparent),
+      color-mix(in srgb, white 18%, transparent),
       transparent 58%
     ),
-    linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--primary) 84%, #000) 0%,
-      var(--primary) 48%,
-      color-mix(in srgb, var(--primary) 76%, #0c1929) 100%
-    );
+    linear-gradient(to bottom right, #3b82f6 0%, #9333ea 100%);
 }
 
 .tiempos-auth-shell__backdrop::after {
@@ -4209,7 +4206,7 @@ html.dark body {
   height: min(55vw, 380px);
   top: -8%;
   right: -6%;
-  background: color-mix(in srgb, white 22%, var(--primary));
+  background: color-mix(in srgb, white 24%, #9333ea);
 }
 
 .tiempos-auth-shell__glow--bl {
@@ -4217,7 +4214,7 @@ html.dark body {
   height: min(48vw, 320px);
   bottom: -12%;
   left: -8%;
-  background: color-mix(in srgb, var(--primary) 40%, #000);
+  background: color-mix(in srgb, #3b82f6 35%, #1e1b4b);
   opacity: 0.65;
   filter: blur(64px);
 }
