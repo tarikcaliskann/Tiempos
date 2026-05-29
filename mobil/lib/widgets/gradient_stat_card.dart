@@ -241,9 +241,9 @@ class GradientCtaButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: Material(
-        borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: InkWell(
           onTap: enabled ? onPressed : null,
           child: Ink(
