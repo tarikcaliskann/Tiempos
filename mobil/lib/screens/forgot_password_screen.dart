@@ -5,7 +5,7 @@ import '../api/auth_api.dart';
 import '../language/auth_l10n.dart';
 import '../widgets/app_chrome.dart';
 import '../widgets/gradient_stat_card.dart';
-import 'reset_password_screen.dart';
+import '../widgets/tiempos_web_logo.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -45,83 +45,146 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final a = AuthL10n.of(context);
+    final loc = MaterialLocalizations.of(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppChrome.gradientAppBar(title: a.forgotTitle),
-      backgroundColor: Colors.transparent,
       body: AppChrome.authScreenBackdrop(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: AppChrome.webStyleAuthCard(
-                  theme: theme,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-            Text(
-              _sent ? a.forgotTitleSent : a.forgotTitle,
-              style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _sent ? a.forgotSubtitleSent : a.forgotSubtitle,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                height: 1.4,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (!_sent) ...[
-              TextField(
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-                autocorrect: false,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  labelText: a.email,
-                  helperText: a.enterEmail,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 8, 8, 12),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                        tooltip: loc.backButtonTooltip,
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                    ),
+                    const Spacer(),
+                    const SizedBox(width: 48),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              GradientCtaButton(
-                label: a.sendResetLink,
-                icon: Icons.mark_email_unread_outlined,
-                busy: _loading,
-                onPressed: _loading || _email.text.trim().isEmpty ? null : _submit,
-              ),
-            ] else ...[
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const ResetPasswordScreen()),
-                  );
-                },
-                icon: const Icon(Icons.pin_outlined),
-                label: Text(a.openResetWithCode),
-              ),
-              TextButton(
-                onPressed: () => setState(() => _sent = false),
-                child: Text(a.sendResetLink),
-              ),
-            ],
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(a.backSignIn),
             ),
-                      ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const TiemposWebLogo(height: 52),
+                  const SizedBox(height: 16),
+                  Text(
+                    _sent ? a.forgotTitleSent : a.forgotTitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      height: 1.2,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _sent ? a.forgotSubtitleSent : a.forgotSubtitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      height: 1.45,
+                      color: Colors.white.withValues(alpha: 0.92),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Expanded(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Transform.translate(
+                  offset: const Offset(0, -6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 440),
+                      child: AppChrome.webStyleAuthCard(
+                        theme: theme,
+                        child: SafeArea(
+                          top: false,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(22, 24, 22, 28),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (!_sent) ...[
+                                  TextField(
+                                    controller: _email,
+                                    keyboardType: TextInputType.emailAddress,
+                                    autocorrect: false,
+                                    onChanged: (_) => setState(() {}),
+                                    decoration: InputDecoration(
+                                      labelText: a.email,
+                                      helperText: a.enterEmail,
+                                      filled: true,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 22),
+                                  GradientCtaButton(
+                                    label: a.sendResetLink,
+                                    icon: Icons.mark_email_unread_outlined,
+                                    busy: _loading,
+                                    onPressed: _loading || _email.text.trim().isEmpty
+                                        ? null
+                                        : _submit,
+                                  ),
+                                ] else ...[
+                                  Icon(
+                                    Icons.mark_email_read_outlined,
+                                    size: 44,
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.85),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  OutlinedButton(
+                                    onPressed: () => setState(() {
+                                      _sent = false;
+                                      _email.clear();
+                                    }),
+                                    child: Text(
+                                      a.useDifferentEmail,
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 22),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: Text(
+                                    a.backSignIn,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -13,9 +13,8 @@ import '../language/auth_l10n.dart';
 import '../util/auth_network_messages.dart';
 import '../widgets/app_chrome.dart';
 import '../widgets/gradient_stat_card.dart';
-import '../widgets/tiempos_brand_mark.dart';
+import '../widgets/tiempos_web_logo.dart';
 import 'forgot_password_screen.dart';
-import 'reset_password_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -408,7 +407,34 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
     if (_googleClientId.isEmpty) {
-      return const SizedBox.shrink();
+      return OutlinedButton.icon(
+        onPressed: _loading
+            ? null
+            : () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(a.googleConfigureHint)),
+                );
+              },
+        icon: const _GoogleMark(),
+        label: Text(
+          a.continueWithGoogle,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+          minimumSize: const Size.fromHeight(52),
+          foregroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+          side: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.4),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      );
     }
 
     return OutlinedButton.icon(
@@ -443,7 +469,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ? (_googleWebSetupInProgress ||
             _googleWebReady ||
             (_googleWebSetupError != null))
-        : (!_googleClientResolved || _googleClientId.isNotEmpty);
+        : true;
 
     final lowerTech = _errorTechnical?.toLowerCase() ?? '';
     final lowerErr = _error?.toLowerCase() ?? '';
@@ -465,40 +491,31 @@ class _LoginScreenState extends State<LoginScreen> {
             SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  alignment: WrapAlignment.center,
-                  spacing: 14,
-                  runSpacing: 12,
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const TiemposBrandMark(size: 52),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 280),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            a.appBrandName,
-                            style: GoogleFonts.inter(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              height: 1.05,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            a.loginSubtitle,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              height: 1.4,
-                              color: Colors.white.withValues(alpha: 0.92),
-                            ),
-                          ),
-                        ],
+                    const Center(child: TiemposWebLogo(height: 56)),
+                    const SizedBox(height: 18),
+                    Text(
+                      a.appBrandName,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.05,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      a.loginSubtitle,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        height: 1.45,
+                        color: Colors.white.withValues(alpha: 0.92),
                       ),
                     ),
                   ],
@@ -617,24 +634,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                             },
                                       child: Text(
                                         a.forgotPassword,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: _loading
-                                          ? null
-                                          : () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute<void>(
-                                                  builder: (_) =>
-                                                      const ResetPasswordScreen(),
-                                                ),
-                                              );
-                                            },
-                                      child: Text(
-                                        a.resetWithCode,
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                         ),

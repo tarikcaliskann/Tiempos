@@ -6,6 +6,9 @@ import '../theme/app_surfaces.dart';
 
 /// Web’deki mavi–mor gradient ve tipografi ile hizalı ortak üst çubuk / şerit.
 abstract final class AppChrome {
+  /// Gradient başlık metni — ana sayfa arama / liste kolonu ile aynı yatay hizalama.
+  static const double heroHeaderPaddingH = 20;
+
   static const LinearGradient heroGradientLinear = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
@@ -44,6 +47,8 @@ abstract final class AppChrome {
       iconTheme: const IconThemeData(color: Colors.white),
       leading: leading,
       automaticallyImplyLeading: automaticallyImplyLeading,
+      centerTitle: true,
+      titleSpacing: 0,
       flexibleSpace: const DecoratedBox(
         decoration: BoxDecoration(gradient: heroGradientLinear),
       ),
@@ -64,47 +69,81 @@ abstract final class AppChrome {
     required BuildContext context,
     required String title,
     String? subtitle,
+    Widget? leading,
     Widget? trailing,
   }) {
     final top = MediaQuery.paddingOf(context).top;
+    final hasSide = leading != null || trailing != null;
+    /// Dikeyde ortalanmış şerit; başlık metni solda hizalı.
+    const minStripHeight = 100.0;
+
     return SliverToBoxAdapter(
       child: DecoratedBox(
         decoration: const BoxDecoration(gradient: heroGradientLinear),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, top + 14, 20, 30),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 26,
-                        color: Colors.white,
-                        height: 1.15,
-                        letterSpacing: -0.6,
-                      ),
+          padding: EdgeInsets.fromLTRB(heroHeaderPaddingH, top + 14, heroHeaderPaddingH, 14),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: minStripHeight),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (hasSide)
+                  SizedBox(
+                    width: 48,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: leading,
                     ),
-                    if (subtitle != null && subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          height: 1.5,
-                          color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          textAlign: TextAlign.start,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 24,
+                            color: Colors.white,
+                            height: 1.15,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
+                        if (subtitle != null && subtitle.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            subtitle,
+                            textAlign: TextAlign.start,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              height: 1.45,
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              ?trailing,
-            ],
+                if (hasSide)
+                  SizedBox(
+                    width: 48,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: trailing,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

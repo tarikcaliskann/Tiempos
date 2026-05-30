@@ -24,6 +24,19 @@ import 'public_profile_screen.dart';
 import 'settings_screen.dart';
 import 'skill_detail_screen.dart';
 
+Widget _profileTabSegmentLabel(String text) {
+  return FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: Alignment.center,
+    child: Text(
+      text,
+      maxLines: 1,
+      textAlign: TextAlign.center,
+      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+    ),
+  );
+}
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
@@ -607,7 +620,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 0, AppChrome.heroHeaderPaddingH, 8),
           child: Row(
             children: [
               Expanded(
@@ -634,7 +647,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (_skills.isEmpty)
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 24),
             child: Text(
               l10n.emptyTeaching,
               style: GoogleFonts.inter(
@@ -665,7 +678,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final category = s.category?.trim();
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: EdgeInsets.symmetric(horizontal: AppChrome.heroHeaderPaddingH, vertical: 8),
                 clipBehavior: Clip.antiAlias,
                 elevation: 0,
                 color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
@@ -883,7 +896,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 0, AppChrome.heroHeaderPaddingH, 8),
           child: Text(
             l10n.skillsLearning,
             style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800),
@@ -893,7 +906,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (bookings.isEmpty)
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 24),
             child: Text(
               l10n.emptyLearning,
               style: GoogleFonts.inter(
@@ -912,7 +925,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final totalTime = formatBookedDurationEn(b.bookedMinutes);
               final existing = givenMap[b.id];
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: EdgeInsets.symmetric(horizontal: AppChrome.heroHeaderPaddingH, vertical: 8),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -1142,10 +1155,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _reviewsTabContent(BuildContext context, ThemeData theme, ProfileL10n l10n) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 12),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+          padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 20, AppChrome.heroHeaderPaddingH, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -1230,7 +1243,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final l10n = ProfileL10n.of(context);
     final name = _profile?.fullName ?? widget.appState.fullName ?? 'Member';
     final email = _profile?.email ?? widget.appState.email ?? '';
-    final credits = _profile?.timeCreditMinutes;
+    // TODO(beyza): Saat kredisi — UI açılınca kullan
+    // final credits = _profile?.timeCreditMinutes;
     final bio = _profile?.bio?.trim();
     final location = _profile?.location?.trim();
     final languages = _profile?.languages?.trim();
@@ -1243,226 +1257,274 @@ class _ProfileScreenState extends State<ProfileScreen> {
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
-          AppChrome.gradientSliverHeader(
-            context: context,
-            title: l10n.profileTitle,
-            subtitle: l10n.profileHeroSubtitle,
-          ),
           if (_loading)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
+              child: Padding(
+                padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
             )
           else ...[
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    AppChrome.profileAvatarRing(
-                      theme: theme,
-                      diameter: 96,
-                      child: _heroAvatar(theme),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      name,
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      email,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DecoratedBox(
+                    decoration: const BoxDecoration(gradient: AppChrome.heroGradientLinear),
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        AppChrome.heroHeaderPaddingH,
+                        8 + MediaQuery.paddingOf(context).top,
+                        AppChrome.heroHeaderPaddingH,
+                        22,
                       ),
-                    ),
-                    if (credits != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        '${l10n.timeCreditsPrefix} ${formatDashCreditsEn(credits)}',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_showReceivedSummary) ...[
-                          Icon(Icons.star_rounded, color: Colors.amber.shade700, size: 22),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              l10n.ratingsSummaryLine(
-                                _summaryReceived!.averageRating,
-                                _summaryReceived!.totalReviews,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: AppChrome.profileAvatarRing(
+                              theme: theme,
+                              diameter: 96,
+                              child: _heroAvatar(theme),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            name,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            email,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.white.withValues(alpha: 0.88),
+                            ),
+                          ),
+                          // TODO(beyza): Saat kredisi satırı — sonra tekrar açılacak
+                          // if (credits != null) ...[
+                          //   const SizedBox(height: 8),
+                          //   Text(
+                          //     '${l10n.timeCreditsPrefix} ${formatDashCreditsEn(credits)}',
+                          //     style: GoogleFonts.inter(
+                          //       fontWeight: FontWeight.w600,
+                          //       color: theme.colorScheme.primary,
+                          //     ),
+                          //   ),
+                          // ],
+                          const SizedBox(height: 12),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_showReceivedSummary) ...[
+                                Icon(Icons.star_rounded, color: Colors.amber.shade200, size: 22),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    l10n.ratingsSummaryLine(
+                                      _summaryReceived!.averageRating,
+                                      _summaryReceived!.totalReviews,
+                                    ),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white.withValues(alpha: 0.95),
+                                    ),
+                                  ),
+                                ),
+                              ] else
+                                Expanded(
+                                  child: Text(
+                                    l10n.noRatingsYet,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      color: Colors.white.withValues(alpha: 0.92),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _shareProfile(l10n),
+                                  icon: const Icon(Icons.share_rounded, size: 18),
+                                  label: Text(l10n.shareProfile),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.55)),
+                                  ),
+                                ),
                               ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: () async {
+                                    final ok = await Navigator.of(context).push<bool>(
+                                      MaterialPageRoute(
+                                        builder: (_) => EditProfileScreen(appState: widget.appState),
+                                      ),
+                                    );
+                                    if (ok == true && mounted) await _load();
+                                  },
+                                  icon: const Icon(Icons.edit_outlined, size: 18),
+                                  label: Text(l10n.editProfile),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_shareFeedback != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              _shareFeedback!,
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
-                                fontSize: 16,
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.95),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-                        ] else
-                          Expanded(
-                            child: Text(
-                              l10n.noRatingsYet,
+                          ],
+                          if (bio != null && bio.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            Text(
+                              bio,
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
-                                fontSize: 16,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                fontSize: 14,
+                                height: 1.4,
+                                color: Colors.white.withValues(alpha: 0.92),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _shareProfile(l10n),
-                            icon: const Icon(Icons.share_rounded, size: 18),
-                            label: Text(l10n.shareProfile),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () async {
-                              final ok = await Navigator.of(context).push<bool>(
-                                MaterialPageRoute(
-                                  builder: (_) => EditProfileScreen(appState: widget.appState),
+                          ],
+                          if (location != null && location.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.place_outlined, size: 18, color: Colors.white.withValues(alpha: 0.75)),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    location,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: Colors.white.withValues(alpha: 0.88),
+                                    ),
+                                  ),
                                 ),
-                              );
-                              if (ok == true && mounted) await _load();
-                            },
-                            icon: const Icon(Icons.edit_outlined, size: 18),
-                            label: Text(l10n.editProfile),
-                          ),
-                        ),
-                      ],
+                              ],
+                            ),
+                          ],
+                          if (languages != null && languages.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.translate_rounded, size: 18, color: Colors.white.withValues(alpha: 0.75)),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    languages,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: Colors.white.withValues(alpha: 0.88),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          if (memberSince != null) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.white.withValues(alpha: 0.75)),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    memberSince,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: Colors.white.withValues(alpha: 0.88),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          if (_error != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFFFFCDD2),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                    if (_shareFeedback != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _shareFeedback!,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                    if (bio != null && bio.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        bio,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          height: 1.4,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
-                        ),
-                      ),
-                    ],
-                    if (location != null && location.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.place_outlined, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.55)),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              location,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                              ),
+                  ),
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppChrome.heroHeaderPaddingH),
+                    child: Theme(
+                      data: theme.copyWith(
+                        segmentedButtonTheme: SegmentedButtonThemeData(
+                          style: ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            padding: const WidgetStatePropertyAll(
+                              EdgeInsets.symmetric(horizontal: 4, vertical: 10),
                             ),
+                            minimumSize:
+                                const WidgetStatePropertyAll(Size(0, 40)),
+                          ),
+                        ),
+                      ),
+                      child: SegmentedButton<int>(
+                        segments: [
+                          ButtonSegment<int>(
+                            value: 0,
+                            label: _profileTabSegmentLabel(l10n.tabTeaching),
+                            icon: const Icon(Icons.school_outlined, size: 18),
+                          ),
+                          ButtonSegment<int>(
+                            value: 1,
+                            label: _profileTabSegmentLabel(l10n.tabLearning),
+                            icon: const Icon(Icons.menu_book_outlined, size: 18),
+                          ),
+                          ButtonSegment<int>(
+                            value: 2,
+                            label: _profileTabSegmentLabel(l10n.tabReviews),
+                            icon: const Icon(Icons.star_outline, size: 18),
                           ),
                         ],
+                        selected: {_mainTab},
+                        onSelectionChanged: (next) {
+                          setState(() => _mainTab = next.first);
+                        },
                       ),
-                    ],
-                    if (languages != null && languages.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.translate_rounded, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.55)),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              languages,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (memberSince != null) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.calendar_today_outlined, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.55)),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              memberSince,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (_error != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        _error!,
-                        style: TextStyle(color: theme.colorScheme.error),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    SegmentedButton<int>(
-                      segments: [
-                        ButtonSegment<int>(
-                          value: 0,
-                          label: Text(l10n.tabTeaching),
-                          icon: const Icon(Icons.school_outlined, size: 18),
-                        ),
-                        ButtonSegment<int>(
-                          value: 1,
-                          label: Text(l10n.tabLearning),
-                          icon: const Icon(Icons.menu_book_outlined, size: 18),
-                        ),
-                        ButtonSegment<int>(
-                          value: 2,
-                          label: Text(l10n.tabReviews),
-                          icon: const Icon(Icons.star_outline, size: 18),
-                        ),
-                      ],
-                      selected: {_mainTab},
-                      onSelectionChanged: (next) {
-                        setState(() => _mainTab = next.first);
-                      },
                     ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
             ),
             if (_mainTab == 0) ..._buildTeachingSlivers(context, theme, l10n),
@@ -1471,22 +1533,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SliverToBoxAdapter(child: _reviewsTabContent(context, theme, l10n)),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 24),
                 child: Card(
                   child: Column(
                     children: [
-                      ListTile(
-                        leading: const Icon(Icons.credit_card_outlined),
-                        title: Text(l10n.buyTimeCredits),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () {
-                          // Ödeme şimdilik kapalı — payment_screen.dart üstündeki not.
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.paymentDisabledMobile)),
-                          );
-                        },
-                      ),
-                      const Divider(height: 1),
+                      // TODO(beyza): Saat kredisi satın al — sonra açılacak
+                      // ListTile(
+                      //   leading: const Icon(Icons.credit_card_outlined),
+                      //   title: Text(l10n.buyTimeCredits),
+                      //   trailing: const Icon(Icons.chevron_right_rounded),
+                      //   onTap: () {
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       SnackBar(content: Text(l10n.paymentDisabledMobile)),
+                      //     );
+                      //   },
+                      // ),
+                      // const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.settings_outlined),
                         title: Text(l10n.settings),

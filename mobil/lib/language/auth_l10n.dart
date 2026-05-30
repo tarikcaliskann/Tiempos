@@ -89,6 +89,8 @@ class AuthL10n {
   String get sendResetLink => _e('Send reset link', 'Sıfırlama bağlantısı gönder');
   String get backSignIn => _e('Back to sign in', 'Girişe dön');
   String get enterEmail => _e('Enter your account email.', 'Hesap e-postanızı girin.');
+  String get useDifferentEmail =>
+      _e('Use a different email', 'Başka bir e-posta kullan');
   String get openResetWithCode => _e('Have a code from email? Use reset with code', 'E-postadan kodunuz mu var? Kod ile sıfırlamayı kullanın');
 
   String get resetTitle => _e('Reset password', 'Şifreyi sıfırla');
@@ -149,4 +151,8 @@ class AuthL10n {
         'Gerçek cihazda 127.0.0.1 telefonun kendisidir. Bilgisayarınızın LAN IP’sini kullanın; Android emülatörde 127.0.0.1 otomatik olarak 10.0.2.2’ye çevrilir.',
       );
   String get showTechnicalDetails => _e('Technical details', 'Teknik ayrıntı');
+  String get googleConfigureHint => _e(
+        'Add GOOGLE_CLIENT_ID to the backend .env or run with --dart-define=GOOGLE_CLIENT_ID=your Web client ID (same as the website).',
+        'Google için backend .env içine GOOGLE_CLIENT_ID ekleyin veya web ile aynı Web istemci kimliğini şununla verin: --dart-define=GOOGLE_CLIENT_ID=....apps.googleusercontent.com',
+      );
 }

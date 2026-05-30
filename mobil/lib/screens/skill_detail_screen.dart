@@ -332,10 +332,20 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                   context: context,
                   title: s.title,
                   subtitle: s.ownerName,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppChrome.heroHeaderPaddingH,
+                      16,
+                      AppChrome.heroHeaderPaddingH,
+                      16,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
