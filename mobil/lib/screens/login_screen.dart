@@ -9,10 +9,11 @@ import '../api/api_exception.dart';
 import '../api/auth_api.dart';
 import '../app/app_state.dart';
 import '../auth/google_sign_in_render_button.dart';
-import '../config/api_config.dart';
 import '../language/auth_l10n.dart';
+import '../util/auth_network_messages.dart';
 import '../widgets/app_chrome.dart';
 import '../widgets/gradient_stat_card.dart';
+import '../widgets/tiempos_brand_mark.dart';
 import 'forgot_password_screen.dart';
 import 'reset_password_screen.dart';
 import 'signup_screen.dart';
@@ -32,8 +33,13 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   String? _error;
   String? _loginErrorHint;
+  String? _errorTechnical;
 
   String? _googleInitClientId;
+
+  /// Mobil / masaüstü: Google Web client id (sunucu veya --dart-define).
+  bool _googleClientResolved = false;
+  String _googleClientId = '';
 
   /// Web: GIS button + [authenticationEvents] (authenticate() is unsupported on web).
   StreamSubscription<GoogleSignInAuthenticationEvent>? _googleAuthSub;
@@ -47,6 +53,27 @@ class _LoginScreenState extends State<LoginScreen> {
     if (kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         unawaited(_setupGoogleWebIfNeeded());
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(_prefetchNativeGoogleClient());
+      });
+    }
+  }
+
+  Future<void> _prefetchNativeGoogleClient() async {
+    try {
+      final id = await resolveGoogleOAuthClientId();
+      if (!mounted) return;
+      setState(() {
+        _googleClientId = id;
+        _googleClientResolved = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _googleClientId = '';
+        _googleClientResolved = true;
       });
     }
   }
@@ -77,20 +104,21 @@ class _LoginScreenState extends State<LoginScreen> {
       _googleWebSetupError = null;
     });
     try {
-      final cfg = await fetchGoogleAuthConfig();
+      final clientId = await resolveGoogleOAuthClientId();
       if (!mounted) return;
-      if (cfg.clientId.isEmpty) {
+      if (clientId.isEmpty) {
         setState(() {
-          _googleWebSetupError = AuthL10n.of(context).googleNotConfigured;
+          _googleWebSetupError = null;
+          _googleWebReady = false;
           _googleWebSetupInProgress = false;
         });
         return;
       }
       await GoogleSignIn.instance.initialize(
-        clientId: cfg.clientId,
+        clientId: clientId,
         serverClientId: null,
       );
-      _googleInitClientId = cfg.clientId;
+      _googleInitClientId = clientId;
 
       _googleAuthSub ??= GoogleSignIn.instance.authenticationEvents.listen(
         _onGoogleAuthEvent,
@@ -166,6 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _loading = true;
           _error = null;
           _loginErrorHint = null;
+          _errorTechnical = null;
         });
         try {
           final res = await socialLoginGoogle(idToken: idToken);
@@ -187,6 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _error = null;
       _loginErrorHint = null;
+      _errorTechnical = null;
       _loading = true;
     });
     try {
@@ -195,20 +225,34 @@ class _LoginScreenState extends State<LoginScreen> {
         _password.text,
       );
     } on ApiException catch (e) {
-      setState(() {
-        _error = e.message;
-        if (e.statusCode == 401) {
-          _loginErrorHint = a.loginHint401;
-        } else if (e.statusCode == 0) {
-          _loginErrorHint = a.loginHintNetwork;
-        } else {
-          _loginErrorHint = null;
-        }
-      });
+      if (e.statusCode == 0 && e.message.startsWith('Network error:')) {
+        final parts = humanizeAuthNetworkError(e.message, a);
+        setState(() {
+          _error = parts.summary;
+          _loginErrorHint = parts.hint;
+          _errorTechnical = parts.technical;
+        });
+      } else {
+        setState(() {
+          _error = e.message;
+          if (e.statusCode == 401) {
+            _loginErrorHint = a.loginHint401;
+          } else if (e.statusCode == 0) {
+            _loginErrorHint = a.loginHintNetwork;
+            _errorTechnical = null;
+          } else {
+            _loginErrorHint = null;
+            _errorTechnical = null;
+          }
+        });
+      }
     } catch (e) {
+      final raw = '$e';
+      final parts = humanizeAuthNetworkError(raw, a);
       setState(() {
-        _error = '$e';
-        _loginErrorHint = a.loginHintNetwork;
+        _error = parts.summary;
+        _loginErrorHint = parts.hint;
+        _errorTechnical = parts.technical;
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -219,17 +263,24 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _error = null;
       _loginErrorHint = null;
+      _errorTechnical = null;
       _loading = true;
     });
     try {
-      final cfg = await fetchGoogleAuthConfig();
-      if (cfg.clientId.isEmpty) {
+      final clientId = _googleClientResolved
+          ? _googleClientId
+          : await resolveGoogleOAuthClientId();
+      if (!mounted) return;
+      if (!_googleClientResolved) {
         setState(() {
-          _error = AuthL10n.of(context).googleNotConfigured;
+          _googleClientId = clientId;
+          _googleClientResolved = true;
         });
+      }
+      if (clientId.isEmpty) {
         return;
       }
-      await _ensureGoogleInitialized(cfg.clientId);
+      await _ensureGoogleInitialized(clientId);
 
       if (!GoogleSignIn.instance.supportsAuthenticate()) {
         setState(() {
@@ -330,6 +381,36 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
 
+    if (!_googleClientResolved) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.primary.withValues(alpha: 0.85),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              a.preparingGoogle,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_googleClientId.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return OutlinedButton.icon(
       onPressed: _loading ? null : _googleSignInMobile,
       icon: const _GoogleMark(),
@@ -341,10 +422,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+        minimumSize: const Size.fromHeight(52),
         foregroundColor: theme.colorScheme.onSurface,
         side: BorderSide(
-          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+          color: theme.colorScheme.outline.withValues(alpha: 0.45),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
         ),
       ),
     );
@@ -354,6 +439,23 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final a = AuthL10n.of(context);
+    final showGoogleBand = kIsWeb
+        ? (_googleWebSetupInProgress ||
+            _googleWebReady ||
+            (_googleWebSetupError != null))
+        : (!_googleClientResolved || _googleClientId.isNotEmpty);
+
+    final lowerTech = _errorTechnical?.toLowerCase() ?? '';
+    final lowerErr = _error?.toLowerCase() ?? '';
+    final looksLikeNetwork = lowerTech.contains('socket') ||
+        lowerTech.contains('failed host lookup') ||
+        lowerTech.contains('connection refused') ||
+        lowerErr.contains('network') ||
+        lowerErr.contains('ulaşılamadı') ||
+        lowerErr.contains('ağ erişimi');
+    final errorIcon =
+        looksLikeNetwork ? Icons.wifi_off_rounded : Icons.error_outline_rounded;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: AppChrome.authScreenBackdrop(
@@ -363,26 +465,40 @@ class _LoginScreenState extends State<LoginScreen> {
             SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 22),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  alignment: WrapAlignment.center,
+                  spacing: 14,
+                  runSpacing: 12,
                   children: [
-                    Text(
-                      a.appBrandName,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      a.loginSubtitle,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: Colors.white.withValues(alpha: 0.9),
+                    const TiemposBrandMark(size: 52),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 280),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            a.appBrandName,
+                            style: GoogleFonts.inter(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.05,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            a.loginSubtitle,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              height: 1.4,
+                              color: Colors.white.withValues(alpha: 0.92),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -395,7 +511,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Transform.translate(
                   offset: const Offset(0, -10),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 400),
                       child: AppChrome.webStyleAuthCard(
@@ -403,141 +519,241 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: SafeArea(
                           top: false,
                           child: SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+                            padding: const EdgeInsets.fromLTRB(20, 22, 20, 28),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                          _buildGoogleEntry(theme, a),
-                  const SizedBox(height: 22),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          a.orWithEmail,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  TextField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: a.email,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _password,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: a.password,
-                    ),
-                    onSubmitted: (_) => _loading ? null : _submit(),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 4,
-                    runSpacing: 0,
-                    children: [
-                      TextButton(
-                        onPressed: _loading
-                            ? null
-                            : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => SignupScreen(appState: widget.appState),
+                                if (showGoogleBand) ...[
+                                  _buildGoogleEntry(theme, a),
+                                  const SizedBox(height: 26),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Divider(
+                                          color: theme.colorScheme.outline
+                                              .withValues(alpha: 0.32),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                        ),
+                                        child: Text(
+                                          a.orWithEmail,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.42),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Divider(
+                                          color: theme.colorScheme.outline
+                                              .withValues(alpha: 0.32),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
-                        child: Text(a.signUpCta, style: GoogleFonts.inter(fontSize: 13)),
-                      ),
-                      TextButton(
-                        onPressed: _loading
-                            ? null
-                            : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(builder: (_) => const ForgotPasswordScreen()),
-                                );
-                              },
-                        child: Text(a.forgotPassword, style: GoogleFonts.inter(fontSize: 13)),
-                      ),
-                      TextButton(
-                        onPressed: _loading
-                            ? null
-                            : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(builder: (_) => const ResetPasswordScreen()),
-                                );
-                              },
-                        child: Text(a.resetWithCode, style: GoogleFonts.inter(fontSize: 13)),
-                      ),
-                    ],
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      style: GoogleFonts.inter(
-                        color: theme.colorScheme.error,
-                        fontSize: 13,
-                      ),
-                    ),
-                    if (_loginErrorHint != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _loginErrorHint!,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          height: 1.35,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                        ),
-                      ),
-                    ],
-                  ],
-                  const SizedBox(height: 24),
-                  GradientCtaButton(
-                    label: a.signIn,
-                    icon: Icons.login_rounded,
-                    busy: _loading,
-                    onPressed: _loading ? null : _submit,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    a.serverSleepHint,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      height: 1.35,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'API: ${ApiConfig.baseUrl}',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
-                    ),
-                  ),
+                                  const SizedBox(height: 26),
+                                ] else
+                                  const SizedBox(height: 4),
+                                TextField(
+                                  controller: _email,
+                                  keyboardType: TextInputType.emailAddress,
+                                  autocorrect: false,
+                                  decoration: InputDecoration(
+                                    labelText: a.email,
+                                    filled: true,
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                TextField(
+                                  controller: _password,
+                                  obscureText: true,
+                                  decoration: InputDecoration(
+                                    labelText: a.password,
+                                    filled: true,
+                                  ),
+                                  onSubmitted: (_) =>
+                                      _loading ? null : _submit(),
+                                ),
+                                const SizedBox(height: 14),
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  spacing: 2,
+                                  runSpacing: 6,
+                                  children: [
+                                    TextButton(
+                                      onPressed: _loading
+                                          ? null
+                                          : () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute<void>(
+                                                  builder: (_) => SignupScreen(
+                                                    appState: widget.appState,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                      child: Text(
+                                        a.signUpCta,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: _loading
+                                          ? null
+                                          : () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const ForgotPasswordScreen(),
+                                                ),
+                                              );
+                                            },
+                                      child: Text(
+                                        a.forgotPassword,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: _loading
+                                          ? null
+                                          : () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const ResetPasswordScreen(),
+                                                ),
+                                              );
+                                            },
+                                      child: Text(
+                                        a.resetWithCode,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_error != null) ...[
+                                  const SizedBox(height: 18),
+                                  DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.errorContainer
+                                          .withValues(alpha: 0.35),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: theme.colorScheme.error
+                                            .withValues(alpha: 0.22),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        14,
+                                        12,
+                                        14,
+                                        10,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Icon(
+                                                errorIcon,
+                                                size: 22,
+                                                color: theme.colorScheme.error,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(
+                                                  _error!,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    height: 1.35,
+                                                    color: theme
+                                                        .colorScheme.onErrorContainer,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          if (_loginErrorHint != null) ...[
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              _loginErrorHint!,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12.5,
+                                                height: 1.45,
+                                                color: theme
+                                                    .colorScheme.onSurface
+                                                    .withValues(alpha: 0.72),
+                                              ),
+                                            ),
+                                          ],
+                                          if (_errorTechnical != null &&
+                                              _errorTechnical != _error) ...[
+                                            Theme(
+                                              data: theme.copyWith(
+                                                dividerColor: Colors.transparent,
+                                                splashColor: Colors.transparent,
+                                              ),
+                                              child: ExpansionTile(
+                                                tilePadding: EdgeInsets.zero,
+                                                childrenPadding:
+                                                    const EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                title: Text(
+                                                  a.showTechnicalDetails,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: theme
+                                                        .colorScheme.primary,
+                                                  ),
+                                                ),
+                                                children: [
+                                                  SelectableText(
+                                                    _errorTechnical!,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11,
+                                                      height: 1.35,
+                                                      color: theme.colorScheme
+                                                          .onSurface
+                                                          .withValues(
+                                                        alpha: 0.55,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 26),
+                                GradientCtaButton(
+                                  label: a.signIn,
+                                  icon: Icons.login_rounded,
+                                  busy: _loading,
+                                  onPressed: _loading ? null : _submit,
+                                ),
+                                const SizedBox(height: 12),
                               ],
                             ),
                           ),

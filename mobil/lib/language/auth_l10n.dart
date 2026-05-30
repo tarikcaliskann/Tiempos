@@ -119,4 +119,34 @@ class AuthL10n {
   String get preparingGoogle => _e('Preparing Google sign-in…', 'Google girişi hazırlanıyor…');
   String get retry => _e('Retry', 'Yeniden dene');
   String get appBrandName => 'Tiempos';
+
+  String get networkErrorGenericTitle => _e(
+        'Could not reach the server',
+        'Sunucuya ulaşılamadı',
+      );
+  String get networkErrorPermissionTitle => _e(
+        'Network access blocked',
+        'Ağ erişimi engellendi',
+      );
+  String get networkErrorPermissionHint => _e(
+        'On macOS, the app needs outgoing network permission (fixed in current build). If you still see this, run from Terminal outside a restricted sandbox. On a physical phone, do not use 127.0.0.1 — use your computer LAN IP (same Wi‑Fi).',
+        'macOS’ta uygulamanın dışarı ağa çıkış izni gerekir (güncel sürümde eklendi). Hâlâ oluyorsa kısıtlı ortam yerine Terminal’den çalıştırın. Gerçek telefonda 127.0.0.1 kullanmayın; bilgisayarınızın yerel ağ IP’sini kullanın (aynı Wi‑Fi).',
+      );
+  String get networkErrorRefusedTitle => _e(
+        'Connection refused',
+        'Bağlantı reddedildi',
+      );
+  String get networkErrorRefusedHint => _e(
+        'Is the Spring API running on the expected port? Start the backend and try again.',
+        'Spring API beklenen portta çalışıyor mu? Backend’i başlatıp tekrar deneyin.',
+      );
+  String get networkErrorLocalhostTitle => _e(
+        'Localhost may be the wrong target',
+        'Yerel adres yanlış olabilir',
+      );
+  String get networkErrorLocalhostHint => _e(
+        'On a real device, 127.0.0.1 points to the phone itself. Use your PC LAN IP, or on Android emulator 10.0.2.2 is applied automatically when you use 127.0.0.1.',
+        'Gerçek cihazda 127.0.0.1 telefonun kendisidir. Bilgisayarınızın LAN IP’sini kullanın; Android emülatörde 127.0.0.1 otomatik olarak 10.0.2.2’ye çevrilir.',
+      );
+  String get showTechnicalDetails => _e('Technical details', 'Teknik ayrıntı');
 }

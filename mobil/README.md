@@ -41,6 +41,14 @@ Yerel veya başka bir sunucu için:
 flutter run --dart-define=API_BASE_URL=http://localhost:8080
 ```
 
+Backend `GET /api/auth/google-config` boş dönüyorsa (yerelde `GOOGLE_CLIENT_ID` tanımlı değilse), web ile **aynı Web OAuth istemci kimliğini** derleme anında verebilirsiniz:
+
+```bash
+flutter run -d macos \
+  --dart-define=API_BASE_URL=http://127.0.0.1:8080 \
+  --dart-define=GOOGLE_CLIENT_ID=YOUR_WEB_CLIENT.apps.googleusercontent.com
+```
+
 (Sondaki `/` ve `/api` olmamalı; istek yolları zaten `/api/...` ile başlar.)
 
 Profil paylaşımında kullanılan **web uygulaması kökü** (varsayılan `https://www.tiempos.site`, yol `/u/{kullanıcıId}`):

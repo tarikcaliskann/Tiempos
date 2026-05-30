@@ -65,6 +65,18 @@ Future<GoogleAuthConfig> fetchGoogleAuthConfig() async {
   return GoogleAuthConfig.fromJson(Map<String, dynamic>.from(data));
 }
 
+/// Sunucudaki `GOOGLE_CLIENT_ID` boşsa web ile aynı kimliği derleme anında verebilirsiniz:
+/// `flutter run --dart-define=GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com`
+Future<String> resolveGoogleOAuthClientId() async {
+  final fromApi = (await fetchGoogleAuthConfig()).clientId.trim();
+  if (fromApi.isNotEmpty) return fromApi;
+  const fromCompile = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+    defaultValue: '',
+  );
+  return fromCompile.trim();
+}
+
 Future<LoginResponse> socialLoginGoogle({
   String? idToken,
   String? accessToken,

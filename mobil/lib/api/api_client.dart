@@ -15,7 +15,7 @@ Future<dynamic> apiFetch(
   String? token,
   Duration timeout = const Duration(seconds: 90),
 }) async {
-  final base = ApiConfig.baseUrl;
+  final base = ApiConfig.resolvedBaseUrl;
   final p = path.startsWith('/') ? path : '/$path';
   final uri = Uri.parse('$base$p');
 

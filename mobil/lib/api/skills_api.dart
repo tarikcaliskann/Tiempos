@@ -65,7 +65,7 @@ class SkillDto {
 
 /// Backend proxy kapak — web `skillCoverProxyUrl`.
 String skillCoverProxyUrl(String skillId) {
-  final base = ApiConfig.baseUrl;
+  final base = ApiConfig.resolvedBaseUrl;
   return '$base/api/skills/$skillId/cover';
 }
 
