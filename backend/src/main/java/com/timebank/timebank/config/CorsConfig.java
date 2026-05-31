@@ -16,13 +16,19 @@ import java.util.List;
 public class CorsConfig {
 
     /**
-     * Flutter web + yerel Vite; Spring {@code http://localhost:[*]} desenini
-     * {@code application.properties} içinde köşeli parantez yüzünden yanlış parse
-     * edebildiği için burada sabitliyoruz.
+     * Flutter web varsayılan portu; Render’da {@code APP_CORS_BROWSER_DEV_PATTERNS=false}
+     * olsa bile yerel geliştirme bu origin’den prod API’ye istek atabilsin.
+     */
+    private static final List<String> BUILTIN_FLUTTER_WEB_ORIGINS = List.of(
+            "http://localhost:9339",
+            "http://127.0.0.1:9339"
+    );
+
+    /**
+     * Vite / React ve LAN; Spring {@code http://localhost:[*]} desenini properties’te parse
+     * etmek riskli olduğu için Java’da. Yalnızca {@code app.cors.browser-dev-patterns=true} iken eklenir.
      */
     private static final List<String> BUILTIN_BROWSER_ORIGIN_PATTERNS = List.of(
-            "http://localhost:9339",
-            "http://127.0.0.1:9339",
             "http://localhost:5173",
             "http://127.0.0.1:5173",
             "http://localhost:3000",
@@ -47,6 +53,7 @@ public class CorsConfig {
                         .filter(s -> !s.isEmpty())
                         .toList());
 
+        merged.addAll(BUILTIN_FLUTTER_WEB_ORIGINS);
         if (browserDevPatterns) {
             merged.addAll(BUILTIN_BROWSER_ORIGIN_PATTERNS);
         }

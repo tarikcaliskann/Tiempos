@@ -77,6 +77,8 @@ Ardından [Google Cloud Console](https://console.cloud.google.com/) → **API’
 
 `http://127.0.0.1:9339` ile `http://localhost:9339` **farklıdır**; uygulama hangi host’ta açılıyorsa onu ekleyin. Backend’deki Web client ID (`/api/auth/google-config`) ile uyumlu olmalı.
 
+**CORS (Flutter Web → Render API):** `http://localhost:9339` ve `http://127.0.0.1:9339` her zaman izinlidir. Vite portları ve LAN kökenleri yalnızca `APP_CORS_BROWSER_DEV_PATTERNS=true` (varsayılan) iken eklenir; Render’da `false` ile sıkılaştırabilirsiniz, Flutter web yine çalışır.
+
 **Giriş ekranında `GoogleSignInExceptionCode.canceled`:** Kullanıcı pencereyi kapattığında veya yukarıdaki OAuth hatası dönüşünde oluşabilir; iptal sessizce yutulur; yapılandırma hatasında ekranda `Authorized JavaScript origins` için kök URL gösterilir.
 
 ### Tema ve dil
