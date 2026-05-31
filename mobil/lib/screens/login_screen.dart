@@ -45,6 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _googleWebSetupInProgress = false;
   bool _googleWebReady = false;
   String? _googleWebSetupError;
+  /// Web: [fetchGoogleAuthConfig] tamamlandı (boş client, hata veya GIS hazır).
+  bool _googleWebConfigResolved = false;
 
   @override
   void initState() {
@@ -101,6 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _googleWebSetupInProgress = true;
       _googleWebSetupError = null;
+      _googleWebConfigResolved = false;
     });
     try {
       final clientId = await resolveGoogleOAuthClientId();
@@ -110,6 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _googleWebSetupError = null;
           _googleWebReady = false;
           _googleWebSetupInProgress = false;
+          _googleWebConfigResolved = true;
         });
         return;
       }
@@ -141,12 +145,22 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _googleWebReady = true;
         _googleWebSetupInProgress = false;
+        _googleWebConfigResolved = true;
       });
     } catch (e) {
       if (!mounted) return;
+      final raw = '$e';
+      final lower = raw.toLowerCase();
+      final l = AuthL10n.of(context);
+      final msg = (kIsWeb &&
+              (lower.contains('failed to fetch') ||
+                  lower.contains('clientexception')))
+          ? '${l.googleConfigFetchFailedHint}\n\n$raw'
+          : raw;
       setState(() {
-        _googleWebSetupError = '$e';
+        _googleWebSetupError = msg;
         _googleWebSetupInProgress = false;
+        _googleWebConfigResolved = true;
       });
     }
   }
@@ -232,12 +246,18 @@ class _LoginScreenState extends State<LoginScreen> {
           _errorTechnical = parts.technical;
         });
       } else {
+        final em = e.message;
+        final low = em.toLowerCase();
         setState(() {
-          _error = e.message;
+          _error = em;
           if (e.statusCode == 401) {
             _loginErrorHint = a.loginHint401;
           } else if (e.statusCode == 0) {
-            _loginErrorHint = a.loginHintNetwork;
+            _loginErrorHint = kIsWeb &&
+                    (low.contains('failed to fetch') ||
+                        low.contains('clientexception'))
+                ? a.googleConfigFetchFailedHint
+                : a.loginHintNetwork;
             _errorTechnical = null;
           } else {
             _loginErrorHint = null;
@@ -357,6 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       setState(() {
                         _googleWebReady = false;
                         _googleWebSetupError = null;
+                        _googleWebConfigResolved = false;
                       });
                       unawaited(_setupGoogleWebIfNeeded());
                     },
@@ -368,15 +389,96 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         );
       }
-      if (!_googleWebReady) {
-        return const SizedBox.shrink();
+      if (_googleWebReady) {
+        return Align(
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: googleSignInGisButton(),
+          ),
+        );
       }
-      return Align(
-        alignment: Alignment.center,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: googleSignInGisButton(),
-        ),
+      if (!_googleWebConfigResolved) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              height: 22,
+              width: 22,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              a.preparingGoogle,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            a.googleWebMissingClientHint,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              height: 1.4,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+            ),
+          ),
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+            onPressed: _loading
+                ? null
+                : () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(a.googleConfigureHint)),
+                    );
+                  },
+            icon: const _GoogleMark(),
+            label: Text(
+              a.continueWithGoogle,
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+              minimumSize: const Size.fromHeight(52),
+              foregroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+              side: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.4),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              onPressed: _loading
+                  ? null
+                  : () {
+                      setState(() {
+                        _googleWebReady = false;
+                        _googleWebSetupError = null;
+                        _googleWebConfigResolved = false;
+                      });
+                      unawaited(_setupGoogleWebIfNeeded());
+                    },
+              child: Text(
+                a.retry,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -465,12 +567,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final a = AuthL10n.of(context);
-    final showGoogleBand = kIsWeb
-        ? (_googleWebSetupInProgress ||
-            _googleWebReady ||
-            (_googleWebSetupError != null))
-        : true;
-
     final lowerTech = _errorTechnical?.toLowerCase() ?? '';
     final lowerErr = _error?.toLowerCase() ?? '';
     final looksLikeNetwork = lowerTech.contains('socket') ||
@@ -495,7 +591,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(child: TiemposWebLogo(height: 56)),
+                    const Center(child: TiemposWebLogo(height: 72)),
                     const SizedBox(height: 18),
                     Text(
                       a.appBrandName,
@@ -540,42 +636,39 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                if (showGoogleBand) ...[
-                                  _buildGoogleEntry(theme, a),
-                                  const SizedBox(height: 26),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Divider(
-                                          color: theme.colorScheme.outline
-                                              .withValues(alpha: 0.32),
+                                _buildGoogleEntry(theme, a),
+                                const SizedBox(height: 26),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(
+                                        color: theme.colorScheme.outline
+                                            .withValues(alpha: 0.32),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                      ),
+                                      child: Text(
+                                        a.orWithEmail,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.42),
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                        ),
-                                        child: Text(
-                                          a.orWithEmail,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.42),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(
+                                        color: theme.colorScheme.outline
+                                            .withValues(alpha: 0.32),
                                       ),
-                                      Expanded(
-                                        child: Divider(
-                                          color: theme.colorScheme.outline
-                                              .withValues(alpha: 0.32),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 26),
-                                ] else
-                                  const SizedBox(height: 4),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 26),
                                 TextField(
                                   controller: _email,
                                   keyboardType: TextInputType.emailAddress,

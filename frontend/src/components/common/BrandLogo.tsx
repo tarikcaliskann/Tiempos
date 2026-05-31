@@ -6,7 +6,7 @@ type BrandLogoProps = {
 export function BrandLogo({ className, alt = "Tiempos logo" }: BrandLogoProps) {
   return (
     <img
-      src="/logo.svg"
+      src="/logo.png"
       alt={alt}
       className={className}
       loading="eager"

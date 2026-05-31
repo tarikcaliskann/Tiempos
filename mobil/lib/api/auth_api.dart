@@ -34,7 +34,7 @@ Future<LoginResponse> loginRequest({
     '/api/auth/login',
     method: 'POST',
     body: {'email': email.trim(), 'password': password},
-    timeout: const Duration(seconds: 180),
+    timeout: const Duration(seconds: 240),
   );
   if (data is! Map) {
     throw StateError('Invalid login response');
@@ -57,7 +57,7 @@ class GoogleAuthConfig {
 Future<GoogleAuthConfig> fetchGoogleAuthConfig() async {
   final data = await apiFetch(
     '/api/auth/google-config',
-    timeout: const Duration(seconds: 90),
+    timeout: const Duration(seconds: 180),
   );
   if (data is! Map) {
     throw StateError('Invalid google-config response');

@@ -71,7 +71,6 @@ flutter:
 
   assets:
     - assets/images/logo.png
-    - assets/images/logo.svg
     - assets/data/profile_locations.json
     - assets/data/profile_languages.json
 

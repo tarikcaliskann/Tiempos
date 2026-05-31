@@ -35,6 +35,11 @@ class AuthL10n {
         'Could not reach the API. Check the API line below and your network.',
         'API\'ye ulaşılamadı. Aşağıdaki adresi ve ağ bağlantınızı kontrol edin.',
       );
+  /// Web: tarayıcı "Failed to fetch" — çoğunlukla CORS veya yanlış köken.
+  String get googleConfigFetchFailedHint => _e(
+        'Browser blocked the request (often CORS). Use this app from http://localhost:9339 on the same machine, or ensure the API allows your page origin (deploy latest backend / set CORS on Render).',
+        'Tarayıcı isteği engelledi (çoğunlukla CORS). Uygulamayı aynı bilgisayarda http://localhost:9339 üzerinden açın veya API’nin sayfa kökeninize izin verdiğinden emin olun (backend’i güncel deploy edin / Render’da CORS). Telefondan bilgisayar IP’siyle deniyorsanız backend’in bu kökene izin vermesi gerekir.',
+      );
   String get serverSleepHint => _e(
         'If the server was asleep, the first sign-in can take 1–2 minutes. Please wait on the loading spinner.',
         'Sunucu uyku modundaysa ilk giriş 1–2 dakika sürebilir. Lütfen yüklenene kadar bekleyin.',
@@ -154,5 +159,9 @@ class AuthL10n {
   String get googleConfigureHint => _e(
         'Add GOOGLE_CLIENT_ID to the backend .env or run with --dart-define=GOOGLE_CLIENT_ID=your Web client ID (same as the website).',
         'Google için backend .env içine GOOGLE_CLIENT_ID ekleyin veya web ile aynı Web istemci kimliğini şununla verin: --dart-define=GOOGLE_CLIENT_ID=....apps.googleusercontent.com',
+      );
+  String get googleWebMissingClientHint => _e(
+        'Google sign-in is unavailable until the API returns a Web client id (first request after idle can take 1–2 minutes on free hosting, or GOOGLE_CLIENT_ID may be unset). Use Retry after the API wakes up, or pass --dart-define=GOOGLE_CLIENT_ID=…',
+        'Google girişi, API Web istemci kimliği dönene kadar kapalıdır (ücretsiz barındırma uyandıktan sonra ilk istek 1–2 dk sürebilir; sunucuda GOOGLE_CLIENT_ID de eksik olabilir). API uyanınca Tekrar dene\'ye basın veya --dart-define=GOOGLE_CLIENT_ID=… kullanın.',
       );
 }

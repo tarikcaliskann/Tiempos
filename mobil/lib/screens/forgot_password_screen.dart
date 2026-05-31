@@ -79,7 +79,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  const TiemposWebLogo(height: 52),
+                  const TiemposWebLogo(height: 64),
                   const SizedBox(height: 16),
                   Text(
                     _sent ? a.forgotTitleSent : a.forgotTitle,

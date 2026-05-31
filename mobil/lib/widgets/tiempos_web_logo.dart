@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 
-/// Tiempos logosu — mobilde `assets/images/logo.png` kullanılır.
+/// Tiempos logosu — `assets/images/logo.png` (canlı web `frontend/public/logo.png` ile senkron).
 ///
-/// `logo.svg` içinde gömülü raster olduğu için `flutter_svg` ile güvenilir
-/// çizilmiyor. Web’deki `public/logo.svg` güncellenince aynı PNG’yi üretmek için:
-/// `python3 mobil/scripts/extract_logo_png.py` (veya projedeki eşdeğer script).
+/// Güncellemek: aynı PNG’yi her iki yola kopyalayın veya `mobil/scripts/sync_logo_png.py` çalıştırın.
 class TiemposWebLogo extends StatelessWidget {
-  const TiemposWebLogo({super.key, this.height = 52});
+  const TiemposWebLogo({
+    super.key,
+    this.height = 52,
+    /// Mavi–mor gradient gibi koyu zeminde koyu çizgili PNG okunur olsun diye beyaza boyar.
+    /// Açık kart / beyaz arka plan için `false` verin (orijinal renkler).
+    this.onDarkBackground = true,
+  });
 
   static const String _pngAsset = 'assets/images/logo.png';
 
   final double height;
+  final bool onDarkBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +24,8 @@ class TiemposWebLogo extends StatelessWidget {
       height: height,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
+      color: onDarkBackground ? Colors.white : null,
+      colorBlendMode: onDarkBackground ? BlendMode.srcIn : null,
       semanticLabel: 'Tiempos',
     );
   }

@@ -1,46 +1,29 @@
 import 'package:flutter/material.dart';
 
-/// Web `/logo.svg` yerine vektör benzeri — gradient kare + "T".
+/// Küçük marka — `assets/images/logo.png` (web `public/logo.png` ile aynı dosya).
 class TiemposBrandMark extends StatelessWidget {
-  const TiemposBrandMark({super.key, this.size = 44});
+  const TiemposBrandMark({
+    super.key,
+    this.size = 44,
+    this.onDarkBackground = false,
+  });
 
   final double size;
+  final bool onDarkBackground;
+
+  static const String _pngAsset = 'assets/images/logo.png';
 
   @override
   Widget build(BuildContext context) {
-    final r = BorderRadius.circular(size * 0.22);
-    return Container(
+    return Image.asset(
+      _pngAsset,
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        borderRadius: r,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF2563EB),
-            Color(0xFF7C3AED),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E1B4B).withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        'T',
-        style: TextStyle(
-          fontSize: size * 0.48,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-          height: 1,
-          letterSpacing: -0.5,
-        ),
-      ),
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+      color: onDarkBackground ? Colors.white : null,
+      colorBlendMode: onDarkBackground ? BlendMode.srcIn : null,
+      semanticLabel: 'Tiempos',
     );
   }
 }
