@@ -46,7 +46,6 @@ dependencies:
   image_picker: ^1.2.2
   image: ^4.8.0
   intl: ^0.20.2
-  flutter_svg: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +70,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/images/logo.png
     - assets/images/logo.svg
     - assets/data/profile_locations.json
     - assets/data/profile_languages.json
