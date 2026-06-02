@@ -85,6 +85,45 @@ Ardından [Google Cloud Console](https://console.cloud.google.com/) → **API’
 
 **Profile → Settings** üzerinden açık/koyu tema ve English/Türkçe dil seçimi `SharedPreferences` ile saklanır (`AppState` + `MaterialApp`).
 
+## Sürüm: Android (APK) ve iPhone (IPA)
+
+| Platform | Çıktı | Komut (özet) |
+|----------|--------|----------------|
+| **Android** | `.apk` | `flutter build apk --release` → `build/app/outputs/flutter-apk/app-release.apk` |
+| **iPhone (gerçek cihaz)** | **`.ipa`** | `flutter build ipa --release` → `build/ios/ipa/*.ipa` |
+
+**iOS’ta APK yok:** Apple tarafında dağıtım paketi **IPA**’dır (`flutter build ipa` arşivi imzalar ve dışa aktarır).
+
+### iPhone’a nasıl gider?
+
+- **TestFlight / App Store (önerilen):** Apple Developer Program ($/yıl) + Xcode’da **Signing & Capabilities** ile takım ve bundle ID (`com.tiempos.tiemposMobile`) ayarlı iken arşivleyip App Store Connect’e yükleyin; test kullanıcıları **TestFlight** ile indirir. GitHub’dan doğrudan IPA indirip “her telefona tıkla kur” Android kadar kolay değildir.
+- **Ad Hoc IPA:** Yalnızca Apple hesabınıza **UDID’leri kayıtlı** cihazlarda çalışır; yine imzalama gerekir.
+- **Simülatör:** `flutter run -d ios` — simülatör için **IPA gerekmez** (mağaza dağıtımı değildir).
+
+### IPA üretmek (Mac + Xcode)
+
+1. `open ios/Runner.xcworkspace`
+2. **Runner** → **Signing & Capabilities** → **Team** seçin (Apple ID ile Xcode’a giriş).
+3. Proje kökünde:
+
+```bash
+cd mobil
+flutter pub get
+flutter build ipa --release
+```
+
+Başarılı olunca IPA genelde **`mobil/build/ios/ipa/`** altında oluşur (`.ipa` dosya adı Flutter/Xcode ayarına göre değişir).
+
+### GitHub Release’e IPA eklemek (örnek)
+
+Önce [GitHub CLI](https://cli.github.com/) ile giriş: `gh auth login`. Mevcut bir etikete dosya eklemek için:
+
+```bash
+gh release upload v1.0.1 path/to/Tiempos.ipa --repo beza0/Tiempo_Project
+```
+
+(Yeni release açarken APK ile birlikte aynı `gh release create` komutuna birden fazla dosya verilebilir.)
+
 ## Kod yapısı
 
 | Yol | Açıklama |
