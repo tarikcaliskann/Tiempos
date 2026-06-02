@@ -12,16 +12,18 @@ class AuthL10n {
 
   String _e(String en, String tr) => _tr ? tr : en;
 
-  String get loginSubtitle => _e('Sign in to continue', 'Devam etmek için giriş yapın');
-  String get orWithEmail => _e('or with email', 'veya e-posta ile');
-  String get signIn => _e('Sign in', 'Giriş yap');
+  String get loginSubtitle =>
+      _e('Sign in to continue your learning journey', 'Öğrenmeye devam etmek için giriş yapın');
+  /// Web `auth.login.orContinue` — divider between Google and email fields.
+  String get orWithEmail => _e('or', 'veya');
+  String get signIn => _e('Sign In', 'Giriş yap');
   String get email => _e('Email', 'E-posta');
   String get password => _e('Password', 'Şifre');
   String get signUpCta => _e('Create account', 'Hesap oluştur');
-  String get forgotPassword => _e('Forgot password?', 'Şifrenizi mi unuttunuz?');
+  String get forgotPassword => _e('Forgot?', 'Unuttum?');
   String get resetWithCode => _e('Reset with email code', 'E-posta kodu ile sıfırla');
   String get alreadyHaveAccount => _e('Already have an account? Sign in', 'Zaten hesabınız var mı? Giriş yapın');
-  String get continueWithGoogle => _e('Continue with Google', 'Google ile devam et');
+  String get continueWithGoogle => _e('Sign in with Google', 'Google ile giriş yap');
   String googleOAuthWebHint(String origin) => _e(
         'Google blocked sign-in (often “origin_mismatch”). Add this exact origin under OAuth 2.0 Web client → Authorized JavaScript origins:\n$origin\n\nTip: use a fixed port so you only register once, e.g. flutter run -d chrome --web-port=9339',
         'Google girişi engellendi (“origin_mismatch”). OAuth 2.0 Web istemcisi → Yetkili JavaScript kökenleri listesine tam olarak şunu ekleyin:\n$origin\n\nİpucu: Sabit port kullanın (bir kez kayıt): flutter run -d chrome --web-port=9339',
@@ -45,24 +47,27 @@ class AuthL10n {
         'Sunucu uyku modundaysa ilk giriş 1–2 dakika sürebilir. Lütfen yüklenene kadar bekleyin.',
       );
 
-  String get signupTitle => _e('Create your account', 'Hesabınızı oluşturun');
-  String get signupSubtitle => _e('Start your skill exchange journey today', 'Beceri takasına bugün başlayın');
+  String get signupTitle => _e('Create your account', 'Hesap oluştur');
+  String get signupSubtitle =>
+      _e('Start your skill exchange journey today', 'Beceri takası yolculuğuna bugün başlayın');
   String get fullName => _e('Full name', 'Ad soyad');
   String get confirmPassword => _e('Confirm password', 'Şifre (tekrar)');
   String get termsPrefix => _e('I agree to the', 'Kabul ediyorum:');
   String get terms => _e('Terms of Service', 'Kullanım şartları');
   String get termsAnd => _e('and', 've');
   String get privacy => _e('Privacy Policy', 'Gizlilik politikası');
-  String get errorTermsRequired =>
-      _e('Please accept the Terms and Privacy Policy.', 'Lütfen şartları ve gizlilik politikasını kabul edin.');
-  String get createAccount => _e('Create account', 'Hesap oluştur');
+  String get errorTermsRequired => _e(
+        'Please accept the Terms of Service and Privacy Policy to continue.',
+        'Devam etmek için kullanım şartları ve gizlilik politikasını onaylayın.',
+      );
+  String get createAccount => _e('Create Account', 'Hesap oluştur');
   String get errorPasswordMismatch => _e('Passwords do not match.', 'Şifreler eşleşmiyor.');
   String get errorPasswordShort => _e('Password must be at least 8 characters.', 'Şifre en az 8 karakter olmalıdır.');
   String get errorFailed => _e('Could not create your account. Try again.', 'Hesap oluşturulamadı. Tekrar deneyin.');
   String get verifySentTitle => _e('Enter your verification code', 'Doğrulama kodunu girin');
   String get verifySentBody => _e(
         'We sent a 6-digit code to your email. Enter it below to open your account.',
-        'E-postanıza 6 haneli bir kod gönderdik. Hesabınızı açmak için aşağıya yazın.',
+        'E-postanıza 6 haneli bir kod gönderdik. Hesabınızı açmak için kodu aşağıya yazın.',
       );
   String get verifyMailpitHint => _e(
         'Local Mailpit: open http://localhost:8025 to read the code (not your real inbox).',
@@ -81,32 +86,40 @@ class AuthL10n {
   String get resendCodeBtn => _e('Resend code', 'Kodu yeniden gönder');
   String resendCodeWithTimer(String time) =>
       _e('Resend code ($time)', 'Kodu yeniden gönder ($time)');
-  String get goToSignIn => _e("I'll sign in later", 'Sonra giriş yapacağım');
-  String get errorVerifyCodeShort => _e('Enter the full 6-digit code.', '6 haneli kodu tam girin.');
+  String get goToSignIn => _e("I'll sign in later", 'Daha sonra giriş yapacağım');
+  String get errorVerifyCodeShort =>
+      _e('Enter the full 6-digit code.', '6 haneli kodu eksiksiz girin.');
 
   String get forgotTitle => _e('Forgot password?', 'Şifrenizi mi unuttunuz?');
   String get forgotTitleSent => _e('Check your email', 'E-postanızı kontrol edin');
-  String get forgotSubtitle => _e("We'll email you reset instructions.", 'Size sıfırlama talimatları göndereceğiz.');
+  String get forgotSubtitle =>
+      _e("No worries, we'll send you reset instructions", 'Sorun değil, sıfırlama talimatlarını gönderelim');
   String get forgotSubtitleSent => _e(
-        'If an account exists for this address, you will receive an email shortly.',
-        'Bu adres için bir hesap varsa kısa süre içinde e-posta alırsınız.',
+        "We've sent you a password reset link",
+        'Şifre sıfırlama bağlantısı gönderdik',
       );
-  String get sendResetLink => _e('Send reset link', 'Sıfırlama bağlantısı gönder');
+  String get sendResetLink => _e('Send Reset Link', 'Sıfırlama bağlantısı gönder');
   String get backSignIn => _e('Back to sign in', 'Girişe dön');
   String get enterEmail => _e('Enter your account email.', 'Hesap e-postanızı girin.');
   String get useDifferentEmail =>
       _e('Use a different email', 'Başka bir e-posta kullan');
   String get openResetWithCode => _e('Have a code from email? Use reset with code', 'E-postadan kodunuz mu var? Kod ile sıfırlamayı kullanın');
 
-  String get resetTitle => _e('Reset password', 'Şifreyi sıfırla');
-  String get resetTitleDone => _e('Password reset!', 'Şifre sıfırlandı!');
-  String get resetSubtitle => _e('Enter the code from your email and choose a new password.', 'E-postadaki kodu ve yeni şifrenizi girin.');
-  String get resetSubtitleDone => _e('You can now sign in with your new password.', 'Artık yeni şifrenizle giriş yapabilirsiniz.');
+  String get resetTitle => _e('Reset Password', 'Şifreyi sıfırla');
+  String get resetTitleDone => _e('Password Reset!', 'Şifre sıfırlandı!');
+  String get resetSubtitle => _e(
+        'Enter the reset code from your email, then choose a new password.',
+        'E-postadaki sıfırlama kodunu ve yeni şifrenizi girin.',
+      );
+  String get resetSubtitleDone => _e(
+        'Your password has been successfully reset',
+        'Şifreniz başarıyla sıfırlandı',
+      );
   String get newPassword => _e('New password', 'Yeni şifre');
   String get confirmNew => _e('Confirm new password', 'Yeni şifre (tekrar)');
   String get resetCodeLabel => _e('Reset code (6 digits)', 'Sıfırlama kodu (6 rakam)');
-  String get resetBtn => _e('Reset password', 'Şifreyi sıfırla');
-  String get continueSignIn => _e('Continue to sign in', 'Girişe devam et');
+  String get resetBtn => _e('Reset Password', 'Şifreyi sıfırla');
+  String get continueSignIn => _e('Continue to Sign In', 'Girişe devam et');
   String get pwdMismatch => _e('Passwords do not match.', 'Şifreler eşleşmiyor.');
 
   String get googleNotConfigured =>

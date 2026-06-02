@@ -10,6 +10,7 @@ import '../api/auth_api.dart';
 import '../app/app_state.dart';
 import '../auth/google_sign_in_render_button.dart';
 import '../language/auth_l10n.dart';
+import '../theme/app_colors.dart';
 import '../util/auth_network_messages.dart';
 import '../widgets/app_chrome.dart';
 import '../widgets/gradient_stat_card.dart';
@@ -619,20 +620,41 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Transform.translate(
-                  offset: const Offset(0, -10),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      child: AppChrome.webStyleAuthCard(
-                        theme: theme,
-                        child: SafeArea(
-                          top: false,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: Material(
+                  color: theme.brightness == Brightness.dark
+                      ? AppColors.darkCard
+                      : AppColors.lightCard,
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : AppColors.lightBorder.withValues(alpha: 0.85),
+                        ),
+                      ),
+                      boxShadow: theme.brightness == Brightness.light
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 24,
+                                offset: const Offset(0, -8),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 420),
                           child: SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(20, 22, 20, 28),
+                            padding: const EdgeInsets.fromLTRB(22, 26, 22, 32),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [

@@ -5,7 +5,6 @@ import '../api/skills_api.dart';
 import '../app/app_state.dart';
 import '../language/shell_l10n.dart';
 import '../widgets/app_chrome.dart';
-import '../widgets/gradient_stat_card.dart';
 import 'public_profile_screen.dart';
 import 'skill_detail_screen.dart';
 
@@ -68,6 +67,10 @@ class _BrowseScreenState extends State<BrowseScreen> {
   List<SkillDto> _filteredSorted() {
     final q = _search.text.trim().toLowerCase();
     var list = List<SkillDto>.from(_catalog);
+    final myId = widget.appState.userId?.trim();
+    if (myId != null && myId.isNotEmpty) {
+      list = list.where((s) => s.ownerId.trim().toLowerCase() != myId.toLowerCase()).toList();
+    }
     if (q.isNotEmpty) {
       list = list.where((s) {
         final cat = (s.category ?? '').toLowerCase();
@@ -117,7 +120,12 @@ class _BrowseScreenState extends State<BrowseScreen> {
     final theme = Theme.of(context);
     final sh = ShellL10n.of(context);
     final items = _filteredSorted();
-    final myId = widget.appState.userId;
+    final myId = widget.appState.userId?.trim();
+    final onlyOwnInCatalog = myId != null &&
+        myId.isNotEmpty &&
+        _catalog.isNotEmpty &&
+        _catalog.every((s) => s.ownerId.trim().toLowerCase() == myId.toLowerCase());
+    final isDark = theme.brightness == Brightness.dark;
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -204,7 +212,11 @@ class _BrowseScreenState extends State<BrowseScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
-                    _catalog.isEmpty ? sh.browseEmptyCatalog : sh.browseEmptySearch,
+                    _catalog.isEmpty
+                        ? sh.browseEmptyCatalog
+                        : onlyOwnInCatalog
+                            ? sh.browseOnlyOwnSkills
+                            : sh.browseEmptySearch,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 15,
@@ -217,20 +229,19 @@ class _BrowseScreenState extends State<BrowseScreen> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, i) {
                     final s = items[i];
-                    final own = myId != null && myId == s.ownerId;
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: _BrowseSkillCard(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _BrowseSkillListTile(
                         skill: s,
-                        isOwnListing: own,
                         onOpen: () => _openSkill(s.id),
                         onInstructor: () => _openInstructor(s.ownerId),
                         l10n: sh,
+                        isDark: isDark,
                       ),
                     );
                   },
@@ -244,20 +255,20 @@ class _BrowseScreenState extends State<BrowseScreen> {
   }
 }
 
-class _BrowseSkillCard extends StatelessWidget {
-  const _BrowseSkillCard({
+class _BrowseSkillListTile extends StatelessWidget {
+  const _BrowseSkillListTile({
     required this.skill,
-    required this.isOwnListing,
     required this.onOpen,
     required this.onInstructor,
     required this.l10n,
+    required this.isDark,
   });
 
   final SkillDto skill;
-  final bool isOwnListing;
   final VoidCallback onOpen;
   final VoidCallback onInstructor;
   final ShellL10n l10n;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -267,96 +278,164 @@ class _BrowseSkillCard extends StatelessWidget {
     final online = types.any((e) => e.toLowerCase() == 'online');
     final inPerson = types.any((e) => e.toLowerCase().contains('person'));
 
-    return AppChrome.webStyleSurfaceCard(
-      theme: theme,
+    final borderColor = theme.colorScheme.outline.withValues(
+      alpha: isDark ? 0.22 : 0.45,
+    );
+
+    return Material(
+      color: theme.colorScheme.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onOpen,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(
-                coverUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => ColoredBox(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.image_not_supported_outlined,
-                    size: 40,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 88,
+                  height: 88,
+                  child: Image.network(
+                    coverUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => ColoredBox(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 32,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    skill.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: onInstructor,
-                    child: Text(
-                      skill.ownerName,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      skill.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      if (skill.category != null && skill.category!.trim().isNotEmpty)
-                        Chip(
-                          label: Text(skill.category!, style: const TextStyle(fontSize: 12)),
-                          visualDensity: VisualDensity.compact,
-                          padding: EdgeInsets.zero,
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: onInstructor,
+                      child: Text(
+                        skill.ownerName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
                         ),
-                      if (online)
-                        Chip(
-                          label: Text(l10n.browseOnline, style: const TextStyle(fontSize: 12)),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      if (inPerson)
-                        Chip(
-                          label: Text(l10n.browseInPerson, style: const TextStyle(fontSize: 12)),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      Chip(
-                        label: Text(
-                          l10n.browseMinutesPerSession(skill.durationMinutes),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        visualDensity: VisualDensity.compact,
                       ),
-                    ],
-                  ),
-                  if (!isOwnListing) ...[
-                    const SizedBox(height: 12),
-                    GradientCtaButton(
-                      label: l10n.browseBookNow,
-                      icon: Icons.event_available_rounded,
-                      onPressed: onOpen,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        if (skill.category != null && skill.category!.trim().isNotEmpty)
+                          Chip(
+                            label: Text(
+                              skill.category!,
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: isDark ? 0.55 : 0.85),
+                            side: BorderSide(
+                              color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                            ),
+                          ),
+                        if (online)
+                          Chip(
+                            label: Text(
+                              l10n.browseOnline,
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: isDark ? 0.55 : 0.85),
+                            side: BorderSide(
+                              color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                            ),
+                          ),
+                        if (inPerson)
+                          Chip(
+                            label: Text(
+                              l10n.browseInPerson,
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: isDark ? 0.55 : 0.85),
+                            side: BorderSide(
+                              color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                            ),
+                          ),
+                        Chip(
+                          label: Text(
+                            l10n.browseMinutesPerSession(skill.durationMinutes),
+                            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: isDark ? 0.55 : 0.85),
+                          side: BorderSide(
+                            color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton.icon(
+                        onPressed: onOpen,
+                        icon: const Icon(Icons.event_available_rounded, size: 20),
+                        label: Text(
+                          l10n.browseBookNow,
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14),
+                        ),
+                        style: FilledButton.styleFrom(
+                          elevation: isDark ? 0 : 1,
+                          shadowColor: Colors.black.withValues(alpha: 0.12),
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

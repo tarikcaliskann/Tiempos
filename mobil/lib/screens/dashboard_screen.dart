@@ -168,6 +168,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: DashboardHero(
               title: sh.dashboardWelcome(_welcomeFirstName(sh)),
               subtitle: sh.dashboardSubtitle,
+              profileLetter: avatarLetterFromUser(
+                _dash?.fullName ?? widget.appState.fullName,
+                widget.appState.email,
+              ),
               onOpenNotifications: widget.onOpenNotifications,
               onOpenProfile: widget.onOpenProfile,
             ),

@@ -5,13 +5,13 @@ abstract final class AppColors {
   /// Web `--primary` / shadcn primary
   static const Color primary = Color(0xFF1D4ED8);
 
-  // Light
-  static const Color lightBackground = Color(0xFFF8FAFC);
-  static const Color lightForeground = Color(0xFF0A0A0A);
+  // Light — slate tonları (web shadcn light ile uyumlu, nötr gri-pembe değil)
+  static const Color lightBackground = Color(0xFFF1F5F9);
+  static const Color lightForeground = Color(0xFF0F172A);
   static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightMuted = Color(0xFFECECF0);
-  static const Color lightMutedFg = Color(0xFF717182);
-  static const Color lightBorder = Color(0x1A000000);
+  static const Color lightMuted = Color(0xFFE2E8F0);
+  static const Color lightMutedFg = Color(0xFF64748B);
+  static const Color lightBorder = Color(0xFFCBD5E1);
 
   /// `html.dark body` + web app shell (indigo gece).
   static const Color darkBackground = Color(0xFF1E1B4B);

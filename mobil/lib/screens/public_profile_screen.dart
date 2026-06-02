@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/user_api.dart';
 import '../app/app_state.dart';
+import '../language/conversation_l10n.dart';
 import '../language/profile_l10n.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_chrome.dart';
@@ -29,6 +31,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   PublicUserProfileDto? _profile;
   bool _loading = true;
   String? _error;
+  UserBlockStateDto? _blocks;
+  bool _blockBusy = false;
 
   @override
   void initState() {
@@ -58,12 +62,66 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         _profile = p;
         _loading = false;
       });
+      unawaited(_loadBlocks());
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _error = '$e';
         _loading = false;
       });
+    }
+  }
+
+  bool get _isOtherUser {
+    final me = widget.appState.userId?.trim().toLowerCase();
+    if (me == null || me.isEmpty) return false;
+    return me != widget.userId.trim().toLowerCase();
+  }
+
+  Future<void> _loadBlocks() async {
+    final t = widget.appState.token;
+    if (t == null || t.isEmpty || !_isOtherUser) return;
+    try {
+      final b = await fetchMyBlockState(t);
+      if (mounted) setState(() => _blocks = b);
+    } catch (_) {}
+  }
+
+  Future<void> _confirmAndToggleBlock() async {
+    final t = widget.appState.token;
+    if (t == null || !_isOtherUser || _blockBusy) return;
+    final conv = ConversationL10n.of(context);
+    final lower = widget.userId.toLowerCase();
+    final blocked = _blocks?.blockedUserIds.contains(lower) ?? false;
+    if (!blocked) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(conv.blockConfirmTitle),
+          content: Text(conv.blockConfirmBody),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(conv.cancelAction)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(conv.blockConfirmAction)),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
+    setState(() => _blockBusy = true);
+    try {
+      if (blocked) {
+        final s = await unblockUser(t, widget.userId);
+        if (mounted) setState(() => _blocks = s);
+      } else {
+        final s = await blockUser(t, widget.userId);
+        if (mounted) setState(() => _blocks = s);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    } finally {
+      if (mounted) setState(() => _blockBusy = false);
     }
   }
 
@@ -173,6 +231,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final pl = ProfileL10n.of(context);
+    final conv = ConversationL10n.of(context);
+    final blockedOther =
+        _blocks?.blockedUserIds.contains(widget.userId.toLowerCase()) ?? false;
 
     return Scaffold(
       appBar: AppChrome.gradientAppBar(title: pl.publicMemberTitle),
@@ -528,6 +589,55 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                         ),
                                       ],
                                     ],
+                                  ),
+                                ),
+                              ],
+                              if (widget.appState.token != null &&
+                                  _isOtherUser &&
+                                  _profile != null) ...[
+                                const SizedBox(height: 24),
+                                _sectionLabel(theme, pl.blockUserSection),
+                                const SizedBox(height: 8),
+                                _surfaceCard(
+                                  theme,
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                                    child: OutlinedButton.icon(
+                                      onPressed: _blockBusy ? null : _confirmAndToggleBlock,
+                                      icon: _blockBusy
+                                          ? SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: theme.colorScheme.primary,
+                                              ),
+                                            )
+                                          : Icon(
+                                              blockedOther
+                                                  ? Icons.lock_open_rounded
+                                                  : Icons.block_rounded,
+                                            ),
+                                      label: Text(
+                                        blockedOther ? conv.unblock : conv.block,
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: blockedOther
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.error,
+                                        side: BorderSide(
+                                          color: (blockedOther
+                                                  ? theme.colorScheme.primary
+                                                  : theme.colorScheme.error)
+                                              .withValues(alpha: 0.55),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                          horizontal: 12,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],

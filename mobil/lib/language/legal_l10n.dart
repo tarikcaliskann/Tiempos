@@ -22,8 +22,8 @@ class LegalL10n {
   String get community => _e('Community', 'Topluluk');
   String get contact => _e('Contact', 'İletişim');
   String get support => _e('Support', 'Destek');
-  String get terms => _e('Terms of service', 'Kullanım şartları');
-  String get privacy => _e('Privacy policy', 'Gizlilik politikası');
-  String get cancellation => _e('Cancellation policy', 'İptal politikası');
+  String get terms => _e('Terms of Service', 'Kullanım şartları');
+  String get privacy => _e('Privacy Policy', 'Gizlilik politikası');
+  String get cancellation => _e('Cancellations & no-show', 'İptal ve no-show');
   String get instructorGuide => _e('Instructor guide', 'Eğitmen rehberi');
 }

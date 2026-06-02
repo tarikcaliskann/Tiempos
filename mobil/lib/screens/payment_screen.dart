@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_state.dart';
+import '../language/profile_l10n.dart';
+import '../language/shell_l10n.dart';
 import '../widgets/app_chrome.dart';
 
 // -----------------------------------------------------------------------------
@@ -32,14 +34,15 @@ class PaymentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final shell = ShellL10n.of(context);
+    final profile = ProfileL10n.of(context);
     return Scaffold(
-      appBar: AppChrome.gradientAppBar(title: 'Ödeme'),
+      appBar: AppChrome.gradientAppBar(title: shell.buyTimeCredits),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'Ödeme mobil uygulamada şimdilik kapalıdır.\n\n'
-            'Saat kredisi için TimeLink web uygulamasını kullanabilirsiniz.',
+            profile.paymentDisabledMobile,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyLarge,
           ),

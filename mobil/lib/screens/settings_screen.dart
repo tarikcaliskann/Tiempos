@@ -6,6 +6,7 @@ import '../api/user_api.dart';
 import '../app/app_state.dart';
 import '../language/settings_l10n.dart';
 import '../help/help_center_screen.dart';
+import '../theme/app_colors.dart';
 import '../widgets/app_chrome.dart';
 
 /// Web `SettingsPage` ile aynı: şifre, dil, tema, hesap silme (`user_api`).
@@ -414,31 +415,25 @@ class _SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final border = borderColor ?? theme.colorScheme.outline.withValues(alpha: 0.22);
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(17),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primary.withValues(alpha: 0.45),
-            theme.colorScheme.tertiary.withValues(alpha: 0.35),
-          ],
+    final isDark = theme.brightness == Brightness.dark;
+    final border = borderColor ??
+        theme.colorScheme.outline.withValues(alpha: isDark ? 0.28 : 0.55);
+    final fill = isDark
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
+        : AppColors.lightCard;
+    return Material(
+      color: fill,
+      elevation: isDark ? 0 : 1.5,
+      shadowColor: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: border),
         ),
-      ),
-      padding: const EdgeInsets.all(1.2),
-      child: Material(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: border),
-          ),
-          child: child,
-        ),
+        child: child,
       ),
     );
   }
@@ -460,8 +455,8 @@ class _ChoiceChip extends StatelessWidget {
     final theme = Theme.of(context);
     return Material(
       color: selected
-          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.5)
-          : theme.colorScheme.surfaceContainerHigh.withValues(alpha: 0.6),
+          ? theme.colorScheme.primary.withValues(alpha: 0.16)
+          : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onSelected,
@@ -473,7 +468,7 @@ class _ChoiceChip extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: selected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.75),
+              color: selected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.82),
             ),
           ),
         ),

@@ -133,11 +133,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return 'data:image/jpeg;base64,${base64Encode(jpg)}';
   }
 
-  Future<void> _pickPhoto(ProfileL10n l10n) async {
+  Future<void> _showPhotoSourceSheet(ProfileL10n l10n) async {
+    if (_saving || !mounted) return;
+    final m = MaterialLocalizations.of(context);
+    final allowCamera = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.android);
+
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              child: Text(
+                l10n.photoAddTitle,
+                style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800),
+              ),
+            ),
+            if (allowCamera)
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: Text(l10n.photoTakeCamera, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                onTap: () => Navigator.pop(ctx, 'camera'),
+              ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.photoChooseGallery, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+              onTap: () => Navigator.pop(ctx, 'gallery'),
+            ),
+            ListTile(
+              leading: Icon(Icons.close_rounded, color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.6)),
+              title: Text(m.cancelButtonLabel, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+              onTap: () => Navigator.pop(ctx),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (choice == 'camera') {
+      await _pickPhotoFromSource(ImageSource.camera, l10n);
+    } else if (choice == 'gallery') {
+      await _pickPhotoFromSource(ImageSource.gallery, l10n);
+    }
+  }
+
+  Future<void> _pickPhotoFromSource(ImageSource source, ProfileL10n l10n) async {
     setState(() => _avatarError = null);
     try {
       final x = await ImagePicker().pickImage(
-        source: kIsWeb ? ImageSource.gallery : ImageSource.gallery,
+        source: source,
         maxWidth: 2048,
         maxHeight: 2048,
       );
@@ -157,8 +208,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _avatarUrl = dataUrl;
         _avatarError = null;
       });
-    } catch (_) {
-      if (mounted) setState(() => _avatarError = l10n.photoInvalid);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _avatarError = l10n.photoInvalid);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e')),
+      );
     }
   }
 
@@ -237,10 +292,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(64),
-          child: SizedBox(
-            width: 128,
-            height: 128,
-            child: child,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _saving ? null : () => _showPhotoSourceSheet(l10n),
+              child: SizedBox(
+                width: 128,
+                height: 128,
+                child: child,
+              ),
+            ),
           ),
         ),
         Positioned(
@@ -249,14 +310,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Material(
             color: theme.colorScheme.primary,
             shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: _saving ? null : () => _pickPhoto(l10n),
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(Icons.photo_camera_rounded, color: theme.colorScheme.onPrimary, size: 22),
-              ),
+            child: IconButton(
+              tooltip: l10n.photoPick,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              icon: Icon(Icons.add_a_photo_rounded, color: theme.colorScheme.onPrimary, size: 22),
+              onPressed: _saving ? null : () => _showPhotoSourceSheet(l10n),
             ),
           ),
         ),
@@ -267,14 +326,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Material(
               color: theme.colorScheme.surface,
               shape: const CircleBorder(),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: _saving ? null : _removePhoto,
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 22),
-                ),
+              child: IconButton(
+                tooltip: l10n.photoRemove,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 22),
+                onPressed: _saving ? null : _removePhoto,
               ),
             ),
           ),

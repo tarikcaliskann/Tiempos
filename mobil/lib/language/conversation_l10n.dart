@@ -16,8 +16,14 @@ class ConversationL10n {
   String get conversationNotFound => _e('Conversation not found', 'Sohbet bulunamadı');
   String requestsCount(int n) => _e('$n requests', '$n talep');
   String get profileTooltip => _e('Profile', 'Profil');
-  String get block => _e('Block', 'Engelle');
-  String get unblock => _e('Unblock', 'Engeli kaldır');
+  String get block => _e('Block user', 'Kullanıcıyı engelle');
+  String get unblock => _e('Unblock user', 'Engeli kaldır');
+  String get blockConfirmTitle => _e('Block this user?', 'Kullanıcı engellensin mi?');
+  String get blockConfirmBody => _e(
+        'If you block this user, they will not be able to send you messages. You can unblock them later.',
+        'Bu kullanıcıyı engellerseniz size mesaj gönderemez. Daha sonra isterseniz engeli kaldırabilirsiniz.',
+      );
+  String get blockConfirmAction => _e('Yes, block', 'Evet, engelle');
   String get activeRequest => _e('Active request', 'Aktif talep');
   String offerLine(String schedule, int minutes) =>
       _tr ? 'Teklif · $schedule · $minutes dk' : 'Offer · $schedule · $minutes min';
@@ -28,7 +34,7 @@ class ConversationL10n {
       case 'cancelled':
         return _e('Cancelled', 'İptal edildi');
       case 'accepted':
-        return _e('Accepted', 'Onaylandı');
+        return _e('Confirmed', 'Onaylandı');
       case 'rejected':
         return _e('Declined', 'Reddedildi');
       case 'completed':
@@ -48,7 +54,7 @@ class ConversationL10n {
       case 'PENDING':
         return _e('Pending', 'Beklemede');
       case 'ACCEPTED':
-        return _e('Accepted', 'Onaylandı');
+        return _e('Confirmed', 'Onaylandı');
       case 'REJECTED':
         return _e('Rejected', 'Reddedildi');
       case 'CANCELLED':
@@ -71,16 +77,18 @@ class ConversationL10n {
   String get outsideAvailability =>
       _e('Outside skill availability window.', 'Seçilen zaman becerinin uygunluk aralığı dışında.');
   String get sendCounterOffer => _e('Send counter-offer', 'Karşı teklif gönder');
-  String counterOfferDefaultMessage(String skillTitle) =>
-      _tr ? '$skillTitle için alternatif zaman' : 'Alternative time for $skillTitle';
+  String counterOfferDefaultMessage(String skillTitle) => _tr
+      ? 'Bu saat benim için uygun değil. $skillTitle için başka bir zaman önerebilirim.'
+      : 'This time does not work for me. I can offer another time for $skillTitle.';
 
   String get instructorProposedSlot =>
       _e('The instructor proposed a new time slot.', 'Eğitmen yeni bir zaman önerdi.');
   String otherWantsToConnect(String name) =>
-      _tr ? '$name bağlantı kurmak istiyor.' : '$name wants to connect.';
+      _tr ? '$name sizinle bağlantı kurmak istiyor.' : '$name wants to connect with you.';
   String get accept => _e('Accept', 'Kabul et');
   String get decline => _e('Decline', 'Reddet');
-  String get declineAndPropose => _e('Decline & propose time', 'Reddet ve zaman öner');
+  String get declineAndPropose =>
+      _e('Decline and offer other time', 'Reddet ve yeni zaman öner');
   String waitingForResponse(String name) =>
       _tr ? '$name yanıt bekliyor.' : 'Waiting for $name to respond.';
   String get cancelRequest => _e('Cancel request', 'Talebi iptal et');
@@ -92,7 +100,7 @@ class ConversationL10n {
   String get iStartedInstructor => _e('I started (instructor)', 'Başladım (eğitmen)');
   String get leaveReview => _e('Leave a review', 'Değerlendirme bırak');
   String get meetingUrlLabel => _e('Meeting URL (Zoom, Meet…)', 'Toplantı bağlantısı (Zoom, Meet…)');
-  String get messageHint => _e('Message…', 'Mesaj…');
+  String get messageHint => _e('Type a message…', 'Mesaj yazın…');
   String get meetingLinkSaved => _e('Meeting link saved', 'Toplantı bağlantısı kaydedildi');
   String get dialogSubmit => _e('Submit', 'Gönder');
   String get cancelAction => _e('Cancel', 'İptal');

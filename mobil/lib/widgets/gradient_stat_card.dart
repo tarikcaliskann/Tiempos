@@ -117,12 +117,15 @@ class DashboardHero extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    required this.profileLetter,
     this.onOpenNotifications,
     this.onOpenProfile,
   });
 
   final String title;
   final String subtitle;
+  /// Tek harf (ad veya e-posta); navbar avatar.
+  final String profileLetter;
   final VoidCallback? onOpenNotifications;
   final VoidCallback? onOpenProfile;
 
@@ -173,13 +176,13 @@ class DashboardHero extends StatelessWidget {
                     child: InkWell(
                       onTap: onOpenProfile,
                       customBorder: const CircleBorder(),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 40,
                         height: 40,
                         child: Center(
                           child: Text(
-                            'Y',
-                            style: TextStyle(
+                            profileLetter,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 16,

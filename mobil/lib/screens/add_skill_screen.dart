@@ -6,10 +6,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/api_exception.dart';
 import '../api/skills_api.dart';
 import '../app/app_state.dart';
+import '../data/profile_picklists.dart';
+import '../language/profile_l10n.dart';
 import '../language/skill_flow_l10n.dart';
 import '../util/booking_utils.dart';
 import '../util/skill_description.dart';
 import '../widgets/app_chrome.dart';
+import '../widgets/searchable_profile_combobox.dart';
 
 const _categories = [
   'Sports',
@@ -64,12 +67,16 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
   bool _loadingSkill = false;
   bool _saving = false;
   String? _error;
+  ProfilePicklists? _picklists;
 
   bool get _isEdit => widget.skillId != null && widget.skillId!.trim().isNotEmpty;
 
   @override
   void initState() {
     super.initState();
+    ProfilePicklists.load().then((p) {
+      if (mounted) setState(() => _picklists = p);
+    });
     if (_isEdit) {
       _loadSkill();
     } else {
@@ -252,6 +259,7 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sf = SkillFlowL10n.of(context);
+    final pl = ProfileL10n.of(context);
     final times = _timeOptions();
 
     return Scaffold(
@@ -394,12 +402,28 @@ class _AddSkillScreenState extends State<AddSkillScreen> {
                   ),
                   if (_sessionTypes.any((e) => e.toLowerCase().contains('person'))) ...[
                     const SizedBox(height: 12),
-                    TextField(
-                      controller: _locationText,
-                      decoration: InputDecoration(
-                        labelText: sf.inPersonLocation,
+                    if (_picklists != null) ...[
+                      SearchableProfileCombobox(
+                        label: sf.inPersonLocation,
+                        value: _locationText.text,
+                        onChanged: (v) => setState(() => _locationText.text = v),
+                        options: mergeLegacyOption(
+                          _picklists!.locationOptions(),
+                          _locationText.text,
+                        ),
+                        placeholder: pl.locationHint,
+                        searchPlaceholder: pl.picklistSearch,
+                        emptyText: sf.locationEmpty,
                       ),
-                    ),
+                    ] else ...[
+                      TextField(
+                        controller: _locationText,
+                        decoration: InputDecoration(
+                          labelText: sf.inPersonLocation,
+                          hintText: sf.locationSearchHint,
+                        ),
+                      ),
+                    ],
                   ],
                   const SizedBox(height: 16),
                   Text(

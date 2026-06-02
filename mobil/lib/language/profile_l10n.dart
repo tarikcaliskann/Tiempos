@@ -23,7 +23,7 @@ class ProfileL10n {
   String get shareCopied => _e('Profile link copied.', 'Profil bağlantısı kopyalandı.');
   String get shareError => _e('Could not share profile.', 'Profil paylaşılamadı.');
   String get noRatingsYet => _e('No ratings yet', 'Henüz değerlendirme yok');
-  String get timeCreditsPrefix => _e('Time credits:', 'Saat kredisi:');
+  String get timeCreditsPrefix => _e('Hours balance:', 'Saat bakiyesi:');
   String get tabTeaching => _e('Teaching', 'Öğretiyorum');
   String get tabLearning => _e('Learning', 'Öğreniyorum');
   String get tabReviews => _e('Reviews', 'Yorumlar');
@@ -60,11 +60,11 @@ class ProfileL10n {
       _e('${avg.toStringAsFixed(1)} ($count reviews)', '${avg.toStringAsFixed(1)} ($count değerlendirme)');
   String get buyTimeCredits => _e('Buy time credits', 'Saat kredisi satın al');
   String get paymentDisabledMobile => _e(
-        'Buying time credits is not available in the mobile app for now. Please use the TimeLink website.',
-        'Saat kredisi satın alma mobil uygulamada şimdilik kapalı. Lütfen TimeLink web sitesini kullanın.',
+        'Buying time credits is not available in the mobile app for now. Please use the Tiempos website.',
+        'Saat kredisi satın alma mobil uygulamada şimdilik kapalı. Lütfen Tiempos web sitesini kullanın.',
       );
   String get settings => _e('Settings', 'Ayarlar');
-  String get logOut => _e('Log out', 'Çıkış yap');
+  String get logOut => _e('Log out', 'Çıkış');
   String get edit => _e('Edit', 'Düzenle');
   String studentsCount(int n) => _e('$n students', '$n öğrenci');
   String get minPerSessionSuffix => _e('min', 'dk');
@@ -111,11 +111,15 @@ class ProfileL10n {
   }
 
   // --- Edit profile (web editProfile) ---
-  String get editProfileTitle => _e('Edit profile', 'Profili düzenle');
-  String get editProfileSubtitle => _e('Update your personal information.', 'Kişisel bilgilerinizi güncelleyin.');
-  String get saveChanges => _e('Save changes', 'Kaydet');
+  String get editProfileTitle => _e('Edit Profile', 'Profili düzenle');
+  String get editProfileSubtitle =>
+      _e('Update your personal information', 'Kişisel bilgilerinizi güncelleyin');
+  String get saveChanges => _e('Save Changes', 'Değişiklikleri kaydet');
   String get loading => _e('Loading…', 'Yükleniyor…');
   String get photoPick => _e('Change photo', 'Fotoğraf seç');
+  String get photoTakeCamera => _e('Take photo', 'Fotoğraf çek');
+  String get photoChooseGallery => _e('Choose from gallery', 'Galeriden seç');
+  String get photoAddTitle => _e('Profile photo', 'Profil fotoğrafı');
   String get photoRemove => _e('Remove photo', 'Fotoğrafı kaldır');
   String get photoTooLarge => _e('File too large. Pick an image up to 4 MB.', 'Dosya çok büyük. En fazla 4 MB seçin.');
   String get photoInvalid => _e('Please pick an image (JPEG, PNG, WebP or GIF).', 'Lütfen bir görsel seçin (JPEG, PNG, WebP veya GIF).');
@@ -141,7 +145,9 @@ class ProfileL10n {
   String get saveFailed => _e('Could not save profile.', 'Profil kaydedilemedi.');
 
   // --- Public member profile (viewing someone else) ---
-  String get publicMemberTitle => _e('Member profile', 'Üye profili');
+  String get publicMemberTitle => _e('Profile', 'Profil');
+  String get blockUserSection =>
+      _e('Block or unblock this member', 'Üyeyi engelle veya engeli kaldır');
   String get publicProfileLoading => _e('Loading profile…', 'Profil yükleniyor…');
   String get publicNotSignedIn => _e('Not signed in', 'Oturum açık değil');
   String get sectionAbout => _e('ABOUT', 'HAKKINDA');

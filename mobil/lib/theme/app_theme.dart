@@ -20,11 +20,22 @@ abstract final class AppTheme {
         secondary: AppColors.lightMuted,
         onSecondary: AppColors.lightForeground,
         outline: AppColors.lightBorder,
+        surfaceContainerHighest: const Color(0xFFE2E8F0),
+        surfaceContainerHigh: const Color(0xFFF1F5F9),
       ),
     );
     return base.copyWith(
       textTheme: _interTextTheme(base.textTheme),
       scaffoldBackgroundColor: AppColors.lightBackground,
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.lightForeground,
+        iconTheme: IconThemeData(color: AppColors.lightForeground),
+      ),
       inputDecorationTheme: _inputDecorationLight(),
       chipTheme: _chipThemeLight(),
       segmentedButtonTheme: _segmentedLight(),
@@ -36,9 +47,12 @@ abstract final class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.lightCard,
-        elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.06),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.65)),
+        ),
       ),
       navigationBarTheme: _navBarThemeLight(),
     );
@@ -64,6 +78,15 @@ abstract final class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.darkForeground,
+        iconTheme: IconThemeData(color: AppColors.darkForeground),
+      ),
       inputDecorationTheme: _inputDecorationDark(),
       chipTheme: _chipThemeDark(),
       segmentedButtonTheme: _segmentedDark(),
@@ -92,11 +115,11 @@ abstract final class AppTheme {
   static InputDecorationTheme _inputDecorationLight() {
     return InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.lightMuted.withValues(alpha: 0.55),
+      fillColor: AppColors.lightCard,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.35)),
+        borderSide: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.9)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -126,8 +149,13 @@ abstract final class AppTheme {
   static ChipThemeData _chipThemeLight() {
     return ChipThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.22)),
-      labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+      side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.75)),
+      backgroundColor: AppColors.lightMuted.withValues(alpha: 0.45),
+      labelStyle: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: AppColors.lightForeground,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
     );
   }
@@ -149,8 +177,20 @@ abstract final class AppTheme {
   static SegmentedButtonThemeData _segmentedLight() {
     return SegmentedButtonThemeData(
       style: ButtonStyle(
-        side: WidgetStateProperty.all(BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.4))),
+        side: WidgetStateProperty.all(BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.85))),
         shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary.withValues(alpha: 0.14);
+          }
+          return AppColors.lightCard;
+        }),
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary;
+          }
+          return AppColors.lightForeground.withValues(alpha: 0.82);
+        }),
       ),
     );
   }
@@ -167,9 +207,9 @@ abstract final class AppTheme {
   static NavigationBarThemeData _navBarThemeLight() {
     return NavigationBarThemeData(
       backgroundColor: AppColors.lightCard,
-      elevation: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.08),
-      indicatorColor: AppColors.primary.withValues(alpha: 0.14),
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
       height: 72,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);

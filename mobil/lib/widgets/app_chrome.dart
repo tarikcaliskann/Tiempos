@@ -42,6 +42,8 @@ abstract final class AppChrome {
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      // M3 varsayılan opak `surface` gradient’i kapatabilir — şeffaf bırak.
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
       iconTheme: const IconThemeData(color: Colors.white),
@@ -49,8 +51,13 @@ abstract final class AppChrome {
       automaticallyImplyLeading: automaticallyImplyLeading,
       centerTitle: true,
       titleSpacing: 0,
-      flexibleSpace: const DecoratedBox(
-        decoration: BoxDecoration(gradient: heroGradientLinear),
+      flexibleSpace: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: const BoxDecoration(gradient: heroGradientLinear),
+          ),
+        ],
       ),
       title: titleWidget != null
           ? t
@@ -241,7 +248,7 @@ abstract final class AppChrome {
       hintText: hintText,
       prefixIcon: Icon(Icons.search_rounded, color: cs.primary.withValues(alpha: 0.85)),
       filled: true,
-      fillColor: isDark ? AppColors.darkCard.withValues(alpha: 0.92) : Colors.white,
+      fillColor: isDark ? AppColors.darkCard.withValues(alpha: 0.92) : AppColors.lightCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

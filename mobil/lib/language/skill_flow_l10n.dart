@@ -16,39 +16,45 @@ class SkillFlowL10n {
   String get noBookableSlots =>
       _e('No bookable slots match this skill’s calendar. Try another day or contact the instructor.',
           'Bu becerinin takvimine uygun müsait slot yok. Başka bir gün deneyin veya eğitmenle iletişime geçin.');
-  String get bookSession => _e('Book session', 'Seans ayırt');
+  String get bookSession => _e('Book Session', 'Oturum ayırt');
   String get dateLabel => _e('Date', 'Tarih');
   String get startTime => _e('Start time', 'Başlangıç saati');
-  String get sessionLengthMinutes => _e('Session length (minutes)', 'Seans süresi (dakika)');
+  String get sessionLengthMinutes => _e('Session Duration (minutes)', 'Oturum süresi (dakika)');
   String minutesOption(int m) => _tr ? '$m dakika' : '$m minutes';
   String get messageToInstructor => _e('Message to instructor', 'Eğitmene mesaj');
   String get defaultBookMessage =>
-      _e("I'd like to book a session with you.", 'Sizinle bir seans ayırtmak istiyorum.');
+      _e("I'd like to book a session.", 'Oturum ayırtmak istiyorum.');
   String get outsideAvailability =>
       _e('Selected time is outside this skill’s published availability.', 'Seçilen zaman becerinin yayınlanan uygunluğu dışında.');
-  String get sendRequest => _e('Send request', 'Talep gönder');
-  String get bookingSentSnack => _e('Booking request sent. Check Messages.', 'Rezervasyon talebi gönderildi. Mesajlar’a bakın.');
+  String get sendRequest => _e('Send request', 'İsteği gönder');
+  String get bookingSentSnack => _e(
+        'Request sent. The instructor will be notified.',
+        'İstek gönderildi. Eğitmen bilgilendirilecek.',
+      );
   String get skillNotFound => _e('Skill not found.', 'Beceri bulunamadı.');
   String get instructor => _e('Instructor', 'Eğitmen');
-  String get bookThisSkill => _e('Book this skill', 'Bu beceriyi ayırt');
+  String get bookThisSkill => _e('Book this skill', 'Rezervasyon isteği');
 
-  String get offerSkillTitle => _e('Offer a skill', 'Beceri sun');
-  String get editSkillTitle => _e('Edit skill', 'Beceriyi düzenle');
-  String get skillTitleLabel => _e('Skill title', 'Beceri başlığı');
+  String get offerSkillTitle => _e('Add New Skill', 'Yeni beceri ekle');
+  String get editSkillTitle => _e('Edit Skill', 'Beceriyi düzenle');
+  String get skillTitleLabel => _e('Skill Title *', 'Beceri başlığı *');
   String get description => _e('Description', 'Açıklama');
   String get category => _e('Category', 'Kategori');
   String get customCategory => _e('Custom category', 'Özel kategori');
   String get level => _e('Level', 'Seviye');
   String get sessionType => _e('Session type', 'Oturum türü');
-  String get online => _e('Online', 'Çevrimiçi');
-  String get inPerson => _e('In-person', 'Yüz yüze');
+  String get online => _e('Online', 'Çevrim içi');
+  String get inPerson => _e('In-Person', 'Yüz yüze');
   String get inPersonLocation => _e('In-person location', 'Yüz yüze konum');
+  String get locationSearchHint =>
+      _e('Type to search cities in Turkey…', 'Şehir ara (Türkiye illeri)…');
+  String get locationEmpty => _e('No city found', 'İl bulunamadı');
   String get availableDays => _e('Available days', 'Müsait günler');
   String get availableFrom => _e('Available from', 'Müsait başlangıç');
   String get availableUntil => _e('Available until', 'Müsait bitiş');
   String get tagsOptional => _e('Tags (optional, comma-separated)', 'Etiketler (isteğe bağlı, virgülle)');
-  String get publishSkill => _e('Publish skill', 'Beceriyi yayınla');
-  String get saveChanges => _e('Save changes', 'Değişiklikleri kaydet');
+  String get publishSkill => _e('Publish Skill', 'Beceriyi yayınla');
+  String get saveChanges => _e('Save Changes', 'Değişiklikleri kaydet');
 
   String get errNotSignedIn => _e('Not signed in', 'Oturum açık değil');
   String get errTitleRequired => _e('Title is required', 'Başlık zorunludur');
@@ -67,7 +73,7 @@ class SkillFlowL10n {
       'Languages': ('Languages', 'Diller'),
       'Programming': ('Programming', 'Programlama'),
       'Music': ('Music', 'Müzik'),
-      'Cooking': ('Cooking', 'Mutfak / yemek'),
+      'Cooking': ('Cooking', 'Yemek'),
       'Photography': ('Photography', 'Fotoğrafçılık'),
       'Writing': ('Writing', 'Yazarlık'),
       'Design': ('Design', 'Tasarım'),
@@ -86,6 +92,8 @@ class SkillFlowL10n {
         return _e('Intermediate', 'Orta');
       case 'Advanced':
         return _e('Advanced', 'İleri');
+      case 'Expert':
+        return _e('Expert', 'Uzman');
       default:
         return apiValue;
     }

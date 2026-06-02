@@ -7,7 +7,6 @@ import '../api/api_exception.dart';
 import '../api/exchange_api.dart';
 import '../api/reviews_api.dart';
 import '../api/skills_api.dart';
-import '../api/user_api.dart';
 import '../app/app_state.dart';
 import '../exchange/exchange_ui_logic.dart';
 import '../language/conversation_l10n.dart';
@@ -43,8 +42,6 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
   bool _loading = true;
   bool _sending = false;
   String? _error;
-  UserBlockStateDto? _blocks;
-  bool _blockBusy = false;
 
   @override
   void initState() {
@@ -54,7 +51,6 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
     _activeExchangeId = (id != null && id.isNotEmpty)
         ? id
         : widget.initialRow.exchanges.first.id;
-    _loadBlocks();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bootstrap();
     });
@@ -71,15 +67,6 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
     _composer.dispose();
     _meetingUrlCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadBlocks() async {
-    final t = widget.appState.token;
-    if (t == null) return;
-    try {
-      final b = await fetchMyBlockState(t);
-      if (mounted) setState(() => _blocks = b);
-    } catch (_) {}
   }
 
   String? get _myId => widget.appState.userId;
@@ -656,30 +643,6 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
     }
   }
 
-  Future<void> _toggleBlock() async {
-    final t = widget.appState.token;
-    final oid = _row?.otherUserId;
-    if (t == null || oid == null || _blockBusy) return;
-    setState(() => _blockBusy = true);
-    try {
-      final lower = oid.toLowerCase();
-      final blocked = _blocks?.blockedUserIds.contains(lower) ?? false;
-      if (blocked) {
-        final s = await unblockUser(t, oid);
-        if (mounted) setState(() => _blocks = s);
-      } else {
-        final s = await blockUser(t, oid);
-        if (mounted) setState(() => _blocks = s);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-      }
-    } finally {
-      if (mounted) setState(() => _blockBusy = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -695,68 +658,94 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
     final canCancel = canCancelExchange(_active, _myId);
     final isOwner = sameUserId(_active.ownerId, _myId);
     final isRequester = sameUserId(_active.requesterId, _myId);
-    final blocked =
-        _blocks?.blockedUserIds.contains(r.otherUserId.toLowerCase()) ?? false;
 
     return Scaffold(
-      appBar: AppChrome.gradientAppBar(
-        titleWidget: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+      appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        toolbarHeight: 72,
+        leadingWidth: 48,
+        centerTitle: false,
+        titleSpacing: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
           children: [
-            Text(
-              r.otherName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w800,
-                fontSize: 17,
+            Container(
+              decoration: const BoxDecoration(
+                gradient: AppChrome.heroGradientLinear,
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                r.otherName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+              ),
+              if (r.exchanges.length > 1) ...[
+                const SizedBox(height: 4),
+                Text(
+                  conv.requestsCount(r.exchanges.length),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.88),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10, top: 8, bottom: 8),
+            child: Material(
+              color: Colors.white.withValues(alpha: 0.18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.35)),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: IconButton(
+                tooltip: conv.profileTooltip,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PublicProfileScreen(
+                        appState: widget.appState,
+                        userId: r.otherUserId,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.person_rounded, size: 22),
                 color: Colors.white,
               ),
             ),
-            if (r.exchanges.length > 1)
-              Text(
-                conv.requestsCount(r.exchanges.length),
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.85),
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: conv.profileTooltip,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => PublicProfileScreen(
-                    appState: widget.appState,
-                    userId: r.otherUserId,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.person_outline_rounded),
           ),
-          if (_blockBusy)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              ),
-            )
-          else
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.white),
-              onPressed: _toggleBlock,
-              child: Text(blocked ? conv.unblock : conv.block),
-            ),
         ],
       ),
       body: Column(
@@ -765,7 +754,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
             const LinearProgressIndicator(minHeight: 2),
           if (r.exchanges.length > 1)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
               child: DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: conv.activeRequest,
@@ -800,13 +789,16 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
               padding: const EdgeInsets.all(8),
               child: Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
             ),
-          _buildActionBanner(
-            ui,
-            canCancel,
-            isOwner,
-            isRequester,
-            theme,
-            conv,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: _buildActionBanner(
+              ui,
+              canCancel,
+              isOwner,
+              isRequester,
+              theme,
+              conv,
+            ),
           ),
           Expanded(
             child: RefreshIndicator(
@@ -896,8 +888,9 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
           if (_composerOn)
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
                       child: TextField(
@@ -906,18 +899,29 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                         maxLines: 4,
                         decoration: InputDecoration(
                           hintText: conv.messageHint,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                         ),
                       ),
                     ),
-                    IconButton.filled(
+                    const SizedBox(width: 12),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                       onPressed: _sending ? null : _send,
-                      icon: _sending
+                      child: _sending
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.send_rounded),
+                          : const Icon(Icons.send_rounded, size: 22),
                     ),
                   ],
                 ),
@@ -940,7 +944,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
       return Material(
         color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -950,7 +954,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
                     : c.otherWantsToConnect(_row!.otherName),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -972,7 +976,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
       return Material(
         color: Colors.amber.withValues(alpha: 0.15),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -982,7 +986,7 @@ class _ConversationThreadScreenState extends State<ConversationThreadScreen> {
               ),
               if (canCancel &&
                   normalizeExchangeStatus(_active.status) == 'PENDING') ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 OutlinedButton(onPressed: _cancel, child: Text(c.cancelRequest)),
               ],
             ],
