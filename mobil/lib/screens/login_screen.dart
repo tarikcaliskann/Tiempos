@@ -646,17 +646,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                             .withValues(alpha: 0.32),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                      ),
-                                      child: Text(
-                                        a.orWithEmail,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: theme.colorScheme.onSurface
-                                              .withValues(alpha: 0.42),
-                                          fontWeight: FontWeight.w500,
+                                    Flexible(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        child: Text(
+                                          a.orWithEmail,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.42),
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
                                     ),

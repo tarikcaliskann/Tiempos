@@ -17,15 +17,26 @@ flutter run -d chrome --web-port=9339
 
 Veya kısayol: `./run_chrome.sh` (`mobil/` içinde).
 
-### Yerel backend + mobil (tek komut)
+**Yerel Spring API + Chrome (giriş / Google testi):** `flutter run` komutunu **repo kökünde değil, `mobil/` içinde** çalıştırın; aksi halde `No pubspec.yaml` hatası alırsınız.
 
-Docker Desktop açıkken repo kökünde:
+1. Bir terminal: repo kökünden `./scripts/start-local-backend.sh` (Postgres `tiempos-postgres` + `http://localhost:8080`). Kök `.env` dosyasında `GOOGLE_CLIENT_ID` varsa otomatik okunur.
+2. İkinci terminal: `cd mobil && ./run_local_chrome.sh` → `http://localhost:9339`, API `http://localhost:8080`, `.env` içindeki `GOOGLE_CLIENT_ID` varsa Web Google için `--dart-define` ile iletilir.
+
+`/path/to/Tiempo_Project/...` gibi placeholder yollar çalışmaz; gerçek klasör yolunuzu kullanın.
+
+### Yerel backend + mobil (iki terminal)
+
+Docker Desktop açıkken:
 
 ```bash
-./scripts/dev-backend-and-mobile.sh
+# Terminal 1 — repo kökü
+./scripts/start-local-backend.sh
+
+# Terminal 2
+cd mobil && ./run_local_chrome.sh
 ```
 
-Önce Postgres (`docker compose up -d db`), ardından Spring Boot (`./mvnw spring-boot:run`), en sonda Flutter Web (**Chrome sabit port 9339**) — API `http://localhost:8080`.
+API: `http://localhost:8080`, Flutter Web: `http://localhost:9339`.
 
 ### API adresi
 
