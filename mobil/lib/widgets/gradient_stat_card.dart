@@ -170,7 +170,7 @@ class DashboardHero extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   Material(
-                    color: AppColors.avatarPurple,
+                    color: AppColors.avatarInitials,
                     shape: const CircleBorder(),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(

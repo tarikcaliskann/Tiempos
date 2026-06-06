@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 
-/// Web `tiempos-auth-shell` / browse bandı ile aynı mavi–mor dil.
 abstract final class AppSurfaces {
-  /// `bg-gradient-to-br from-blue-500 to-purple-600`
+  /// Web `tiempos-auth-shell`: primary koyu mavi (`#1D4ED8` → `#1E3A8A`), mor yok.
   static const LinearGradient brandBluePurple = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF3B82F6),
-      Color(0xFF9333EA),
+      Color(0xFF1D4ED8),
+      Color(0xFF1E3A8A),
     ],
   );
 
-  /// Koyu mod ana zemin üstünden alta hafif derinlik (web `html.dark body` + indigo).
+  /// Koyu mod gövde — web `.dark` `--background` civarı, hafif dikey derinlik.
   static const LinearGradient darkScaffoldDepth = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
-      Color(0xFF22205A),
-      Color(0xFF1E1B4B),
-      Color(0xFF17132E),
+      Color(0xFF181824),
+      Color(0xFF13131F),
+      Color(0xFF0E0E14),
     ],
     stops: [0.0, 0.45, 1.0],
   );

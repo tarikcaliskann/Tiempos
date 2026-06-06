@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Web (`--primary`, `index.css` koyu zemin, auth/browse gradient) ile hizalı.
+/// Web `index.css` — `:root` / `.dark` ve Tailwind `--color-*` ile aynı hex’ler.
 abstract final class AppColors {
-  /// Web `--primary` / shadcn primary
+  /// Web `--primary` / shadcn
   static const Color primary = Color(0xFF1D4ED8);
 
-  // Light — slate tonları (web shadcn light ile uyumlu, nötr gri-pembe değil)
+  // Light — web :root / slate shell
   static const Color lightBackground = Color(0xFFF1F5F9);
   static const Color lightForeground = Color(0xFF0F172A);
   static const Color lightCard = Color(0xFFFFFFFF);
@@ -13,47 +13,50 @@ abstract final class AppColors {
   static const Color lightMutedFg = Color(0xFF64748B);
   static const Color lightBorder = Color(0xFFCBD5E1);
 
-  /// `html.dark body` + web app shell (indigo gece).
-  static const Color darkBackground = Color(0xFF1E1B4B);
+  /// Web `.dark` — düşük kromalı lacivert-gri (mobildeki yoğun mor yerine).
+  static const Color darkBackground = Color(0xFF13131F);
   static const Color darkForeground = Color(0xFFF4F4F8);
+  static const Color darkCard = Color(0xFF1F1F2E);
+  static const Color darkMuted = Color(0xFF262635);
+  static const Color darkMutedFg = Color(0xFFA4A4B8);
+  static const Color darkBorder = Color(0xFF3A3A4D);
 
-  /// Kart / yüzey — web `card` üzerinde hafif yükselti.
-  static const Color darkCard = Color(0xFF25204A);
-  static const Color darkMuted = Color(0xFF2F2A5C);
-  static const Color darkMutedFg = Color(0xFF9CA3BC);
-  static const Color darkBorder = Color(0xFF3D3668);
+  /// Alt nav seçili kapsül — web `secondary` koyu tonu ile uyumlu.
+  static const Color navIndicator = Color(0xFF252532);
+  static const Color navInactiveIcon = Color(0xFF8B8B9E);
+  static const Color navInactiveLabel = Color(0xFFA4A4B8);
 
-  /// Alt nav seçili kapsül (koyu mavi).
-  static const Color navIndicator = Color(0xFF252E52);
-  static const Color navInactiveIcon = Color(0xFF8B90A8);
-  static const Color navInactiveLabel = Color(0xFF9CA3BC);
+  /// Web hero / butonlardaki `from-blue-500 to-purple-600` (Tailwind map: #1D4ED8 → #1D4ED8);
+  /// hafif derinlik için sağ uç `blue-600` (#1E40AF).
+  static const Color avatarInitials = Color(0xFF1D4ED8);
 
-  /// Profil avatar (mor).
-  static const Color avatarPurple = Color(0xFF7C3AED);
-
-  /// Saat dengesi — cyan ağırlıklı.
+  /// Web dashboard stat: `from-blue-500 to-cyan-500`
   static const List<Color> statGradient1 = [
-    Color(0xFF2563EB),
-    Color(0xFF22D3EE),
+    Color(0xFF1D4ED8),
+    Color(0xFF06B6D4),
   ];
 
-  /// Yetenek sayısı — pembe → mor.
+  /// Web: `from-purple-500 to-pink-500` → `--color-purple-500` #3B82F6, pembe uç yaklaşık pink-500.
   static const List<Color> statGradient2 = [
+    Color(0xFF3B82F6),
     Color(0xFFEC4899),
-    Color(0xFFA855F7),
   ];
+
+  /// Web: `from-orange-500 to-red-500`
   static const List<Color> statGradient3 = [
     Color(0xFFF97316),
     Color(0xFFEF4444),
   ];
+
+  /// Web: `from-green-500 to-emerald-500`
   static const List<Color> statGradient4 = [
     Color(0xFF22C55E),
     Color(0xFF10B981),
   ];
 
-  /// Web `from-blue-500 to-purple-600` (hero / CTA / app bar şeritleri).
+  /// Web `bg-gradient-to-r from-blue-500 to-purple-600` (strip / app bar) — Tailwind map.
   static const List<Color> heroGradient = [
-    Color(0xFF3B82F6),
-    Color(0xFF9333EA),
+    Color(0xFF1D4ED8),
+    Color(0xFF1E40AF),
   ];
 }
