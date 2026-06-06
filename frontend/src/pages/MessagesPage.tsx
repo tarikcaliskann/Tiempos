@@ -1675,7 +1675,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   </div>
 
                   {selected.uiStatus === "pending-incoming" && (
-                    <div className="shrink-0 border-b border-sky-200/80 bg-gradient-to-r from-sky-50 via-blue-50 to-blue-50 p-4 dark:border-sky-800/60 dark:bg-gradient-to-r dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70">
+                    <div className="shrink-0 border-b border-border bg-muted p-4">
                       <p className="mb-3 text-sm font-medium text-slate-800 dark:text-sky-100">
                         {formatTemplate(
                           selected.ex.pendingFromOwner
