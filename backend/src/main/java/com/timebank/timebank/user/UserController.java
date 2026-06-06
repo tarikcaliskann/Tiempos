@@ -8,6 +8,7 @@ import com.timebank.timebank.user.dto.LoginResponse;
 import com.timebank.timebank.user.dto.RegisterRequest;
 import com.timebank.timebank.user.dto.ResetPasswordRequest;
 import com.timebank.timebank.user.dto.ResendVerificationRequest;
+import com.timebank.timebank.user.dto.ResendVerificationResponse;
 import com.timebank.timebank.user.dto.SocialLoginRequest;
 import com.timebank.timebank.user.dto.UpdateUserProfileRequest;
 import com.timebank.timebank.user.dto.UserDashboardResponse;
@@ -23,6 +24,7 @@ import com.timebank.timebank.user.dto.RegistrationOutcome;
 import com.timebank.timebank.user.dto.VerifyEmailCodeRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,6 +39,9 @@ public class UserController {
     private final UserService userService;
     private final RegistrationMailService registrationMailService;
     private final AuthCookieService authCookieService;
+
+    @Value("${app.auth.expose-resend-code:false}")
+    private boolean exposeResendCode;
 
     public UserController(
             UserService userService,
@@ -53,17 +58,19 @@ public class UserController {
         RegistrationOutcome out = userService.register(req);
         if (out.isPendingSignup()) {
             PendingSignup p = out.pendingSignup();
-            return ResponseEntity.ok(
-                    new UserResponse(
-                            p.getId(),
-                            p.getFullName(),
-                            p.getEmail(),
-                            0,
-                            true,
-                            registrationMailService.isOutgoingMailPossible(),
-                            registrationMailService.isLocalCaptureSmtp()
-                    )
+            UserResponse body = new UserResponse(
+                    p.getId(),
+                    p.getFullName(),
+                    p.getEmail(),
+                    0,
+                    true,
+                    registrationMailService.isOutgoingMailPossible(),
+                    registrationMailService.isLocalCaptureSmtp()
             );
+            if (exposeResendCode && !registrationMailService.isOutgoingMailPossible()) {
+                body.setVerificationCode(p.getVerificationCode());
+            }
+            return ResponseEntity.ok(body);
         }
         User saved = out.user();
         return ResponseEntity.ok(
@@ -99,9 +106,10 @@ public class UserController {
     }
 
     @PostMapping("/auth/resend-verification")
-    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest req) {
-        userService.resendVerificationEmail(req.getEmail());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ResendVerificationResponse> resendVerification(
+            @Valid @RequestBody ResendVerificationRequest req) {
+        ResendVerificationResponse body = userService.resendVerificationEmail(req.getEmail());
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("/auth/login")

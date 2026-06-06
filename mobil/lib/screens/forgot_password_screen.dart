@@ -64,7 +64,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       height: 48,
                       child: IconButton(
                         padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Colors.white,
+                        ),
                         tooltip: loc.backButtonTooltip,
                         onPressed: () => Navigator.of(context).maybePop(),
                       ),
@@ -107,80 +110,64 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 18),
             Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Transform.translate(
-                  offset: const Offset(0, -6),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 440),
-                      child: AppChrome.webStyleAuthCard(
-                        theme: theme,
-                        child: SafeArea(
-                          top: false,
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(22, 24, 22, 28),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (!_sent) ...[
-                                  TextField(
-                                    controller: _email,
-                                    keyboardType: TextInputType.emailAddress,
-                                    autocorrect: false,
-                                    onChanged: (_) => setState(() {}),
-                                    decoration: InputDecoration(
-                                      labelText: a.email,
-                                      helperText: a.enterEmail,
-                                      filled: true,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 22),
-                                  GradientCtaButton(
-                                    label: a.sendResetLink,
-                                    icon: Icons.mark_email_unread_outlined,
-                                    busy: _loading,
-                                    onPressed: _loading || _email.text.trim().isEmpty
-                                        ? null
-                                        : _submit,
-                                  ),
-                                ] else ...[
-                                  Icon(
-                                    Icons.mark_email_read_outlined,
-                                    size: 44,
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.85),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  OutlinedButton(
-                                    onPressed: () => setState(() {
-                                      _sent = false;
-                                      _email.clear();
-                                    }),
-                                    child: Text(
-                                      a.useDifferentEmail,
-                                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 22),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Text(
-                                    a.backSignIn,
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+              child: AppChrome.authFormSheetPanel(
+                theme: theme,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (!_sent) ...[
+                      TextField(
+                        controller: _email,
+                        keyboardType: TextInputType.emailAddress,
+                        autocorrect: false,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          labelText: a.email,
+                          helperText: a.enterEmail,
+                          filled: true,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      GradientCtaButton(
+                        label: a.sendResetLink,
+                        icon: Icons.mark_email_unread_outlined,
+                        busy: _loading,
+                        onPressed: _loading || _email.text.trim().isEmpty
+                            ? null
+                            : _submit,
+                      ),
+                    ] else ...[
+                      Icon(
+                        Icons.mark_email_read_outlined,
+                        size: 44,
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.85,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      OutlinedButton(
+                        onPressed: () => setState(() {
+                          _sent = false;
+                          _email.clear();
+                        }),
+                        child: Text(
+                          a.useDifferentEmail,
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 22),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        a.backSignIn,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),

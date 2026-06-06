@@ -1,5 +1,7 @@
 package com.timebank.timebank.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.UUID;
 
 public class UserResponse {
@@ -13,6 +15,9 @@ public class UserResponse {
     private boolean smtpMailDeliveryEnabled;
     /** Yerel Mailpit / test SMTP — gelen kutusu değil */
     private boolean smtpLocalCapture;
+    /** Yalnızca yerel + app.auth.expose-resend-code ve posta kapalı: ilk doğrulama kodu */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String verificationCode;
 
     public UserResponse(
             UUID id,
@@ -49,4 +54,6 @@ public class UserResponse {
     public boolean isEmailVerificationPending() { return emailVerificationPending; }
     public boolean isSmtpMailDeliveryEnabled() { return smtpMailDeliveryEnabled; }
     public boolean isSmtpLocalCapture() { return smtpLocalCapture; }
+    public String getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
 }

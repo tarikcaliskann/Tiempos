@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/api_exception.dart';
 import '../api/exchange_api.dart';
 import '../api/skills_api.dart';
+import '../widgets/skill_cover_image.dart';
 import '../app/app_state.dart';
 import '../language/skill_flow_l10n.dart';
 import '../widgets/app_chrome.dart';
@@ -18,10 +19,13 @@ class SkillDetailScreen extends StatefulWidget {
     super.key,
     required this.appState,
     required this.skillId,
+    this.onLoginRequired,
   });
 
   final AppState appState;
   final String skillId;
+  /// Token yokken rezervasyon / eğitmen profili: girişe yönlendir (misafir keşfet).
+  final VoidCallback? onLoginRequired;
 
   @override
   State<SkillDetailScreen> createState() => _SkillDetailScreenState();
@@ -68,12 +72,21 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
 
   Future<void> _openBook(SkillDto s) async {
     final sf = SkillFlowL10n.of(context);
-    final lang = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('tr') ? 'tr' : 'en';
+    final lang =
+        Localizations.localeOf(
+          context,
+        ).languageCode.toLowerCase().startsWith('tr')
+        ? 'tr'
+        : 'en';
     final token = widget.appState.token;
     if (token == null || token.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(sf.signInAgainSnack)),
-      );
+      if (widget.onLoginRequired != null) {
+        widget.onLoginRequired!();
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(sf.signInAgainSnack)));
+      }
       return;
     }
     final myId = widget.appState.userId;
@@ -85,9 +98,7 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
       if (ds.isNotEmpty) bookDate = ds.first.value;
     }
     var bookMinutes = s.durationMinutes > 0 ? s.durationMinutes : 60;
-    final messageCtrl = TextEditingController(
-      text: sf.defaultBookMessage,
-    );
+    final messageCtrl = TextEditingController(text: sf.defaultBookMessage);
     List<String> initialChoices() {
       if (hasSkillAvailabilityConstraints(s)) {
         final o = buildSkillTimeOptionsForDate(s, bookDate);
@@ -99,12 +110,14 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
 
     final initialSlots = initialChoices();
     if (initialSlots.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(sf.noBookableSlots)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(sf.noBookableSlots)));
       return;
     }
-    var bookTime = initialSlots.contains('10:00') ? '10:00' : initialSlots.first;
+    var bookTime = initialSlots.contains('10:00')
+        ? '10:00'
+        : initialSlots.first;
     final ok = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -122,7 +135,9 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
             }
 
             final choices = timeChoices();
-            final effTime = choices.contains(bookTime) ? bookTime : choices.first;
+            final effTime = choices.contains(bookTime)
+                ? bookTime
+                : choices.first;
             final inAvail = isWithinSkillAvailability(s, bookDate, effTime);
             final startLocal = DateTime(
               int.parse(bookDate.split('-')[0]),
@@ -131,7 +146,8 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
               int.parse(effTime.split(':')[0]),
               int.parse(effTime.split(':')[1]),
             );
-            final within = inAvail &&
+            final within =
+                inAvail &&
                 startLocal.millisecondsSinceEpoch >=
                     DateTime.now().millisecondsSinceEpoch + 60 * 60 * 1000;
 
@@ -157,24 +173,26 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                     const SizedBox(height: 16),
                     if (hasSkillAvailabilityConstraints(s)) ...[
                       DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: sf.dateLabel,
-                        ),
+                        decoration: InputDecoration(labelText: sf.dateLabel),
                         value: () {
-                          final opts =
-                              buildSkillDateOptions(s, lang, bookingHorizonDays);
+                          final opts = buildSkillDateOptions(
+                            s,
+                            lang,
+                            bookingHorizonDays,
+                          );
                           final vals = opts.map((e) => e.value).toList();
                           if (vals.contains(bookDate)) return bookDate;
                           return vals.isNotEmpty ? vals.first : bookDate;
                         }(),
-                        items: buildSkillDateOptions(s, lang, bookingHorizonDays)
-                            .map(
-                              (o) => DropdownMenuItem(
-                                value: o.value,
-                                child: Text(o.label),
-                              ),
-                            )
-                            .toList(),
+                        items:
+                            buildSkillDateOptions(s, lang, bookingHorizonDays)
+                                .map(
+                                  (o) => DropdownMenuItem(
+                                    value: o.value,
+                                    child: Text(o.label),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (v) {
                           if (v != null) setModal(() => bookDate = v);
                         },
@@ -187,13 +205,22 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                         subtitle: Text(bookDate),
                         trailing: const Icon(Icons.calendar_today_rounded),
                         onTap: () async {
-                          final parts = bookDate.split('-').map(int.parse).toList();
-                          final initial = DateTime(parts[0], parts[1], parts[2]);
+                          final parts = bookDate
+                              .split('-')
+                              .map(int.parse)
+                              .toList();
+                          final initial = DateTime(
+                            parts[0],
+                            parts[1],
+                            parts[2],
+                          );
                           final picked = await showDatePicker(
                             context: ctx,
                             initialDate: initial,
                             firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
                           );
                           if (picked != null) {
                             setModal(() {
@@ -204,10 +231,10 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                         },
                       ),
                     DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: sf.startTime,
-                      ),
-                      value: choices.contains(bookTime) ? bookTime : choices.first,
+                      decoration: InputDecoration(labelText: sf.startTime),
+                      value: choices.contains(bookTime)
+                          ? bookTime
+                          : choices.first,
                       items: choices
                           .map(
                             (t) => DropdownMenuItem(value: t, child: Text(t)),
@@ -294,14 +321,12 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }
   }
 
@@ -333,8 +358,13 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                   title: s.title,
                   subtitle: s.ownerName,
                   leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                    tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).backButtonTooltip,
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                 ),
@@ -353,11 +383,12 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                           borderRadius: BorderRadius.circular(14),
                           child: AspectRatio(
                             aspectRatio: 16 / 9,
-                            child: Image.network(
-                              skillCoverProxyUrl(s.id),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => ColoredBox(
-                                color: theme.colorScheme.surfaceContainerHighest,
+                            child: SkillCoverImage(
+                              skillId: s.id,
+                              fallbackUrl: s.coverImageUrl,
+                              errorWidget: ColoredBox(
+                                color: theme
+                                    .colorScheme.surfaceContainerHighest,
                                 child: Icon(
                                   Icons.image_not_supported_outlined,
                                   size: 48,
@@ -383,7 +414,20 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                           trailing: const Icon(Icons.chevron_right_rounded),
                           onTap: () {
                             final t = widget.appState.token;
-                            if (t == null) return;
+                            if (t == null || t.isEmpty) {
+                              if (widget.onLoginRequired != null) {
+                                widget.onLoginRequired!();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      SkillFlowL10n.of(context).signInAgainSnack,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
                             Navigator.of(context).push(
                               MaterialPageRoute<void>(
                                 builder: (ctx) => PublicProfileScreen(
@@ -405,7 +449,9 @@ class _SkillDetailScreenState extends State<SkillDetailScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             height: 1.45,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.85,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24),

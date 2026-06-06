@@ -1,6 +1,9 @@
 import type { SkillDto } from "../api/skills";
 import type { Messages } from "../language";
-import { resolveSkillCoverImageUrl } from "./skillCoverImageUrl";
+import {
+  resolveSkillCoverImageUrl,
+  skillCoverImageFallbackUrl,
+} from "./skillCoverImageUrl";
 
 function parseMetaField(text: string, labels: string[]): string | null {
   for (const label of labels) {
@@ -28,6 +31,8 @@ export type BrowseSkillCardModel = {
   isInPerson: boolean;
   image: string;
   tags: string[];
+  /** Proxy başarısız olursa ImageWithFallback için */
+  coverFallbackUrl?: string;
   createdAt: string;
   searchBlob: string;
 };
@@ -102,6 +107,7 @@ export function mapSkillDtoToBrowseCard(
     isOnline,
     isInPerson,
     image: resolveSkillCoverImageUrl(skill),
+    coverFallbackUrl: skillCoverImageFallbackUrl(skill),
     tags,
     createdAt: skill.createdAt,
     searchBlob,

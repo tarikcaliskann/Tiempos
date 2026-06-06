@@ -13,6 +13,7 @@ import com.timebank.timebank.user.dto.LoginResponse;
 import com.timebank.timebank.user.dto.SessionResponse;
 import com.timebank.timebank.user.dto.RegisterRequest;
 import com.timebank.timebank.user.dto.RegistrationOutcome;
+import com.timebank.timebank.user.dto.ResendVerificationResponse;
 import com.timebank.timebank.user.dto.SocialLoginRequest;
 import com.timebank.timebank.user.dto.UpdateUserProfileRequest;
 import com.timebank.timebank.user.dto.UserDashboardResponse;
@@ -76,6 +77,9 @@ public class UserService {
 
     @Value("${app.google.require-client-id:false}")
     private boolean requireGoogleClientId;
+
+    @Value("${app.auth.expose-resend-code:false}")
+    private boolean exposeResendCode;
 
     /** OAuth Web client id (public) — frontend Google giriş butonu için. */
     public Optional<String> getGoogleOAuthClientId() {
@@ -173,19 +177,19 @@ public class UserService {
             throw new IllegalArgumentException("E-posta ve doğrulama kodu gerekli.");
         }
         String email = emailRaw.trim().toLowerCase();
-        String code = codeRaw.trim().replaceAll("\\s+", "");
+        String code = normalizeVerificationDigits(codeRaw);
         if (!code.matches("[0-9]{6}")) {
             throw new IllegalArgumentException("Doğrulama kodu 6 rakam olmalıdır.");
         }
 
-        Optional<PendingSignup> pendingOpt = pendingSignupRepository.findByEmail(email);
+        Optional<PendingSignup> pendingOpt = pendingSignupRepository.findByEmailIgnoreCase(email);
         if (pendingOpt.isPresent()) {
             PendingSignup p = pendingOpt.get();
             if (Instant.now().isAfter(p.getExpiresAt())) {
                 throw new IllegalArgumentException(
                         "Doğrulama süresi dolmuş. Yeni kod için \"Tekrar gönder\" kullanın.");
             }
-            if (!constantTimeEquals(p.getVerificationCode(), code)) {
+            if (!constantTimeEquals(normalizeVerificationDigits(p.getVerificationCode()), code)) {
                 throw new IllegalArgumentException("Doğrulama kodu hatalı.");
             }
 
@@ -209,7 +213,7 @@ public class UserService {
             );
         }
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new IllegalArgumentException("Geçersiz kod veya e-posta."));
         if (user.isEmailVerified()) {
             throw new IllegalArgumentException("Bu hesap zaten doğrulanmış.");
@@ -219,8 +223,8 @@ public class UserService {
             throw new IllegalArgumentException(
                     "Doğrulama süresi dolmuş. Yeni kod için \"Tekrar gönder\" kullanın.");
         }
-        String expected = user.getEmailVerificationToken();
-        if (expected == null || !constantTimeEquals(expected, code)) {
+        String expected = normalizeVerificationDigits(user.getEmailVerificationToken());
+        if (expected.isEmpty() || !constantTimeEquals(expected, code)) {
             throw new IllegalArgumentException("Doğrulama kodu hatalı.");
         }
 
@@ -239,7 +243,22 @@ public class UserService {
         );
     }
 
+    /** Yalnızca ASCII rakamlar; baştaki/sondaki boşluk ve görünmez karakterleri temizler. */
+    private static String normalizeVerificationDigits(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim().replaceAll("\\s+", "").replaceAll("[^0-9]", "");
+        if (s.length() > 6) {
+            return s.substring(0, 6);
+        }
+        return s;
+    }
+
     private static boolean constantTimeEquals(String a, String b) {
+        if (a == null || b == null) {
+            return a == null && b == null;
+        }
         if (a.length() != b.length()) {
             return false;
         }
@@ -255,14 +274,14 @@ public class UserService {
      * Eski (users’daki doğrulanmamış) hesaplar için uyumluluk dalı korunur.
      */
     @Transactional
-    public void resendVerificationEmail(String emailRaw) {
+    public ResendVerificationResponse resendVerificationEmail(String emailRaw) {
         if (emailRaw == null || emailRaw.isBlank()) {
-            return;
+            throw new IllegalArgumentException("E-posta gerekli.");
         }
         String email = emailRaw.trim().toLowerCase();
         boolean canSend = registrationMailService.isOutgoingMailPossible();
 
-        Optional<PendingSignup> pendingOpt = pendingSignupRepository.findByEmail(email);
+        Optional<PendingSignup> pendingOpt = pendingSignupRepository.findByEmailIgnoreCase(email);
         if (pendingOpt.isPresent()) {
             PendingSignup p = pendingOpt.get();
             String newCode = newVerificationCode();
@@ -271,24 +290,33 @@ public class UserService {
             pendingSignupRepository.save(p);
             if (canSend) {
                 registrationMailService.sendVerificationCodeAsync(p.getFullName(), email, newCode);
-            } else {
-                log.warn("Dış posta yok — yeniden gönderilen kod yalnızca logda. e-posta={} kod={}", email, newCode);
+                return ResendVerificationResponse.of(true, null);
             }
-            return;
+            log.warn("Dış posta yok — yeniden gönderilen kod yalnızca logda. e-posta={} kod={}", email, newCode);
+            String dev = exposeResendCode ? newCode : null;
+            return ResendVerificationResponse.of(false, dev);
+        }
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (user == null) {
+            throw new IllegalArgumentException(
+                    "Bu e-posta ile bekleyen kayıt bulunamadı. Adresi kontrol edin veya önce kayıt olun.");
+        }
+        if (user.isEmailVerified()) {
+            throw new IllegalArgumentException("Bu hesap zaten doğrulanmış; giriş yapabilirsiniz.");
         }
 
         if (!canSend) {
-            return;
+            throw new IllegalArgumentException(
+                    "Doğrulama postası gönderilemiyor (SMTP kapalı) ve bu e-posta eski kayıt akışında bekliyor. "
+                            + "Yerelde `app.auth.expose-resend-code=true` ile yeniden gönder deneyin veya SMTP ekleyin.");
         }
 
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null || user.isEmailVerified()) {
-            return;
-        }
         user.setEmailVerificationToken(newVerificationCode());
         user.setEmailVerificationExpiresAt(Instant.now().plus(48, ChronoUnit.HOURS));
         User saved = userRepository.save(user);
         registrationMailService.sendVerificationEmail(saved);
+        return ResendVerificationResponse.of(true, null);
     }
 
     @Transactional
@@ -694,13 +722,13 @@ public class UserService {
             throw new IllegalArgumentException("E-posta, kod ve yeni şifre gerekli.");
         }
         String email = emailRaw.trim().toLowerCase();
-        String token = tokenRaw.trim().replaceAll("\\s+", "");
+        String token = normalizeVerificationDigits(tokenRaw);
 
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new IllegalArgumentException("Geçersiz kod veya e-posta."));
 
-        String expected = user.getPasswordResetToken();
-        if (expected == null || expected.isBlank()) {
+        String expected = normalizeVerificationDigits(user.getPasswordResetToken());
+        if (expected.isEmpty()) {
             throw new IllegalArgumentException("Geçersiz veya süresi dolmuş sıfırlama kodu.");
         }
         Instant exp = user.getPasswordResetExpiresAt();

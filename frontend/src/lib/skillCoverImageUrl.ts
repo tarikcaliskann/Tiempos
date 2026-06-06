@@ -14,3 +14,9 @@ export function skillCoverProxyUrl(skillId: string): string {
 export function resolveSkillCoverImageUrl(skill: SkillDto): string {
   return skillCoverProxyUrl(skill.id);
 }
+
+/** Proxy 503 / octet-stream vb. olduğunda tarayıcıda tek seferlik yedek (API’deki kayıtlı URL). */
+export function skillCoverImageFallbackUrl(skill: SkillDto): string | undefined {
+  const u = skill.coverImageUrl?.trim();
+  return u || undefined;
+}

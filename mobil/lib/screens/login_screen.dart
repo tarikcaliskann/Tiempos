@@ -10,7 +10,6 @@ import '../api/auth_api.dart';
 import '../app/app_state.dart';
 import '../auth/google_sign_in_render_button.dart';
 import '../language/auth_l10n.dart';
-import '../theme/app_colors.dart';
 import '../util/auth_network_messages.dart';
 import '../widgets/app_chrome.dart';
 import '../widgets/gradient_stat_card.dart';
@@ -46,6 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _googleWebSetupInProgress = false;
   bool _googleWebReady = false;
   String? _googleWebSetupError;
+
   /// Web: [fetchGoogleAuthConfig] tamamlandı (boş client, hata veya GIS hazır).
   bool _googleWebConfigResolved = false;
 
@@ -153,7 +153,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final raw = '$e';
       final lower = raw.toLowerCase();
       final l = AuthL10n.of(context);
-      final msg = (kIsWeb &&
+      final msg =
+          (kIsWeb &&
               (lower.contains('failed to fetch') ||
                   lower.contains('clientexception')))
           ? '${l.googleConfigFetchFailedHint}\n\n$raw'
@@ -173,7 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String _googleSignInMessageForUi(GoogleSignInException e, AuthL10n l) {
     final raw = '${e.description ?? ''} ${e.toString()}'.toLowerCase();
-    final likelyOAuthConfig = raw.contains('origin') ||
+    final likelyOAuthConfig =
+        raw.contains('origin') ||
         raw.contains('mismatch') ||
         raw.contains('access_denied') ||
         raw.contains('policy') ||
@@ -186,7 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (d != null && d.isNotEmpty) return d;
       return e.toString();
     }
-    return e.description?.trim().isNotEmpty == true ? e.description!.trim() : e.toString();
+    return e.description?.trim().isNotEmpty == true
+        ? e.description!.trim()
+        : e.toString();
   }
 
   Future<void> _onGoogleAuthEvent(GoogleSignInAuthenticationEvent event) async {
@@ -234,10 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _loading = true;
     });
     try {
-      await widget.appState.login(
-        _email.text.trim(),
-        _password.text,
-      );
+      await widget.appState.login(_email.text.trim(), _password.text);
     } on ApiException catch (e) {
       if (e.statusCode == 0 && e.message.startsWith('Network error:')) {
         final parts = humanizeAuthNetworkError(e.message, a);
@@ -254,7 +255,8 @@ class _LoginScreenState extends State<LoginScreen> {
           if (e.statusCode == 401) {
             _loginErrorHint = a.loginHint401;
           } else if (e.statusCode == 0) {
-            _loginErrorHint = kIsWeb &&
+            _loginErrorHint =
+                kIsWeb &&
                     (low.contains('failed to fetch') ||
                         low.contains('clientexception'))
                 ? a.googleConfigFetchFailedHint
@@ -327,7 +329,9 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       if (!mounted) return;
-      setState(() => _error = _googleSignInMessageForUi(e, AuthL10n.of(context)));
+      setState(
+        () => _error = _googleSignInMessageForUi(e, AuthL10n.of(context)),
+      );
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
@@ -450,7 +454,9 @@ class _LoginScreenState extends State<LoginScreen> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
               minimumSize: const Size.fromHeight(52),
-              foregroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+              foregroundColor: theme.colorScheme.onSurface.withValues(
+                alpha: 0.75,
+              ),
               side: BorderSide(
                 color: theme.colorScheme.outline.withValues(alpha: 0.4),
               ),
@@ -514,17 +520,14 @@ class _LoginScreenState extends State<LoginScreen> {
         onPressed: _loading
             ? null
             : () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(a.googleConfigureHint)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(a.googleConfigureHint)));
               },
         icon: const _GoogleMark(),
         label: Text(
           a.continueWithGoogle,
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-          ),
+          style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
@@ -545,10 +548,7 @@ class _LoginScreenState extends State<LoginScreen> {
       icon: const _GoogleMark(),
       label: Text(
         a.continueWithGoogle,
-        style: GoogleFonts.inter(
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
+        style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
       ),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
@@ -557,9 +557,7 @@ class _LoginScreenState extends State<LoginScreen> {
         side: BorderSide(
           color: theme.colorScheme.outline.withValues(alpha: 0.45),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
@@ -570,14 +568,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final a = AuthL10n.of(context);
     final lowerTech = _errorTechnical?.toLowerCase() ?? '';
     final lowerErr = _error?.toLowerCase() ?? '';
-    final looksLikeNetwork = lowerTech.contains('socket') ||
+    final looksLikeNetwork =
+        lowerTech.contains('socket') ||
         lowerTech.contains('failed host lookup') ||
         lowerTech.contains('connection refused') ||
         lowerErr.contains('network') ||
         lowerErr.contains('ulaşılamadı') ||
         lowerErr.contains('ağ erişimi');
-    final errorIcon =
-        looksLikeNetwork ? Icons.wifi_off_rounded : Icons.error_outline_rounded;
+    final errorIcon = looksLikeNetwork
+        ? Icons.wifi_off_rounded
+        : Icons.error_outline_rounded;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -620,266 +620,257 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                child: Material(
-                  color: theme.brightness == Brightness.dark
-                      ? AppColors.darkCard
-                      : AppColors.lightCard,
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: theme.brightness == Brightness.dark
-                              ? Colors.white.withValues(alpha: 0.1)
-                              : AppColors.lightBorder.withValues(alpha: 0.85),
+              child: AppChrome.authFormSheetPanel(
+                theme: theme,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildGoogleEntry(theme, a),
+                    const SizedBox(height: 26),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.32,
+                            ),
+                          ),
                         ),
-                      ),
-                      boxShadow: theme.brightness == Brightness.light
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.06),
-                                blurRadius: 24,
-                                offset: const Offset(0, -8),
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              a.orWithEmail,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.42,
+                                ),
+                                fontWeight: FontWeight.w500,
                               ),
-                            ]
-                          : null,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.32,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: SafeArea(
-                      top: false,
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 420),
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(22, 26, 22, 32),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _buildGoogleEntry(theme, a),
-                                const SizedBox(height: 26),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Divider(
-                                        color: theme.colorScheme.outline
-                                            .withValues(alpha: 0.32),
+                    const SizedBox(height: 26),
+                    TextField(
+                      controller: _email,
+                      keyboardType: TextInputType.emailAddress,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        labelText: a.email,
+                        filled: true,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    TextField(
+                      controller: _password,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: a.password,
+                        filled: true,
+                      ),
+                      onSubmitted: (_) => _loading ? null : _submit(),
+                    ),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 2,
+                      runSpacing: 6,
+                      children: [
+                        TextButton(
+                          onPressed: _loading
+                              ? null
+                              : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => SignupScreen(
+                                        appState: widget.appState,
                                       ),
                                     ),
-                                    Flexible(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                        ),
-                                        child: Text(
-                                          a.orWithEmail,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.42),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
+                                  );
+                                },
+                          child: Text(
+                            a.signUpCta,
+                            style: GoogleFonts.inter(fontSize: 13),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _loading
+                              ? null
+                              : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          const ForgotPasswordScreen(),
                                     ),
-                                    Expanded(
-                                      child: Divider(
-                                        color: theme.colorScheme.outline
-                                            .withValues(alpha: 0.32),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 26),
-                                TextField(
-                                  controller: _email,
-                                  keyboardType: TextInputType.emailAddress,
-                                  autocorrect: false,
-                                  decoration: InputDecoration(
-                                    labelText: a.email,
-                                    filled: true,
+                                  );
+                                },
+                          child: Text(
+                            a.forgotPassword,
+                            style: GoogleFonts.inter(fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_error != null) ...[
+                      const SizedBox(height: 18),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.errorContainer.withValues(
+                            alpha: 0.35,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: theme.colorScheme.error.withValues(
+                              alpha: 0.22,
+                            ),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    errorIcon,
+                                    size: 22,
+                                    color: theme.colorScheme.error,
                                   ),
-                                ),
-                                const SizedBox(height: 18),
-                                TextField(
-                                  controller: _password,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    labelText: a.password,
-                                    filled: true,
-                                  ),
-                                  onSubmitted: (_) =>
-                                      _loading ? null : _submit(),
-                                ),
-                                const SizedBox(height: 14),
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  spacing: 2,
-                                  runSpacing: 6,
-                                  children: [
-                                    TextButton(
-                                      onPressed: _loading
-                                          ? null
-                                          : () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute<void>(
-                                                  builder: (_) => SignupScreen(
-                                                    appState: widget.appState,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                      child: Text(
-                                        a.signUpCta,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: _loading
-                                          ? null
-                                          : () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute<void>(
-                                                  builder: (_) =>
-                                                      const ForgotPasswordScreen(),
-                                                ),
-                                              );
-                                            },
-                                      child: Text(
-                                        a.forgotPassword,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_error != null) ...[
-                                  const SizedBox(height: 18),
-                                  DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.errorContainer
-                                          .withValues(alpha: 0.35),
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: theme.colorScheme.error
-                                            .withValues(alpha: 0.22),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        14,
-                                        12,
-                                        14,
-                                        10,
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Icon(
-                                                errorIcon,
-                                                size: 22,
-                                                color: theme.colorScheme.error,
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Text(
-                                                  _error!,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    height: 1.35,
-                                                    color: theme
-                                                        .colorScheme.onErrorContainer,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          if (_loginErrorHint != null) ...[
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              _loginErrorHint!,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12.5,
-                                                height: 1.45,
-                                                color: theme
-                                                    .colorScheme.onSurface
-                                                    .withValues(alpha: 0.72),
-                                              ),
-                                            ),
-                                          ],
-                                          if (_errorTechnical != null &&
-                                              _errorTechnical != _error) ...[
-                                            Theme(
-                                              data: theme.copyWith(
-                                                dividerColor: Colors.transparent,
-                                                splashColor: Colors.transparent,
-                                              ),
-                                              child: ExpansionTile(
-                                                tilePadding: EdgeInsets.zero,
-                                                childrenPadding:
-                                                    const EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                title: Text(
-                                                  a.showTechnicalDetails,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: theme
-                                                        .colorScheme.primary,
-                                                  ),
-                                                ),
-                                                children: [
-                                                  SelectableText(
-                                                    _errorTechnical!,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 11,
-                                                      height: 1.35,
-                                                      color: theme.colorScheme
-                                                          .onSurface
-                                                          .withValues(
-                                                        alpha: 0.55,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ],
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      _error!,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.35,
+                                        color:
+                                            theme.colorScheme.onErrorContainer,
                                       ),
                                     ),
                                   ),
                                 ],
-                                const SizedBox(height: 26),
-                                GradientCtaButton(
-                                  label: a.signIn,
-                                  icon: Icons.login_rounded,
-                                  busy: _loading,
-                                  onPressed: _loading ? null : _submit,
+                              ),
+                              if (_loginErrorHint != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  _loginErrorHint!,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    height: 1.45,
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.72),
+                                  ),
                                 ),
-                                const SizedBox(height: 12),
                               ],
-                            ),
+                              if (_errorTechnical != null &&
+                                  _errorTechnical != _error) ...[
+                                Theme(
+                                  data: theme.copyWith(
+                                    dividerColor: Colors.transparent,
+                                    splashColor: Colors.transparent,
+                                  ),
+                                  child: ExpansionTile(
+                                    tilePadding: EdgeInsets.zero,
+                                    childrenPadding: const EdgeInsets.only(
+                                      bottom: 4,
+                                    ),
+                                    title: Text(
+                                      a.showTechnicalDetails,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    ),
+                                    children: [
+                                      SelectableText(
+                                        _errorTechnical!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          height: 1.35,
+                                          color: theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.55),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ),
+                    ],
+                    const SizedBox(height: 26),
+                    GradientCtaButton(
+                      label: a.signIn,
+                      icon: Icons.login_rounded,
+                      busy: _loading,
+                      onPressed: _loading ? null : _submit,
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        alignment: WrapAlignment.center,
+                        spacing: 4,
+                        runSpacing: 2,
+                        children: [
+                          Text(
+                            '${a.orContinue} ',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              height: 1.35,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.55,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              foregroundColor: theme.colorScheme.primary,
+                            ),
+                            onPressed: _loading
+                                ? null
+                                : () {
+                                    widget.appState.enterGuestBrowse();
+                                  },
+                            child: Text(
+                              a.continueGuest,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor: theme.colorScheme.primary
+                                    .withValues(alpha: 0.55),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 ),
               ),
             ),

@@ -19,6 +19,8 @@ class AppState extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;
   /// `en` / `tr` when kullanıcı dil seçti; `null` ise cihaz dili (`MaterialApp.locale`).
   String? _localeLanguageCode;
+  /// Giriş yapmadan keşfet — kalıcı değil, yalnızca oturum belleği.
+  bool _guestBrowseActive = false;
 
   String? get token => _token;
   String? get userId => _userId;
@@ -32,6 +34,18 @@ class AppState extends ChangeNotifier {
   }
 
   bool get isAuthenticated => _token != null && _token!.isNotEmpty;
+
+  bool get guestBrowseActive => _guestBrowseActive;
+
+  void enterGuestBrowse() {
+    _guestBrowseActive = true;
+    notifyListeners();
+  }
+
+  void exitGuestBrowse() {
+    _guestBrowseActive = false;
+    notifyListeners();
+  }
 
   Future<void> restoreSession() async {
     final p = await SharedPreferences.getInstance();
@@ -65,6 +79,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> applyLoginResponse(LoginResponse res) async {
+    _guestBrowseActive = false;
     _token = res.token;
     _userId = res.userId;
     _email = res.email;
@@ -92,6 +107,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _guestBrowseActive = false;
     _token = null;
     _userId = null;
     _email = null;

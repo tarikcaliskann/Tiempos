@@ -18,6 +18,7 @@ import '../language/profile_l10n.dart';
 import '../util/formatting.dart';
 import '../util/skill_profile_card_display.dart';
 import '../widgets/app_chrome.dart';
+import '../widgets/skill_cover_image.dart';
 import 'add_skill_screen.dart';
 import 'edit_profile_screen.dart';
 import 'public_profile_screen.dart';
@@ -38,13 +39,10 @@ Widget _profileTabSegmentLabel(String text) {
 }
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({
-    super.key,
-    required this.appState,
-    this.onOpenMessages,
-  });
+  const ProfileScreen({super.key, required this.appState, this.onOpenMessages});
 
   final AppState appState;
+
   /// Web profil “Continue learning” → Mesajlar sekmesi.
   final VoidCallback? onOpenMessages;
 
@@ -75,6 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<ExchangeRequestDto> _receivedBookings = [];
   List<ExchangeRequestDto> _sentBookings = [];
   List<String> _hiddenLearningIds = [];
+
   /// 0 Teaching, 1 Learning, 2 Reviews — web `ProfilePage` `mainTab`.
   int _mainTab = 0;
   String? _shareFeedback;
@@ -120,7 +119,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) setState(() => _hiddenLearningIds = []);
         return;
       }
-      final ids = decoded.map((e) => '$e'.trim()).where((e) => e.isNotEmpty).toList();
+      final ids = decoded
+          .map((e) => '$e'.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
       if (mounted) setState(() => _hiddenLearningIds = ids);
     } catch (_) {
       if (mounted) setState(() => _hiddenLearningIds = []);
@@ -131,7 +133,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final uid = widget.appState.userId?.trim().toLowerCase();
     if (uid == null || uid.isEmpty) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('tiempos_hidden_learning:$uid', jsonEncode(_hiddenLearningIds));
+    await prefs.setString(
+      'tiempos_hidden_learning:$uid',
+      jsonEncode(_hiddenLearningIds),
+    );
   }
 
   Future<void> _load() async {
@@ -230,14 +235,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _persistHiddenLearningIds();
   }
 
-  Future<void> _openDeleteLearningDialog(ExchangeRequestDto booking, ProfileL10n l10n) async {
+  Future<void> _openDeleteLearningDialog(
+    ExchangeRequestDto booking,
+    ProfileL10n l10n,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteLearningTitle),
         content: Text(l10n.deleteLearningBody(booking.skillTitle)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.yesDelete),
@@ -277,7 +288,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     booking.ownerName,
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.6),
+                      color: Theme.of(
+                        ctx,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -288,7 +301,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       return IconButton(
                         onPressed: saving ? null : () => setD(() => rating = v),
                         icon: Icon(
-                          v <= rating ? Icons.star_rounded : Icons.star_border_rounded,
+                          v <= rating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
                           color: Colors.amber.shade700,
                           size: 36,
                         ),
@@ -300,7 +315,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       l10n.tapStarsHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.55),
+                        color: Theme.of(
+                          ctx,
+                        ).colorScheme.onSurface.withValues(alpha: 0.55),
                         fontSize: 12,
                       ),
                     ),
@@ -316,7 +333,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   if (err != null) ...[
                     const SizedBox(height: 8),
-                    Text(err!, style: TextStyle(color: Theme.of(ctx).colorScheme.error, fontSize: 13)),
+                    Text(
+                      err!,
+                      style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.error,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -339,7 +362,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             token: t,
                             exchangeRequestId: booking.id,
                             rating: rating,
-                            comment: commentCtrl.text.trim().isEmpty ? null : commentCtrl.text.trim(),
+                            comment: commentCtrl.text.trim().isEmpty
+                                ? null
+                                : commentCtrl.text.trim(),
                           );
                           if (ctx.mounted) Navigator.pop(ctx, true);
                         } on ApiException catch (e) {
@@ -490,7 +515,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           height: 1.35,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.9,
+                          ),
                         ),
                       ),
                     ],
@@ -596,7 +623,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           height: 1.35,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.9,
+                          ),
                         ),
                       ),
                     ],
@@ -615,18 +644,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  List<Widget> _buildTeachingSlivers(BuildContext context, ThemeData theme, ProfileL10n l10n) {
+  List<Widget> _buildTeachingSlivers(
+    BuildContext context,
+    ThemeData theme,
+    ProfileL10n l10n,
+  ) {
     final bySkill = _teachingBookingsBySkill();
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 0, AppChrome.heroHeaderPaddingH, 8),
+          padding: EdgeInsets.fromLTRB(
+            AppChrome.heroHeaderPaddingH,
+            0,
+            AppChrome.heroHeaderPaddingH,
+            8,
+          ),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   l10n.skillsTeach,
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               FilledButton(
@@ -647,7 +688,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (_skills.isEmpty)
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 24),
+            padding: EdgeInsets.fromLTRB(
+              AppChrome.heroHeaderPaddingH,
+              8,
+              AppChrome.heroHeaderPaddingH,
+              24,
+            ),
             child: Text(
               l10n.emptyTeaching,
               style: GoogleFonts.inter(
@@ -658,245 +704,304 @@ class _ProfileScreenState extends State<ProfileScreen> {
         )
       else
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, i) {
-              final s = _skills[i];
-              final bookings = bySkill[s.id] ?? [];
-              final learners = bookings.map((b) => b.requesterId.toLowerCase()).toSet().length;
-              final muted = theme.colorScheme.onSurface.withValues(alpha: 0.55);
-              final coverUrl = skillCoverProxyUrl(s.id);
-              final levelText = l10n.skillLevelFromApi(s.level);
-              final sessionTypeText = s.sessionTypes.isNotEmpty
-                  ? s.sessionTypes.map(l10n.sessionTypeChip).join(', ')
-                  : (fallbackSessionTypeFromDescription(s.description) ?? '');
-              final locationText = (s.inPersonLocation ?? '').trim().isNotEmpty
-                  ? s.inPersonLocation!.trim()
-                  : (fallbackLocationFromDescription(s.description) ?? '');
-              final availability = getSkillAvailabilityParts(s, _profileDayLabels) ??
-                  fallbackAvailabilityFromDescription(s.description, _profileDayLabels);
-              final preview = skillCardDescriptionPreview(s.description);
-              final category = s.category?.trim();
+          delegate: SliverChildBuilderDelegate((context, i) {
+            final s = _skills[i];
+            final bookings = bySkill[s.id] ?? [];
+            final learners = bookings
+                .map((b) => b.requesterId.toLowerCase())
+                .toSet()
+                .length;
+            final muted = theme.colorScheme.onSurface.withValues(alpha: 0.55);
+            final levelText = l10n.skillLevelFromApi(s.level);
+            final sessionTypeText = s.sessionTypes.isNotEmpty
+                ? s.sessionTypes.map(l10n.sessionTypeChip).join(', ')
+                : (fallbackSessionTypeFromDescription(s.description) ?? '');
+            final locationText = (s.inPersonLocation ?? '').trim().isNotEmpty
+                ? s.inPersonLocation!.trim()
+                : (fallbackLocationFromDescription(s.description) ?? '');
+            final availability =
+                getSkillAvailabilityParts(s, _profileDayLabels) ??
+                fallbackAvailabilityFromDescription(
+                  s.description,
+                  _profileDayLabels,
+                );
+            final preview = skillCardDescriptionPreview(s.description);
+            final category = s.category?.trim();
 
-              return Card(
-                margin: EdgeInsets.symmetric(horizontal: AppChrome.heroHeaderPaddingH, vertical: 8),
-                clipBehavior: Clip.antiAlias,
-                elevation: 0,
-                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.colorScheme.outlineVariant),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AspectRatio(
+            return Card(
+              margin: EdgeInsets.symmetric(
+                horizontal: AppChrome.heroHeaderPaddingH,
+                vertical: 8,
+              ),
+              clipBehavior: Clip.antiAlias,
+              elevation: 0,
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.25,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: theme.colorScheme.outlineVariant),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child: Image.network(
-                        coverUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => ColoredBox(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                      child: SkillCoverImage(
+                        skillId: s.id,
+                        fallbackUrl: s.coverImageUrl,
+                        errorWidget: ColoredBox(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.12,
+                          ),
                           child: Icon(
                             Icons.auto_awesome_mosaic_rounded,
                             size: 48,
-                            color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.35,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      s.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 17,
-                                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    s.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 17,
                                     ),
-                                    if (category != null && category.isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          category,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: muted,
-                                          ),
+                                  ),
+                                  if (category != null && category.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: Text(
+                                        category,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: muted,
                                         ),
                                       ),
-                                    const SizedBox(height: 8),
-                                    Wrap(
-                                      spacing: 6,
-                                      runSpacing: 6,
-                                      children: [
-                                        if (levelText != null && levelText.isNotEmpty)
-                                          Chip(
-                                            label: Text(
-                                              levelText,
-                                              style: const TextStyle(fontSize: 12),
+                                    ),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: [
+                                      if (levelText != null &&
+                                          levelText.isNotEmpty)
+                                        Chip(
+                                          label: Text(
+                                            levelText,
+                                            style: const TextStyle(
+                                              fontSize: 12,
                                             ),
-                                            visualDensity: VisualDensity.compact,
-                                            padding: EdgeInsets.zero,
                                           ),
-                                        if (sessionTypeText.isNotEmpty)
-                                          Chip(
-                                            label: Text(
-                                              sessionTypeText,
-                                              style: const TextStyle(fontSize: 12),
+                                          visualDensity: VisualDensity.compact,
+                                          padding: EdgeInsets.zero,
+                                        ),
+                                      if (sessionTypeText.isNotEmpty)
+                                        Chip(
+                                          label: Text(
+                                            sessionTypeText,
+                                            style: const TextStyle(
+                                              fontSize: 12,
                                             ),
-                                            visualDensity: VisualDensity.compact,
-                                            side: BorderSide(color: theme.colorScheme.outline),
-                                            padding: EdgeInsets.zero,
                                           ),
-                                        if (locationText.isNotEmpty)
-                                          Chip(
-                                            label: Text(
-                                              locationText,
-                                              style: const TextStyle(fontSize: 12),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
+                                          visualDensity: VisualDensity.compact,
+                                          side: BorderSide(
+                                            color: theme.colorScheme.outline,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                        ),
+                                      if (locationText.isNotEmpty)
+                                        Chip(
+                                          label: Text(
+                                            locationText,
+                                            style: const TextStyle(
+                                              fontSize: 12,
                                             ),
-                                            visualDensity: VisualDensity.compact,
-                                            side: BorderSide(color: theme.colorScheme.outline),
-                                            padding: EdgeInsets.zero,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        if (availability != null) ...[
-                                          Chip(
-                                            label: Text(
-                                              availability.days,
-                                              style: const TextStyle(fontSize: 11, height: 1.2),
+                                          visualDensity: VisualDensity.compact,
+                                          side: BorderSide(
+                                            color: theme.colorScheme.outline,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                        ),
+                                      if (availability != null) ...[
+                                        Chip(
+                                          label: Text(
+                                            availability.days,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              height: 1.2,
                                             ),
-                                            visualDensity: VisualDensity.compact,
-                                            side: BorderSide(color: theme.colorScheme.outline),
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                           ),
-                                          Chip(
-                                            label: Text(
-                                              availability.hours,
-                                              style: const TextStyle(fontSize: 12),
+                                          visualDensity: VisualDensity.compact,
+                                          side: BorderSide(
+                                            color: theme.colorScheme.outline,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                        ),
+                                        Chip(
+                                          label: Text(
+                                            availability.hours,
+                                            style: const TextStyle(
+                                              fontSize: 12,
                                             ),
-                                            visualDensity: VisualDensity.compact,
-                                            side: BorderSide(color: theme.colorScheme.outline),
-                                            padding: EdgeInsets.zero,
                                           ),
-                                        ],
+                                          visualDensity: VisualDensity.compact,
+                                          side: BorderSide(
+                                            color: theme.colorScheme.outline,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                        ),
                                       ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    size: 18,
-                                    color: Colors.amber.shade700.withValues(alpha: 0.5),
-                                  ),
-                                  Text(
-                                    '—',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: muted,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Icon(Icons.menu_book_outlined, size: 16, color: muted),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${l10n.studentsCount(learners)} · ${s.durationMinutes} ${l10n.minPerSessionSuffix}',
-                                style: GoogleFonts.inter(fontSize: 13, color: muted),
-                              ),
-                            ],
-                          ),
-                          if (preview.isNotEmpty) ...[
-                            const SizedBox(height: 10),
+                            ),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.star_rounded,
+                                  size: 18,
+                                  color: Colors.amber.shade700.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                                Text(
+                                  '—',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: muted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.menu_book_outlined,
+                              size: 16,
+                              color: muted,
+                            ),
+                            const SizedBox(width: 6),
                             Text(
-                              preview,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
+                              '${l10n.studentsCount(learners)} · ${s.durationMinutes} ${l10n.minPerSessionSuffix}',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                height: 1.35,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                                color: muted,
                               ),
                             ),
                           ],
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () async {
-                                    final ok = await Navigator.of(context).push<bool>(
-                                      MaterialPageRoute(
-                                        builder: (_) => AddSkillScreen(
-                                          appState: widget.appState,
-                                          skillId: s.id,
-                                        ),
-                                      ),
-                                    );
-                                    if (ok == true && mounted) _load();
-                                  },
-                                  child: Text(l10n.edit),
-                                ),
+                        ),
+                        if (preview.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            preview,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              height: 1.35,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.72,
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => SkillDetailScreen(
-                                          appState: widget.appState,
-                                          skillId: s.id,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(l10n.viewDetails),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
-                      ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final ok = await Navigator.of(context)
+                                      .push<bool>(
+                                        MaterialPageRoute(
+                                          builder: (_) => AddSkillScreen(
+                                            appState: widget.appState,
+                                            skillId: s.id,
+                                          ),
+                                        ),
+                                      );
+                                  if (ok == true && mounted) _load();
+                                },
+                                child: Text(l10n.edit),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => SkillDetailScreen(
+                                        appState: widget.appState,
+                                        skillId: s.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text(l10n.viewDetails),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
-            childCount: _skills.length,
-          ),
+                  ),
+                ],
+              ),
+            );
+          }, childCount: _skills.length),
         ),
     ];
   }
 
-  List<Widget> _buildLearningSlivers(BuildContext context, ThemeData theme, ProfileL10n l10n) {
+  List<Widget> _buildLearningSlivers(
+    BuildContext context,
+    ThemeData theme,
+    ProfileL10n l10n,
+  ) {
     final bookings = _learningBookings;
     final givenMap = _givenReviewByExchangeId();
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 0, AppChrome.heroHeaderPaddingH, 8),
+          padding: EdgeInsets.fromLTRB(
+            AppChrome.heroHeaderPaddingH,
+            0,
+            AppChrome.heroHeaderPaddingH,
+            8,
+          ),
           child: Text(
             l10n.skillsLearning,
             style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800),
@@ -906,7 +1011,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (bookings.isEmpty)
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 24),
+            padding: EdgeInsets.fromLTRB(
+              AppChrome.heroHeaderPaddingH,
+              8,
+              AppChrome.heroHeaderPaddingH,
+              24,
+            ),
             child: Text(
               l10n.emptyLearning,
               style: GoogleFonts.inter(
@@ -917,145 +1027,162 @@ class _ProfileScreenState extends State<ProfileScreen> {
         )
       else
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, i) {
-              final b = bookings[i];
-              final statusLabel =
-                  b.status == 'COMPLETED' ? l10n.learningStatusCompleted : l10n.learningStatusAccepted;
-              final totalTime = formatBookedDurationEn(b.bookedMinutes);
-              final existing = givenMap[b.id];
-              return Card(
-                margin: EdgeInsets.symmetric(horizontal: AppChrome.heroHeaderPaddingH, vertical: 8),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  b.skillTitle,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${l10n.learningInstructor}: ${b.ownerName}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Chip(
-                            label: Text(statusLabel, style: const TextStyle(fontSize: 12)),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '${l10n.learningSession}: ${_formatSessionTime(context, b.scheduledStartAt)}',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.learningTotalTime(totalTime),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => SkillDetailScreen(
-                                      appState: widget.appState,
-                                      skillId: b.skillId,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Text(l10n.viewDetails),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: widget.onOpenMessages ??
-                                  () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(l10n.openMessagesHint),
-                                      ),
-                                    );
-                                  },
-                              child: Text(l10n.continueLearning),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: theme.colorScheme.error,
-                            side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.5)),
-                          ),
-                          onPressed: () => _openDeleteLearningDialog(b, l10n),
-                          child: Text(l10n.deleteLearning),
-                        ),
-                      ),
-                      if (b.status == 'COMPLETED') ...[
-                        const SizedBox(height: 10),
-                        if (existing != null)
-                          Row(
+          delegate: SliverChildBuilderDelegate((context, i) {
+            final b = bookings[i];
+            final statusLabel = b.status == 'COMPLETED'
+                ? l10n.learningStatusCompleted
+                : l10n.learningStatusAccepted;
+            final totalTime = formatBookedDurationEn(b.bookedMinutes);
+            final existing = givenMap[b.id];
+            return Card(
+              margin: EdgeInsets.symmetric(
+                horizontal: AppChrome.heroHeaderPaddingH,
+                vertical: 8,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                l10n.rated,
+                                b.skillTitle,
                                 style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 17,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              _starRow(existing.rating),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${l10n.learningInstructor}: ${b.ownerName}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                              ),
                             ],
-                          )
-                        else
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.tonal(
-                              onPressed: () => _openReviewDialog(b),
-                              child: Text(l10n.rateSession),
+                          ),
+                        ),
+                        Chip(
+                          label: Text(
+                            statusLabel,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${l10n.learningSession}: ${_formatSessionTime(context, b.scheduledStartAt)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.learningTotalTime(totalTime),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => SkillDetailScreen(
+                                    appState: widget.appState,
+                                    skillId: b.skillId,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(l10n.viewDetails),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed:
+                                widget.onOpenMessages ??
+                                () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(l10n.openMessagesHint),
+                                    ),
+                                  );
+                                },
+                            child: Text(l10n.continueLearning),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: theme.colorScheme.error,
+                          side: BorderSide(
+                            color: theme.colorScheme.error.withValues(
+                              alpha: 0.5,
                             ),
                           ),
-                      ],
+                        ),
+                        onPressed: () => _openDeleteLearningDialog(b, l10n),
+                        child: Text(l10n.deleteLearning),
+                      ),
+                    ),
+                    if (b.status == 'COMPLETED') ...[
+                      const SizedBox(height: 10),
+                      if (existing != null)
+                        Row(
+                          children: [
+                            Text(
+                              l10n.rated,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.55,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            _starRow(existing.rating),
+                          ],
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.tonal(
+                            onPressed: () => _openReviewDialog(b),
+                            child: Text(l10n.rateSession),
+                          ),
+                        ),
                     ],
-                  ),
+                  ],
                 ),
-              );
-            },
-            childCount: bookings.length,
-          ),
+              ),
+            );
+          }, childCount: bookings.length),
         ),
     ];
   }
@@ -1126,7 +1253,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   height: 96,
                   fit: BoxFit.cover,
                   gaplessPlayback: true,
-                  errorBuilder: (context, error, stackTrace) => _heroInitials(theme),
+                  errorBuilder: (context, error, stackTrace) =>
+                      _heroInitials(theme),
                 ),
               ),
             );
@@ -1144,7 +1272,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 96,
               height: 96,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => _heroInitials(theme),
+              errorBuilder: (context, error, stackTrace) =>
+                  _heroInitials(theme),
             ),
           ),
         );
@@ -1153,12 +1282,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _heroInitials(theme);
   }
 
-  Widget _reviewsTabContent(BuildContext context, ThemeData theme, ProfileL10n l10n) {
+  Widget _reviewsTabContent(
+    BuildContext context,
+    ThemeData theme,
+    ProfileL10n l10n,
+  ) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 12),
+      padding: EdgeInsets.fromLTRB(
+        AppChrome.heroHeaderPaddingH,
+        8,
+        AppChrome.heroHeaderPaddingH,
+        12,
+      ),
       child: Card(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 20, AppChrome.heroHeaderPaddingH, 20),
+          padding: EdgeInsets.fromLTRB(
+            AppChrome.heroHeaderPaddingH,
+            20,
+            AppChrome.heroHeaderPaddingH,
+            20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -1187,7 +1330,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     l10n.emptyReviews,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.55,
+                      ),
                     ),
                   ),
                 )
@@ -1224,7 +1369,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     l10n.emptyReviewsIGave,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.55,
+                      ),
                     ),
                   ),
                 )
@@ -1261,7 +1408,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
-                padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+                padding: EdgeInsets.only(
+                  top: MediaQuery.paddingOf(context).top,
+                ),
                 child: const Center(child: CircularProgressIndicator()),
               ),
             )
@@ -1271,7 +1420,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   DecoratedBox(
-                    decoration: const BoxDecoration(gradient: AppChrome.heroGradientLinear),
+                    decoration: const BoxDecoration(
+                      gradient: AppChrome.heroGradientLinear,
+                    ),
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(
                         AppChrome.heroHeaderPaddingH,
@@ -1324,7 +1475,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (_showReceivedSummary) ...[
-                                Icon(Icons.star_rounded, color: Colors.amber.shade200, size: 22),
+                                Icon(
+                                  Icons.star_rounded,
+                                  color: Colors.amber.shade200,
+                                  size: 22,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -1335,7 +1490,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.white.withValues(alpha: 0.95),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.95,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1345,7 +1502,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     l10n.noRatingsYet,
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
-                                      color: Colors.white.withValues(alpha: 0.92),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.92,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1357,11 +1516,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () => _shareProfile(l10n),
-                                  icon: const Icon(Icons.share_rounded, size: 18),
+                                  icon: const Icon(
+                                    Icons.share_rounded,
+                                    size: 18,
+                                  ),
                                   label: Text(l10n.shareProfile),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.white,
-                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.55)),
+                                    side: BorderSide(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1369,14 +1535,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Expanded(
                                 child: FilledButton.icon(
                                   onPressed: () async {
-                                    final ok = await Navigator.of(context).push<bool>(
-                                      MaterialPageRoute(
-                                        builder: (_) => EditProfileScreen(appState: widget.appState),
-                                      ),
-                                    );
+                                    final ok = await Navigator.of(context)
+                                        .push<bool>(
+                                          MaterialPageRoute(
+                                            builder: (_) => EditProfileScreen(
+                                              appState: widget.appState,
+                                            ),
+                                          ),
+                                        );
                                     if (ok == true && mounted) await _load();
                                   },
-                                  icon: const Icon(Icons.edit_outlined, size: 18),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
                                   label: Text(l10n.editProfile),
                                 ),
                               ),
@@ -1411,7 +1583,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.place_outlined, size: 18, color: Colors.white.withValues(alpha: 0.75)),
+                                Icon(
+                                  Icons.place_outlined,
+                                  size: 18,
+                                  color: Colors.white.withValues(alpha: 0.75),
+                                ),
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
@@ -1419,7 +1595,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
-                                      color: Colors.white.withValues(alpha: 0.88),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.88,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1431,7 +1609,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.translate_rounded, size: 18, color: Colors.white.withValues(alpha: 0.75)),
+                                Icon(
+                                  Icons.translate_rounded,
+                                  size: 18,
+                                  color: Colors.white.withValues(alpha: 0.75),
+                                ),
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
@@ -1439,7 +1621,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
-                                      color: Colors.white.withValues(alpha: 0.88),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.88,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1451,7 +1635,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.white.withValues(alpha: 0.75)),
+                                Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 16,
+                                  color: Colors.white.withValues(alpha: 0.75),
+                                ),
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
@@ -1459,7 +1647,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
-                                      color: Colors.white.withValues(alpha: 0.88),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.88,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1483,7 +1673,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 14),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppChrome.heroHeaderPaddingH),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppChrome.heroHeaderPaddingH,
+                    ),
                     child: Theme(
                       data: theme.copyWith(
                         segmentedButtonTheme: SegmentedButtonThemeData(
@@ -1493,8 +1685,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const WidgetStatePropertyAll(
                               EdgeInsets.symmetric(horizontal: 4, vertical: 10),
                             ),
-                            minimumSize:
-                                const WidgetStatePropertyAll(Size(0, 40)),
+                            minimumSize: const WidgetStatePropertyAll(
+                              Size(0, 40),
+                            ),
                           ),
                         ),
                       ),
@@ -1508,7 +1701,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ButtonSegment<int>(
                             value: 1,
                             label: _profileTabSegmentLabel(l10n.tabLearning),
-                            icon: const Icon(Icons.menu_book_outlined, size: 18),
+                            icon: const Icon(
+                              Icons.menu_book_outlined,
+                              size: 18,
+                            ),
                           ),
                           ButtonSegment<int>(
                             value: 2,
@@ -1530,10 +1726,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (_mainTab == 0) ..._buildTeachingSlivers(context, theme, l10n),
             if (_mainTab == 1) ..._buildLearningSlivers(context, theme, l10n),
             if (_mainTab == 2)
-              SliverToBoxAdapter(child: _reviewsTabContent(context, theme, l10n)),
+              SliverToBoxAdapter(
+                child: _reviewsTabContent(context, theme, l10n),
+              ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(AppChrome.heroHeaderPaddingH, 8, AppChrome.heroHeaderPaddingH, 24),
+                padding: EdgeInsets.fromLTRB(
+                  AppChrome.heroHeaderPaddingH,
+                  8,
+                  AppChrome.heroHeaderPaddingH,
+                  24,
+                ),
                 child: Card(
                   child: Column(
                     children: [
@@ -1556,7 +1759,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (_) => SettingsScreen(appState: widget.appState),
+                              builder: (_) =>
+                                  SettingsScreen(appState: widget.appState),
                             ),
                           );
                         },

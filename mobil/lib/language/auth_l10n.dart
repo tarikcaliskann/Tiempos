@@ -16,6 +16,12 @@ class AuthL10n {
       _e('Sign in to continue your learning journey', 'Öğrenmeye devam etmek için giriş yapın');
   /// Web `auth.login.orContinue` — divider between Google and email fields.
   String get orWithEmail => _e('or', 'veya');
+  /// Web `auth.login.orContinue` — before guest link on login (same keys as web).
+  String get orContinue => _e('or', 'veya');
+  /// Web `auth.login.continueGuest` — opens how-it-works equivalent (Help center).
+  /// Turkish uses natural “sign in” wording on the login screen (web copy says “sign up”).
+  String get continueGuest =>
+      _e('Continue without signing in', 'Giriş yapmadan devam et');
   String get signIn => _e('Sign In', 'Giriş yap');
   String get email => _e('Email', 'E-posta');
   String get password => _e('Password', 'Şifre');
@@ -86,6 +92,10 @@ class AuthL10n {
   String get resendCodeBtn => _e('Resend code', 'Kodu yeniden gönder');
   String resendCodeWithTimer(String time) =>
       _e('Resend code ($time)', 'Kodu yeniden gönder ($time)');
+  String get verifyResendNewCodeHint => _e(
+        'A new code was generated. If SMTP is off, use the latest verification line in API logs — the old code no longer works.',
+        'Yeni kod üretildi. SMTP kapalıysa API günlüğündeki **en son** doğrulama_kodu satırını kullanın; önceki kod artık geçersiz.',
+      );
   String get goToSignIn => _e("I'll sign in later", 'Daha sonra giriş yapacağım');
   String get errorVerifyCodeShort =>
       _e('Enter the full 6-digit code.', '6 haneli kodu eksiksiz girin.');

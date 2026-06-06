@@ -66,7 +66,7 @@ class SkillDto {
 /// Backend proxy kapak — web `skillCoverProxyUrl`.
 String skillCoverProxyUrl(String skillId) {
   final base = ApiConfig.resolvedBaseUrl;
-  return '$base/api/skills/$skillId/cover';
+  return '$base/api/skills/${skillId.trim()}/cover';
 }
 
 Future<List<SkillDto>> fetchPublicSkills() async {

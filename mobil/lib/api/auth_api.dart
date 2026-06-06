@@ -113,6 +113,7 @@ class RegisterResponse {
     required this.emailVerificationPending,
     required this.smtpMailDeliveryEnabled,
     required this.smtpLocalCapture,
+    this.verificationCode,
   });
 
   final String id;
@@ -122,8 +123,11 @@ class RegisterResponse {
   final bool emailVerificationPending;
   final bool smtpMailDeliveryEnabled;
   final bool smtpLocalCapture;
+  /// Yerel + SMTP kapalı + sunucu bayrağı: ilk 6 haneli kod.
+  final String? verificationCode;
 
   factory RegisterResponse.fromJson(Map<String, dynamic> j) {
+    final vc = j['verificationCode'];
     return RegisterResponse(
       id: '${j['id'] ?? ''}',
       fullName: j['fullName'] as String? ?? '',
@@ -132,6 +136,7 @@ class RegisterResponse {
       emailVerificationPending: j['emailVerificationPending'] == true,
       smtpMailDeliveryEnabled: j['smtpMailDeliveryEnabled'] == true,
       smtpLocalCapture: j['smtpLocalCapture'] != false,
+      verificationCode: vc is String && vc.isNotEmpty ? vc : null,
     );
   }
 }
@@ -140,6 +145,7 @@ Future<RegisterResponse> registerRequest({
   required String fullName,
   required String email,
   required String password,
+  required bool acceptedTerms,
 }) async {
   final data = await apiFetch(
     '/api/auth/register',
@@ -148,6 +154,7 @@ Future<RegisterResponse> registerRequest({
       'fullName': fullName.trim(),
       'email': email.trim(),
       'password': password,
+      'acceptedTerms': acceptedTerms,
     },
     timeout: const Duration(seconds: 180),
   );
@@ -178,12 +185,29 @@ Future<LoginResponse> verifyEmailWithCode({
   return LoginResponse.fromJson(Map<String, dynamic>.from(data));
 }
 
-Future<void> resendVerificationEmail(String email) async {
-  await apiFetch(
+/// POST /api/auth/resend-verification — [verificationCode] yalnızca yerel + SMTP kapalı + sunucu bayrağı açıkken dolu.
+class ResendVerificationResult {
+  const ResendVerificationResult({required this.mailSent, this.verificationCode});
+
+  final bool mailSent;
+  final String? verificationCode;
+}
+
+Future<ResendVerificationResult> resendVerificationEmail(String email) async {
+  final data = await apiFetch(
     '/api/auth/resend-verification',
     method: 'POST',
     body: {'email': email.trim().toLowerCase()},
     timeout: const Duration(seconds: 90),
+  );
+  if (data is! Map) {
+    return const ResendVerificationResult(mailSent: false, verificationCode: null);
+  }
+  final m = Map<String, dynamic>.from(data);
+  final code = m['verificationCode'];
+  return ResendVerificationResult(
+    mailSent: m['mailSent'] == true,
+    verificationCode: code is String && code.isNotEmpty ? code : null,
   );
 }
 

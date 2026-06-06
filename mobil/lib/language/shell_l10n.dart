@@ -94,4 +94,12 @@ class ShellL10n {
   String get learningProgress => _e('Learning Progress', 'Öğrenme ilerlemesi');
   String get noLearningProgressYet =>
       _e('No learning progress to show yet.', 'Gösterilecek öğrenme ilerlemesi yok.');
+
+  // —— Guest / browse without account ——
+  String get guestNeedSignInTitle =>
+      _e('Sign in to continue', 'Devam etmek için giriş yapın');
+  String get guestNeedSignInBody => _e(
+        'Messages, your dashboard, and booking a session are available after you sign in. You can keep exploring skills in Explore.',
+        'Mesajlar, paneliniz ve oturum rezervasyonu giriş yaptıktan sonra açılır. Becerilere göz atmaya Keşfet’ten devam edebilirsiniz.',
+      );
 }

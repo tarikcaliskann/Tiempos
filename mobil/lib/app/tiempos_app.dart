@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../screens/guest_root_scaffold.dart';
 import '../screens/login_screen.dart';
 import '../screens/root_scaffold.dart';
 import '../theme/app_theme.dart';
@@ -17,6 +18,9 @@ class TiemposApp extends StatelessWidget {
       animation: appState,
       builder: (context, _) {
         return MaterialApp(
+          key: ValueKey<Object>(
+            '${appState.isAuthenticated}_${appState.guestBrowseActive}',
+          ),
           title: 'Tiempos',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light(),
@@ -34,7 +38,9 @@ class TiemposApp extends StatelessWidget {
           ],
           home: appState.isAuthenticated
               ? RootScaffold(appState: appState)
-              : LoginScreen(appState: appState),
+              : appState.guestBrowseActive
+                  ? GuestRootScaffold(appState: appState)
+                  : LoginScreen(appState: appState),
         );
       },
     );

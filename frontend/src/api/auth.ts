@@ -34,6 +34,14 @@ export type RegisterResponse = {
   smtpMailDeliveryEnabled?: boolean;
   /** Mailpit / yerel test — gelen kutusu değil */
   smtpLocalCapture?: boolean;
+  /** Yerel + SMTP kapalı + sunucu bayrağı: doğrulama kodu */
+  verificationCode?: string | null;
+};
+
+export type ResendVerificationResponse = {
+  ok: boolean;
+  mailSent: boolean;
+  verificationCode?: string | null;
 };
 
 export async function loginRequest(body: {
@@ -71,8 +79,10 @@ export async function verifyEmailWithCode(body: {
   });
 }
 
-export async function resendVerificationEmail(email: string): Promise<void> {
-  return apiFetch<void>("/api/auth/resend-verification", {
+export async function resendVerificationEmail(
+  email: string,
+): Promise<ResendVerificationResponse> {
+  return apiFetch<ResendVerificationResponse>("/api/auth/resend-verification", {
     method: "POST",
     body: JSON.stringify({ email }),
   });

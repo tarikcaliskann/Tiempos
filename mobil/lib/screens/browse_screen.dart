@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../api/skills_api.dart';
+import '../widgets/skill_cover_image.dart';
 import '../app/app_state.dart';
+import '../language/auth_l10n.dart';
 import '../language/shell_l10n.dart';
 import '../widgets/app_chrome.dart';
 import 'public_profile_screen.dart';
 import 'skill_detail_screen.dart';
 
 class BrowseScreen extends StatefulWidget {
-  const BrowseScreen({super.key, required this.appState});
+  const BrowseScreen({
+    super.key,
+    required this.appState,
+    this.onRequireAuth,
+    this.showGuestSignInInHeader = false,
+  });
 
   final AppState appState;
+  /// Token yokken rezervasyon / eğitmen profili vb. için giriş ekranına geçiş.
+  final VoidCallback? onRequireAuth;
+  /// Misafir keşfet: üst şeritte kısa “Giriş yap”.
+  final bool showGuestSignInInHeader;
 
   @override
   State<BrowseScreen> createState() => _BrowseScreenState();
@@ -69,7 +80,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
     var list = List<SkillDto>.from(_catalog);
     final myId = widget.appState.userId?.trim();
     if (myId != null && myId.isNotEmpty) {
-      list = list.where((s) => s.ownerId.trim().toLowerCase() != myId.toLowerCase()).toList();
+      list = list
+          .where((s) => s.ownerId.trim().toLowerCase() != myId.toLowerCase())
+          .toList();
     }
     if (q.isNotEmpty) {
       list = list.where((s) {
@@ -85,7 +98,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
         list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         break;
       case _SortOption.title:
-        list.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+        list.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
         break;
     }
     return list;
@@ -97,6 +112,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
         builder: (ctx) => SkillDetailScreen(
           appState: widget.appState,
           skillId: id,
+          onLoginRequired: widget.onRequireAuth,
         ),
       ),
     );
@@ -104,13 +120,14 @@ class _BrowseScreenState extends State<BrowseScreen> {
 
   void _openInstructor(String userId) {
     final t = widget.appState.token;
-    if (t == null || t.isEmpty) return;
+    if (t == null || t.isEmpty) {
+      widget.onRequireAuth?.call();
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (ctx) => PublicProfileScreen(
-          appState: widget.appState,
-          userId: userId,
-        ),
+        builder: (ctx) =>
+            PublicProfileScreen(appState: widget.appState, userId: userId),
       ),
     );
   }
@@ -121,11 +138,40 @@ class _BrowseScreenState extends State<BrowseScreen> {
     final sh = ShellL10n.of(context);
     final items = _filteredSorted();
     final myId = widget.appState.userId?.trim();
-    final onlyOwnInCatalog = myId != null &&
+    final onlyOwnInCatalog =
+        myId != null &&
         myId.isNotEmpty &&
         _catalog.isNotEmpty &&
-        _catalog.every((s) => s.ownerId.trim().toLowerCase() == myId.toLowerCase());
+        _catalog.every(
+          (s) => s.ownerId.trim().toLowerCase() == myId.toLowerCase(),
+        );
     final isDark = theme.brightness == Brightness.dark;
+    final auth = AuthL10n.of(context);
+    final trailing =
+        widget.showGuestSignInInHeader && widget.onRequireAuth != null
+        ? TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: widget.onRequireAuth,
+            child: Text(
+              auth.signIn,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: Colors.white,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.white.withValues(alpha: 0.55),
+              ),
+            ),
+          )
+        : null;
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -138,6 +184,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
             context: context,
             title: sh.browseTitle,
             subtitle: sh.browseSubtitle,
+            trailing: trailing,
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -159,7 +206,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
                         sh.browseSortBy,
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.55,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -215,13 +264,15 @@ class _BrowseScreenState extends State<BrowseScreen> {
                     _catalog.isEmpty
                         ? sh.browseEmptyCatalog
                         : onlyOwnInCatalog
-                            ? sh.browseOnlyOwnSkills
-                            : sh.browseEmptySearch,
+                        ? sh.browseOnlyOwnSkills
+                        : sh.browseEmptySearch,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 15,
                       height: 1.45,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.55,
+                      ),
                     ),
                   ),
                 ),
@@ -231,22 +282,19 @@ class _BrowseScreenState extends State<BrowseScreen> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final s = items[i];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _BrowseSkillListTile(
-                        skill: s,
-                        onOpen: () => _openSkill(s.id),
-                        onInstructor: () => _openInstructor(s.ownerId),
-                        l10n: sh,
-                        isDark: isDark,
-                      ),
-                    );
-                  },
-                  childCount: items.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, i) {
+                  final s = items[i];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _BrowseSkillListTile(
+                      skill: s,
+                      onOpen: () => _openSkill(s.id),
+                      onInstructor: () => _openInstructor(s.ownerId),
+                      l10n: sh,
+                      isDark: isDark,
+                    ),
+                  );
+                }, childCount: items.length),
               ),
             ),
         ],
@@ -273,7 +321,6 @@ class _BrowseSkillListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final coverUrl = skillCoverProxyUrl(skill.id);
     final types = skill.sessionTypes;
     final online = types.any((e) => e.toLowerCase() == 'online');
     final inPerson = types.any((e) => e.toLowerCase().contains('person'));
@@ -302,15 +349,17 @@ class _BrowseSkillListTile extends StatelessWidget {
                 child: SizedBox(
                   width: 88,
                   height: 88,
-                  child: Image.network(
-                    coverUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => ColoredBox(
+                  child: SkillCoverImage(
+                    skillId: skill.id,
+                    fallbackUrl: skill.coverImageUrl,
+                    errorWidget: ColoredBox(
                       color: theme.colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.image_not_supported_outlined,
                         size: 32,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.25,
+                        ),
                       ),
                     ),
                   ),
@@ -351,60 +400,93 @@ class _BrowseSkillListTile extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        if (skill.category != null && skill.category!.trim().isNotEmpty)
+                        if (skill.category != null &&
+                            skill.category!.trim().isNotEmpty)
                           Chip(
                             label: Text(
                               skill.category!,
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             visualDensity: VisualDensity.compact,
                             padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: theme.colorScheme.surfaceContainerHighest
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: theme
+                                .colorScheme
+                                .surfaceContainerHighest
                                 .withValues(alpha: isDark ? 0.55 : 0.85),
                             side: BorderSide(
-                              color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: 0.35,
+                              ),
                             ),
                           ),
                         if (online)
                           Chip(
                             label: Text(
                               l10n.browseOnline,
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             visualDensity: VisualDensity.compact,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: theme.colorScheme.surfaceContainerHighest
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: theme
+                                .colorScheme
+                                .surfaceContainerHighest
                                 .withValues(alpha: isDark ? 0.55 : 0.85),
                             side: BorderSide(
-                              color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: 0.35,
+                              ),
                             ),
                           ),
                         if (inPerson)
                           Chip(
                             label: Text(
                               l10n.browseInPerson,
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             visualDensity: VisualDensity.compact,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: theme.colorScheme.surfaceContainerHighest
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: theme
+                                .colorScheme
+                                .surfaceContainerHighest
                                 .withValues(alpha: isDark ? 0.55 : 0.85),
                             side: BorderSide(
-                              color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: 0.35,
+                              ),
                             ),
                           ),
                         Chip(
                           label: Text(
                             l10n.browseMinutesPerSession(skill.durationMinutes),
-                            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           visualDensity: VisualDensity.compact,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: theme.colorScheme.surfaceContainerHighest
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: theme
+                              .colorScheme
+                              .surfaceContainerHighest
                               .withValues(alpha: isDark ? 0.55 : 0.85),
                           side: BorderSide(
-                            color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.35,
+                            ),
                           ),
                         ),
                       ],
@@ -414,17 +496,26 @@ class _BrowseSkillListTile extends StatelessWidget {
                       alignment: Alignment.centerRight,
                       child: FilledButton.icon(
                         onPressed: onOpen,
-                        icon: const Icon(Icons.event_available_rounded, size: 20),
+                        icon: const Icon(
+                          Icons.event_available_rounded,
+                          size: 20,
+                        ),
                         label: Text(
                           l10n.browseBookNow,
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
                         ),
                         style: FilledButton.styleFrom(
                           elevation: isDark ? 0 : 1,
                           shadowColor: Colors.black.withValues(alpha: 0.12),
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: theme.colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

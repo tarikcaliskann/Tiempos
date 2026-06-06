@@ -52,6 +52,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
   const [smtpMailDeliveryEnabled, setSmtpMailDeliveryEnabled] = useState(false);
   const [smtpLocalCapture, setSmtpLocalCapture] = useState(true);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [localDevCode, setLocalDevCode] = useState<string | null>(null);
   useEffect(() => {
     if (!awaitingVerification || resendCooldown <= 0) return;
     const id = window.setInterval(() => {
@@ -99,6 +100,8 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
         );
         setResendCooldown(RESEND_COOLDOWN_SEC);
         setAwaitingVerification(true);
+        const vc = created.verificationCode?.trim();
+        setLocalDevCode(vc && vc.length > 0 ? vc : null);
         return;
       }
       const res = await loginRequest({ email, password });
@@ -158,8 +161,10 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
     setError(null);
     setResendLoading(true);
     try {
-      await resendVerificationEmail(pendingEmail);
+      const r = await resendVerificationEmail(pendingEmail);
       setResendCooldown(RESEND_COOLDOWN_SEC);
+      const vc = r.verificationCode?.trim();
+      setLocalDevCode(vc && vc.length > 0 ? vc : null);
     } catch (err) {
       setError(apiErrorDisplayMessage(err, a.errorFailed));
     } finally {
@@ -198,6 +203,14 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
                 </p>
                 {pendingEmail ? (
                   <p className="mt-2 text-sm font-medium text-foreground">{pendingEmail}</p>
+                ) : null}
+                {localDevCode ? (
+                  <p
+                    className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center font-mono text-lg font-semibold tracking-wider text-foreground"
+                    translate="no"
+                  >
+                    {localDevCode}
+                  </p>
                 ) : null}
               </div>
               {error ? (
