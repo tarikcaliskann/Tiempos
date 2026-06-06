@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -61,82 +60,19 @@ public class SkillCoverProxyService {
                 if (res.statusCode() != 200 || res.body() == null || res.body().length < 64) {
                     continue;
                 }
-                byte[] body = res.body();
-                String ctRaw = res.headers().firstValue(HttpHeaders.CONTENT_TYPE).orElse("");
-                String ct = ctRaw.split(";")[0].trim();
-                boolean declaredImage = ct.toLowerCase(Locale.ROOT).startsWith("image/");
-                boolean sniffedImage = looksLikeRasterImage(body);
-                if (!declaredImage && !sniffedImage) {
+                String ct = res.headers().firstValue(HttpHeaders.CONTENT_TYPE).orElse(MediaType.IMAGE_JPEG_VALUE);
+                if (!ct.startsWith("image/")) {
                     continue;
-                }
-                if (!declaredImage) {
-                    ct = sniffContentType(body);
-                } else if (ct.isEmpty()) {
-                    ct = MediaType.IMAGE_JPEG_VALUE;
-                }
-                MediaType mediaType;
-                try {
-                    mediaType = MediaType.parseMediaType(ct);
-                } catch (Exception ignored) {
-                    mediaType = MediaType.IMAGE_JPEG;
                 }
                 return ResponseEntity.ok()
                         .cacheControl(CacheControl.maxAge(Duration.ofHours(6)).cachePublic())
-                        .contentType(mediaType)
-                        .body(body);
+                        .contentType(MediaType.parseMediaType(ct))
+                        .body(res.body());
             } catch (Exception e) {
                 log.debug("cover fetch failed for {}: {}", url, e.getMessage());
             }
         }
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
-    }
-
-    /** Pollinations / CDN bazen {@code application/octet-stream} döner; gövde gerçekten görsel ise kabul et. */
-    private static boolean looksLikeRasterImage(byte[] b) {
-        if (b == null || b.length < 12) {
-            return false;
-        }
-        if (b[0] == (byte) 0xFF && b[1] == (byte) 0xD8 && b[2] == (byte) 0xFF) {
-            return true;
-        }
-        if (b[0] == (byte) 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') {
-            return true;
-        }
-        if (b[0] == 'G' && b[1] == 'I' && b[2] == 'F') {
-            return true;
-        }
-        return b[0] == 'R'
-                && b[1] == 'I'
-                && b[2] == 'F'
-                && b[3] == 'F'
-                && b[8] == 'W'
-                && b[9] == 'E'
-                && b[10] == 'B'
-                && b[11] == 'P';
-    }
-
-    private static String sniffContentType(byte[] b) {
-        if (b.length >= 3 && b[0] == (byte) 0xFF && b[1] == (byte) 0xD8 && b[2] == (byte) 0xFF) {
-            return MediaType.IMAGE_JPEG_VALUE;
-        }
-        if (b.length >= 4 && b[0] == (byte) 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') {
-            return MediaType.IMAGE_PNG_VALUE;
-        }
-        if (b.length >= 12
-                && b[0] == 'R'
-                && b[1] == 'I'
-                && b[2] == 'F'
-                && b[3] == 'F'
-                && b[8] == 'W'
-                && b[9] == 'E'
-                && b[10] == 'B'
-                && b[11] == 'P') {
-            return "image/webp";
-        }
-        if (b.length >= 3 && b[0] == 'G' && b[1] == 'I' && b[2] == 'F') {
-            return "image/gif";
-        }
-        return MediaType.IMAGE_JPEG_VALUE;
     }
 
     private HttpResponse<byte[]> httpGet(String url) throws Exception {

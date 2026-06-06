@@ -43,7 +43,7 @@ import {
   getSkillAvailabilityParts,
   skillCardDescriptionPreview,
 } from "../lib/skillProfileCardDisplay";
-import { resolveSkillCoverImageUrl, skillCoverImageFallbackUrl } from "../lib/skillCoverImageUrl";
+import { resolveSkillCoverImageUrl } from "../lib/skillCoverImageUrl";
 import { apiErrorDisplayMessage } from "../api/client";
 import { PATHS } from "../navigation/paths";
 import { Textarea } from "../components/ui/textarea";
@@ -635,7 +635,6 @@ export function ProfilePage({
                               <ImageWithFallback
                                 src={coverUrl}
                                 alt={skill.title}
-                                fallbackSrc={skillCoverImageFallbackUrl(skill)}
                                 className="h-full w-full object-cover"
                               />
                             ) : (

@@ -55,11 +55,16 @@ public class SkillService {
         skill.setAvailableUntil(normalizeTime(req.getAvailableUntil()));
         validateAvailabilityRules(skill);
         skill.setOwner(owner);
-        // Kapak URL’sindeki seed/path, skill UUID’sine bağlı olmalı (updateSkill ile aynı).
-        // Kayıt öncesi id yok; owner id ile üretmek proxy zincirindeki ilk URL’yi yanlış eşleştirir.
+        skill.setCoverImageUrl(
+                SkillCoverImageUrlBuilder.fromSkillContent(
+                        skill.getTitle(),
+                        skill.getDescription(),
+                        skill.getCategory(),
+                        owner.getId()
+                )
+        );
+
         Skill saved = skillRepository.save(skill);
-        refreshCoverImageUrl(saved);
-        saved = skillRepository.save(saved);
 
         return mapToResponse(saved);
     }
@@ -107,7 +112,14 @@ public class SkillService {
             skill.setAvailableUntil(normalizeTime(req.getAvailableUntil()));
             validateAvailabilityRules(skill);
         }
-        refreshCoverImageUrl(skill);
+        skill.setCoverImageUrl(
+                SkillCoverImageUrlBuilder.fromSkillContent(
+                        skill.getTitle(),
+                        skill.getDescription(),
+                        skill.getCategory(),
+                        skill.getId()
+                )
+        );
         Skill updated = skillRepository.save(skill);
         return mapToResponse(updated);
     }
@@ -117,18 +129,6 @@ public class SkillService {
                 .orElseThrow(() -> new IllegalArgumentException("Skill bulunamadı veya bu skill size ait değil"));
 
         skillRepository.delete(skill);
-    }
-
-    /** Pollinations kapak URL’si — {@code skill.getId()} atanmış olmalı. */
-    private static void refreshCoverImageUrl(Skill skill) {
-        skill.setCoverImageUrl(
-                SkillCoverImageUrlBuilder.fromSkillContent(
-                        skill.getTitle(),
-                        skill.getDescription(),
-                        skill.getCategory(),
-                        skill.getId()
-                )
-        );
     }
 
     private SkillResponse mapToResponse(Skill skill) {

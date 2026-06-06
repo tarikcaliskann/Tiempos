@@ -10,19 +10,19 @@ type Props = React.ImgHTMLAttributes<HTMLImageElement> & {
 
 export function ImageWithFallback(props: Props) {
   const [erroredSourceKey, setErroredSourceKey] = useState<string | null>(null);
-  const { src, alt, style, className, fallbackSrc, onError, ...rest } = props;
-  const sourceKey = `${src ?? ""}|${fallbackSrc ?? ""}`;
+  const sourceKey = `${props.src ?? ""}|${props.fallbackSrc ?? ""}`;
   const didError = erroredSourceKey === sourceKey;
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    if (fallbackSrc && e.currentTarget.dataset.fallbackApplied !== "1") {
+    if (props.fallbackSrc && e.currentTarget.dataset.fallbackApplied !== "1") {
       e.currentTarget.dataset.fallbackApplied = "1";
-      e.currentTarget.src = fallbackSrc;
+      e.currentTarget.src = props.fallbackSrc;
       return;
     }
-    onError?.(e);
     setErroredSourceKey(sourceKey);
   };
+
+  const { src, alt, style, className, ...rest } = props;
 
   return didError ? (
     <div

@@ -16,7 +16,7 @@ import {
 import { apiErrorDisplayMessage } from "../api/client";
 import { ImageWithFallback } from "../components/common/ImageWithFallback";
 import { fetchPublicSkills, type SkillDto } from "../api/skills";
-import { resolveSkillCoverImageUrl, skillCoverImageFallbackUrl } from "../lib/skillCoverImageUrl";
+import { resolveSkillCoverImageUrl } from "../lib/skillCoverImageUrl";
 import {
   fallbackAvailabilityFromDescription,
   fallbackLocationFromDescription,
@@ -445,7 +445,6 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
                               <ImageWithFallback
                                 src={coverUrl}
                                 alt={skill.title}
-                                fallbackSrc={skillCoverImageFallbackUrl(skill)}
                                 className="h-full w-full object-cover"
                               />
                             ) : (

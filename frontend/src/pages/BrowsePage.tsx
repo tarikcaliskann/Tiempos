@@ -302,7 +302,6 @@ export function BrowsePage({
                       availability={skill.availability}
                       location={skill.location}
                       image={skill.image}
-                      coverFallbackUrl={skill.coverFallbackUrl}
                       isOnline={skill.isOnline}
                       isInPerson={skill.isInPerson}
                       tags={skill.tags}
