@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppSurfaces {
-  /// Web `tiempos-auth-shell`: primary koyu mavi (`#1D4ED8` → `#1E3A8A`), mor yok.
-  static const LinearGradient brandBluePurple = LinearGradient(
+  /// Web auth / marka şeridi: yalnızca primary mavi (`#1D4ED8` → `#1E3A8A`).
+  static const LinearGradient brandPrimaryBlue = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [

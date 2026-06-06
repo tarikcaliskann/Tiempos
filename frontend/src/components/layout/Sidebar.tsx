@@ -119,7 +119,7 @@ export function Sidebar({
                 </Button>
                 <Button
                   onClick={() => onNavigate("signup")}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                 >
                   {t.sidebar.getStarted}
                 </Button>

@@ -547,7 +547,7 @@ export function SkillDetailPage({
         <div className="pt-28 pb-20 px-4 text-center">
           <p className="text-muted-foreground mb-6">{s.pickBrowse}</p>
           <Button
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+            className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
             onClick={() => onNavigate?.("browse")}
           >
             {s.backToBrowse}
@@ -948,7 +948,7 @@ export function SkillDetailPage({
               </Button>
               <Button
                 type="button"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                 onClick={() => void submitBookRequest()}
                 disabled={
                   bookSubmitting ||

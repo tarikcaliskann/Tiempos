@@ -27,7 +27,7 @@ export function HowItWorksPage({ onNavigate }: HowItWorksPageProps) {
   return (
     <PageLayout onNavigate={onNavigate}>
       
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-700 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl text-white mb-6">
             {h.heroTitle}
@@ -62,7 +62,7 @@ export function HowItWorksPage({ onNavigate }: HowItWorksPageProps) {
             const Icon = stepIcons[index];
             const gradients = [
               "from-blue-500 to-cyan-500",
-              "from-purple-500 to-pink-500",
+              "from-blue-600 to-blue-400",
               "from-orange-500 to-red-500",
               "from-green-500 to-emerald-500",
             ] as const;
@@ -114,9 +114,9 @@ export function HowItWorksPage({ onNavigate }: HowItWorksPageProps) {
                   </div>
                 </Card>
 
-                <Card className="gap-0 rounded-xl border border-purple-500/25 bg-purple-500/[0.12] p-4 text-card-foreground shadow-sm dark:border-purple-500/35 dark:bg-purple-950/55">
+                <Card className="gap-0 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary">
                       <BookOpen className="h-5 w-5 text-white" />
                     </div>
                     <div className="min-w-0">
@@ -128,7 +128,7 @@ export function HowItWorksPage({ onNavigate }: HowItWorksPageProps) {
               </div>
             </div>
             
-            <Card className="p-8 rounded-3xl bg-gradient-to-br from-blue-500 to-purple-600 border-0 shadow-2xl text-white">
+            <Card className="p-8 rounded-3xl bg-gradient-to-br from-blue-500 to-blue-700 border-0 shadow-2xl text-white">
               <h3 className="text-2xl mb-4">{h.bonusTitle}</h3>
               <div className="text-6xl mb-4">🎁</div>
               <p className="text-xl mb-2">{h.bonusCredits}</p>
@@ -190,7 +190,7 @@ export function HowItWorksPage({ onNavigate }: HowItWorksPageProps) {
         </div>
       </div>
       
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 py-20">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-700 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl text-white mb-6">
             {h.ctaTitle}

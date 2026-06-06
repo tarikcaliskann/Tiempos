@@ -317,7 +317,7 @@ function SessionCard({
             <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                 type="button"
                 onClick={onRate}
               >

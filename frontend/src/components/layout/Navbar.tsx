@@ -382,8 +382,8 @@ export function Navbar({ onNavigate }: NavbarProps) {
                         <label
                           className={
                             isDark
-                              ? "inline-flex cursor-pointer items-center gap-2 rounded-full border border-purple-500/50 bg-zinc-950 px-3 py-1.5 text-xs font-medium text-purple-200 transition-colors hover:border-purple-400/70 hover:bg-zinc-900"
-                              : "inline-flex cursor-pointer items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-100"
+                              ? "inline-flex cursor-pointer items-center gap-2 rounded-full border border-primary/50 bg-zinc-950 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/70 hover:bg-zinc-900"
+                              : "inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
                           }
                         >
                           <input
@@ -392,17 +392,17 @@ export function Navbar({ onNavigate }: NavbarProps) {
                             onChange={() => setNotifUnreadOnly((u) => !u)}
                             className={
                               isDark
-                                ? "h-3.5 w-3.5 shrink-0 rounded border-purple-400 bg-zinc-900 accent-purple-400 focus:ring-purple-500"
-                                : "h-3.5 w-3.5 shrink-0 rounded border-purple-300 accent-purple-600 focus:ring-purple-500"
+                                ? "h-3.5 w-3.5 shrink-0 rounded border-primary/60 bg-zinc-900 accent-primary focus:ring-primary"
+                                : "h-3.5 w-3.5 shrink-0 rounded border-border accent-primary focus:ring-primary"
                             }
                           />
-                          <span className={isDark ? "text-purple-200" : "text-purple-700"}>
+                          <span className={isDark ? "text-muted-foreground" : "text-foreground"}>
                             {t.notificationsPage.unreadOnly}
                           </span>
                         </label>
                         <button
                         type="button"
-                        className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-purple-300 dark:hover:text-purple-200"
+                        className="cursor-pointer text-sm font-medium text-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:text-primary dark:hover:opacity-90"
                         disabled={
                           notifications.length === 0 ||
                           !notifications.some((n) => isNotificationUnread(n))
@@ -434,7 +434,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                               key={n.id}
                               className={`border-b border-border p-4 transition-colors last:border-b-0 ${
                                 unread
-                                  ? "border-l-[5px] border-l-purple-600 bg-background dark:border-l-purple-500 dark:bg-accent/25"
+                                  ? "border-l-[5px] border-l-primary bg-background dark:border-l-primary dark:bg-accent/25"
                                   : "border-l-[5px] border-l-transparent bg-muted/30 dark:bg-muted/40"
                               }`}
                             >
@@ -466,7 +466,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                                   <h3
                                     className={
                                       unread
-                                        ? "font-bold text-purple-700 dark:text-purple-300"
+                                        ? "font-bold text-primary dark:text-primary"
                                         : isDark
                                           ? "font-medium text-zinc-400"
                                           : "font-medium text-gray-500"
@@ -491,8 +491,8 @@ export function Navbar({ onNavigate }: NavbarProps) {
                                   <p
                                     className={`mb-2 text-sm ${
                                       unread
-                                        ? "font-medium text-purple-600 dark:text-purple-300"
-                                        : "font-medium text-purple-500/80 dark:text-purple-400/90"
+                                        ? "font-medium text-primary dark:text-primary"
+                                        : "font-medium text-primary dark:text-primary"
                                     }`}
                                   >
                                     {n.skillTitle}
@@ -519,8 +519,8 @@ export function Navbar({ onNavigate }: NavbarProps) {
                                     }}
                                     className={`inline-flex cursor-pointer items-center gap-2 text-sm font-medium ${
                                       unread
-                                        ? "text-purple-600 hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-200"
-                                        : "text-purple-500/80 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300"
+                                        ? "text-primary hover:opacity-90 dark:text-primary dark:hover:opacity-90"
+                                        : "text-primary hover:text-primary dark:text-primary dark:hover:opacity-90"
                                     }`}
                                   >
                                     <MessageCircle className="h-4 w-4 shrink-0" />
@@ -576,7 +576,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                     <div className="border-t border-border bg-muted/20 p-3">
                       <Link
                         to={notifUnreadOnly ? `${PATHS.notifications}?unread=1` : PATHS.notifications}
-                        className="block w-full cursor-pointer rounded-lg px-3 py-2 text-center text-sm font-medium text-purple-600 transition-colors hover:bg-purple-100 hover:text-purple-700 dark:text-purple-300 dark:hover:bg-purple-500/25 dark:hover:text-purple-200"
+                        className="block w-full cursor-pointer rounded-lg px-3 py-2 text-center text-sm font-medium text-primary transition-colors hover:bg-accent hover:opacity-90 dark:text-primary dark:hover:bg-accent dark:hover:opacity-90"
                         onClick={() => setNotifOpen(false)}
                       >
                         {t.nav.allNotifications}
@@ -604,7 +604,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                     </span>
                   </button>
 
-                  <div className="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-1.5 text-white">
+                  <div className="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 px-3 py-1.5 text-white">
                     <Clock className="h-4 w-4 shrink-0" />
                     <span className="text-sm font-medium tabular-nums">
                       {formatNavbarCreditHours(creditMinutes, locale)}
@@ -631,7 +631,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                         />
                       ) : (
                         <span
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-semibold uppercase leading-none tracking-tight text-white"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-xs font-semibold uppercase leading-none tracking-tight text-white"
                           aria-hidden
                         >
                           {initialsFromName(user?.name ?? "")}
@@ -706,7 +706,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
                     </Button>
                     <Button
                       onClick={() => handleNavigate("signup")}
-                      className="cursor-pointer whitespace-nowrap bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm"
+                      className="cursor-pointer whitespace-nowrap bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-sm"
                     >
                       {t.nav.getStarted}
                     </Button>

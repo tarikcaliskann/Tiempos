@@ -26,7 +26,7 @@ abstract final class AppColors {
   static const Color navInactiveIcon = Color(0xFF8B8B9E);
   static const Color navInactiveLabel = Color(0xFFA4A4B8);
 
-  /// Web hero / butonlardaki `from-blue-500 to-purple-600` (Tailwind map: #1D4ED8 → #1D4ED8);
+  /// Web hero / CTA: `from-blue-500 to-blue-700`.
   /// hafif derinlik için sağ uç `blue-600` (#1E40AF).
   static const Color avatarInitials = Color(0xFF1D4ED8);
 
@@ -36,10 +36,10 @@ abstract final class AppColors {
     Color(0xFF06B6D4),
   ];
 
-  /// Web: `from-purple-500 to-pink-500` → `--color-purple-500` #3B82F6, pembe uç yaklaşık pink-500.
+  /// Web dashboard stat: `from-blue-600 to-blue-400` (mavi derinlik, mor yok).
   static const List<Color> statGradient2 = [
-    Color(0xFF3B82F6),
-    Color(0xFFEC4899),
+    Color(0xFF1E40AF),
+    Color(0xFF60A5FA),
   ];
 
   /// Web: `from-orange-500 to-red-500`
@@ -54,7 +54,7 @@ abstract final class AppColors {
     Color(0xFF10B981),
   ];
 
-  /// Web `bg-gradient-to-r from-blue-500 to-purple-600` (strip / app bar) — Tailwind map.
+  /// Web `bg-gradient-to-r from-blue-500 to-blue-700` (şerit / app bar).
   static const List<Color> heroGradient = [
     Color(0xFF1D4ED8),
     Color(0xFF1E40AF),

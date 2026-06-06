@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_surfaces.dart';
 
-/// Web’deki mavi–mor gradient ve tipografi ile hizalı ortak üst çubuk / şerit.
+/// Web’deki primary mavi gradient ve tipografi ile hizalı ortak üst çubuk / şerit.
 abstract final class AppChrome {
   /// Gradient başlık metni — ana sayfa arama / liste kolonu ile aynı yatay hizalama.
   static const double heroHeaderPaddingH = 20;
@@ -177,7 +177,7 @@ abstract final class AppChrome {
     );
   }
 
-  /// Üye avatarı — web hero ile aynı mavi–mor gradient halka.
+  /// Üye avatarı — web hero ile aynı primary mavi gradient halka.
   static Widget profileAvatarRing({
     required ThemeData theme,
     required double diameter,
@@ -214,7 +214,7 @@ abstract final class AppChrome {
             constraints.hasBoundedWidth && constraints.hasBoundedHeight;
         return DecoratedBox(
           decoration: const BoxDecoration(
-            gradient: AppSurfaces.brandBluePurple,
+            gradient: AppSurfaces.brandPrimaryBlue,
           ),
           child: bounded ? SizedBox.expand(child: child) : child,
         );

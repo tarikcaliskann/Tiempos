@@ -176,7 +176,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
 
                 <Button 
                   type="submit"
-                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white sm:h-12"
                   disabled={!passwordsMatch || !passwordLengthValid || !email || code.length < 6 || loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -213,7 +213,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                 </p>
 
                 <Button 
-                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white sm:h-12"
                   onClick={() => onNavigate?.("login")}
                 >
                   {a.continueSignIn}

@@ -10,14 +10,14 @@ const colors = [
   "from-green-400 to-emerald-600",
   "from-pink-400 to-rose-600",
   "from-blue-400 to-indigo-600",
-  "from-purple-400 to-violet-600",
+  "from-blue-500 to-blue-700",
   "from-orange-400 to-amber-600",
 ] as const;
 const bgColors = [
   "bg-emerald-50",
   "bg-rose-50",
   "bg-sky-50",
-  "bg-violet-50",
+  "bg-blue-50",
   "bg-amber-50",
 ] as const;
 

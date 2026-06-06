@@ -467,7 +467,7 @@ export function AddSkillPage({ onNavigate }: AddSkillPageProps) {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                     disabled={loading || loadingSkill}
                   >
                     {loading ? t.common.loading : submitLabel}

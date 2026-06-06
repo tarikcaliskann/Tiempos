@@ -1675,7 +1675,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                   </div>
 
                   {selected.uiStatus === "pending-incoming" && (
-                    <div className="shrink-0 border-b border-sky-200/80 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 p-4 dark:border-sky-800/60 dark:bg-gradient-to-r dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70">
+                    <div className="shrink-0 border-b border-sky-200/80 bg-gradient-to-r from-sky-50 via-blue-50 to-blue-50 p-4 dark:border-sky-800/60 dark:bg-gradient-to-r dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70">
                       <p className="mb-3 text-sm font-medium text-slate-800 dark:text-sky-100">
                         {formatTemplate(
                           selected.ex.pendingFromOwner
@@ -1701,7 +1701,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       <div className="flex flex-wrap gap-2">
                         <Button
                           size="sm"
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                          className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                           onClick={() => void handleAccept(selected.ex.id)}
                         >
                           <Check className="mr-1 h-4 w-4" />
@@ -1882,7 +1882,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                               <div
                                 className={`rounded-2xl p-3 ${
                                   line.sender === "me"
-                                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                                    ? "bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                                     : "bg-muted text-foreground"
                                 }`}
                               >
@@ -1944,7 +1944,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                             />
                             <Button
                               type="button"
-                              className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                              className="shrink-0 bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                               onClick={() => void handleSend()}
                               disabled={isBlockedBySelected || !messageText.trim()}
                             >
@@ -2047,7 +2047,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
                       <div className="flex flex-wrap gap-2">
                         <Button
                           type="button"
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                          className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                           disabled={
                             draftSubmitting || !draftFirstMessage.trim()
                           }
@@ -2451,7 +2451,7 @@ export function MessagesPage({ onNavigate, onViewUserProfile }: MessagesPageProp
             </Button>
             <Button
               type="button"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
               onClick={() => void handleCreateBooking()}
               disabled={
                 bookSubmitting ||

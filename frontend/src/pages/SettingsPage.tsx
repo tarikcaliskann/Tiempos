@@ -170,7 +170,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                 ) : null}
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                   disabled={passwordLoading}
                 >
                   {passwordLoading ? t.common.loading : s.updatePassword}

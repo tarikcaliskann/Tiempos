@@ -186,7 +186,7 @@ export function BrowsePage({
     <PageLayout onNavigate={onNavigate}>
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-700 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl sm:text-4xl md:text-5xl text-white mb-4">
             {b.title}
@@ -359,7 +359,7 @@ export function BrowsePage({
                     variant={page === activePage ? "default" : "outline"}
                     className={
                       page === activePage
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 min-w-10"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-700 text-white border-0 min-w-10"
                         : "min-w-10"
                     }
                     onClick={() => handlePageChange(page)}
@@ -424,8 +424,8 @@ export function BrowsePage({
                 type="button"
                 className={
                   mobileDraftActive
-                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                    : "w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                    ? "bg-gradient-to-r from-blue-500 to-blue-700 text-white"
+                    : "w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                 }
                 onClick={applyMobileFilters}
               >

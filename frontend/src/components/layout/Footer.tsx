@@ -9,7 +9,7 @@ export function Footer() {
   const f = t.footer;
 
   return (
-    <footer className="border-t border-white/15 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 px-4 py-12 text-white sm:px-6 lg:px-8">
+    <footer className="border-t border-white/15 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 px-4 py-12 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="col-span-1 md:col-span-2">

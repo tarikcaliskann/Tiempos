@@ -77,7 +77,7 @@ export function SkillCard({
           />
         ) : (
           <div
-            className="h-full w-full bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 opacity-90 transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
+            className="h-full w-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 opacity-90 transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
             aria-hidden
           />
         )}
@@ -148,7 +148,7 @@ export function SkillCard({
           {showBookCta ? (
             <Button
               type="button"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
               onClick={onBookNow}
             >
               {sc.bookNow}

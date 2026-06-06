@@ -223,7 +223,7 @@ class DashboardHero extends StatelessWidget {
   }
 }
 
-/// Web’deki `bg-gradient-to-r from-blue-500 to-purple-600` birincil CTA.
+/// Web’deki `from-blue-500 to-blue-700` birincil CTA.
 class GradientCtaButton extends StatelessWidget {
   const GradientCtaButton({
     super.key,

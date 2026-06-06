@@ -99,7 +99,7 @@ function PaymentReturnContent({
       <Card className="rounded-2xl border-0 p-10 text-center shadow-lg">
         {status === "loading" && (
           <>
-            <Loader2 className="mx-auto mb-6 h-16 w-16 animate-spin text-purple-600" />
+            <Loader2 className="mx-auto mb-6 h-16 w-16 animate-spin text-primary" />
             <h2 className="text-xl font-semibold">{p.processingTitle}</h2>
           </>
         )}
@@ -111,7 +111,7 @@ function PaymentReturnContent({
               {formatTemplate(p.successMessage, { hours: resultHours })}
             </p>
             <Button
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white"
               onClick={onDashboard}
             >
               {p.backToDashboard}

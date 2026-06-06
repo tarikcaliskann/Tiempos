@@ -7,7 +7,7 @@ class TiemposWebLogo extends StatelessWidget {
   const TiemposWebLogo({
     super.key,
     this.height = 52,
-    /// Mavi–mor gradient gibi koyu zeminde koyu çizgili PNG okunur olsun diye beyaza boyar.
+    /// Koyu mavi gradient / koyu zeminde koyu çizgili PNG okunur olsun diye beyaza boyar.
     /// Açık kart / beyaz arka plan için `false` verin (orijinal renkler).
     this.onDarkBackground = true,
   });

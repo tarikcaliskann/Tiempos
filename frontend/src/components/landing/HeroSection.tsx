@@ -14,7 +14,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
   const h = t.landing.hero;
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 pt-24 pb-16 sm:pt-28 sm:pb-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 pt-24 pb-16 sm:pt-28 sm:pb-20">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-10 animate-pulse">
@@ -56,7 +56,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
           {!isAuthenticated ? (
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-xl px-8 py-6 rounded-full"
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:opacity-90 shadow-xl px-8 py-6 rounded-full"
               onClick={() => onNavigate?.("signup")}
             >
               {h.joinNow}

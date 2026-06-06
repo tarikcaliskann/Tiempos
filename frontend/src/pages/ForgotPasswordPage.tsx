@@ -83,7 +83,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
 
                 <Button 
                   type="submit"
-                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white sm:h-12"
                   disabled={loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -122,7 +122,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
 
                 <div className="space-y-3">
                   <Button 
-                    className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
+                    className="h-11 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white sm:h-12"
                     onClick={() => {
                       sessionStorage.setItem("tiempos_reset_email", email);
                       onNavigate?.("reset-password");

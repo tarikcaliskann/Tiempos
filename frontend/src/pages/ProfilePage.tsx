@@ -529,7 +529,7 @@ export function ProfilePage({
       <div className="flex min-h-0 w-full flex-1 flex-col">
         {loading ? (
           <>
-            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-blue-700 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
               {heroMain}
             </div>
             <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col min-h-[min(26rem,42dvh)] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
@@ -546,7 +546,7 @@ export function ProfilePage({
             }
             className="flex min-h-0 w-full flex-1 flex-col gap-0"
           >
-            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-0 pt-24 sm:px-6 lg:px-8">
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-blue-700 px-4 pb-0 pt-24 sm:px-6 lg:px-8">
               {heroMain}
               <div className="mx-auto max-w-5xl py-6">
                 <TabsList className="rounded-xl border border-border bg-muted p-1 shadow-lg">
@@ -568,7 +568,7 @@ export function ProfilePage({
                 <div className="mb-6 flex shrink-0 items-center justify-between">
                   <h2 className="text-xl text-foreground">{p.skillsTeach}</h2>
                   <Button
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                    className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                     onClick={() => onNavigate?.("add-skill")}
                   >
                     {p.addNewSkill}
@@ -640,7 +640,7 @@ export function ProfilePage({
                               />
                             ) : (
                               <div
-                                className="h-full w-full bg-gradient-to-br from-blue-500/35 via-purple-500/30 to-indigo-600/35"
+                                className="h-full w-full bg-primary/20"
                                 aria-hidden
                               />
                             )}
@@ -811,7 +811,7 @@ export function ProfilePage({
                               </Button>
                               <Button
                                 size="sm"
-                                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                                 onClick={() => onNavigate?.("messages")}
                               >
                                 {p.continueLearning}

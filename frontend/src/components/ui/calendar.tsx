@@ -68,7 +68,7 @@ function Calendar({ className, classNames: userClassNames, components, ...props 
         ),
         selected: cn(
           dz.selected,
-          "rounded-md bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 focus:bg-primary",
+          "rounded-md bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:opacity-[0.92] focus:bg-primary",
         ),
         today: cn(dz.today, "bg-accent text-accent-foreground"),
         outside: cn(

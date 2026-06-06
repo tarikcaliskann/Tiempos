@@ -30,7 +30,7 @@ interface DashboardPageProps {
 const statIcons = [Clock, BookOpen, TrendingUp, Award] as const;
 const statGradients = [
   "from-blue-500 to-cyan-500",
-  "from-purple-500 to-pink-500",
+  "from-blue-600 to-blue-400",
   "from-orange-500 to-red-500",
   "from-green-500 to-emerald-500",
 ] as const;
@@ -140,7 +140,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
 
   return (
     <PageLayout onNavigate={onNavigate}>
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-700 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl sm:text-4xl text-white mb-2">
             {formatTemplate(d.welcome, { name: displayName })}
@@ -170,7 +170,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                 <h2 className="text-xl text-foreground">{d.upcomingTitle}</h2>
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                   onClick={() => onNavigate?.("browse")}
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -252,7 +252,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
               <h3 className="mb-4 text-lg text-foreground">{d.quickActions}</h3>
               <div className="space-y-3">
                 <Button
-                  className="w-full justify-start bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  className="w-full justify-start bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                   onClick={() => onNavigate?.("add-skill")}
                 >
                   <Plus className="w-4 h-4 mr-2" />

@@ -240,7 +240,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
               <Button
                 type="button"
                 disabled={verifyLoading || verifyCode.replace(/\D/g, "").length !== 6}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                 onClick={() => void handleVerifyCode()}
               >
                 {verifyLoading ? t.common.loading : a.verifyAccountBtn}
@@ -363,7 +363,7 @@ export function SignUpPage({ onNavigate }: SignUpPageProps) {
             <Button
               type="submit"
               disabled={loading}
-              className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
+              className="h-11 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white sm:h-12"
             >
               {loading ? t.common.loading : a.createAccount}
             </Button>

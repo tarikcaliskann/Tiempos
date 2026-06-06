@@ -224,7 +224,7 @@ export function EditProfilePage({ onNavigate }: EditProfilePageProps) {
                       />
                     ) : (
                       <div
-                        className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-3xl font-semibold text-white ring-2 ring-border"
+                        className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-3xl font-semibold text-white ring-2 ring-border"
                         aria-hidden
                       >
                         {initialsFromFullName(fullName)}
@@ -232,7 +232,7 @@ export function EditProfilePage({ onNavigate }: EditProfilePageProps) {
                     )}
                     <button
                       type="button"
-                      className="absolute bottom-0 left-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md transition-opacity hover:opacity-90"
+                      className="absolute bottom-0 left-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md transition-opacity hover:opacity-90"
                       aria-label={e.photoChangeAria}
                       onClick={handlePickPhoto}
                     >
@@ -390,7 +390,7 @@ export function EditProfilePage({ onNavigate }: EditProfilePageProps) {
                   )}
                   <Button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                     disabled={saving}
                   >
                     {saving ? t.common.loading : t.common.saveChanges}

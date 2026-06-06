@@ -137,7 +137,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
             <Button
               type="submit"
               disabled={loading}
-              className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white sm:h-12"
+              className="h-11 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white sm:h-12"
             >
               {loading ? t.common.loading : a.signIn}
             </Button>

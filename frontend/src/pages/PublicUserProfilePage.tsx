@@ -349,7 +349,7 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
             }
             className="flex min-h-0 w-full flex-1 flex-col gap-0"
           >
-            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-0 pt-24 sm:px-6 lg:px-8">
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-blue-700 px-4 pb-0 pt-24 sm:px-6 lg:px-8">
               <div className="mx-auto max-w-5xl">
                 <div className="mb-4">
                   <Button
@@ -450,7 +450,7 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
                               />
                             ) : (
                               <div
-                                className="h-full w-full bg-gradient-to-br from-blue-500/35 via-purple-500/30 to-indigo-600/35"
+                                className="h-full w-full bg-primary/20"
                                 aria-hidden
                               />
                             )}
@@ -566,7 +566,7 @@ export function PublicUserProfilePage({ onNavigate }: Props) {
           </Tabs>
         ) : (
           <>
-            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
+            <div className="shrink-0 bg-gradient-to-r from-blue-500 to-blue-700 px-4 pb-32 pt-24 sm:px-6 lg:px-8">
               <div className="mx-auto max-w-5xl">
                 <div className="mb-4">
                   <Button

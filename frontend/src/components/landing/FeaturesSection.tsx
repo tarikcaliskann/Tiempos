@@ -5,7 +5,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 const icons = [Handshake, Clock, Heart] as const;
 const gradients = [
   "from-blue-500 to-cyan-500",
-  "from-purple-500 to-pink-500",
+  "from-blue-600 to-blue-400",
   "from-orange-500 to-red-500",
 ] as const;
 
