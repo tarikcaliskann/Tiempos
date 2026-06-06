@@ -54,7 +54,7 @@ import {
 import { apiErrorDisplayMessage } from "../api/client";
 import { initialsFromFullName } from "../lib/initials";
 import { ImageWithFallback } from "../components/common/ImageWithFallback";
-import { resolveSkillCoverImageUrl } from "../lib/skillCoverImageUrl";
+import { resolveSkillCoverImageUrl, skillCoverImageFallbackUrl } from "../lib/skillCoverImageUrl";
 
 interface SkillDetailPageProps {
   onNavigate?: (page: PageType) => void;
@@ -677,6 +677,7 @@ export function SkillDetailPage({
                   src={coverImageSrc}
                   alt={skill.title}
                   loading="eager"
+                  fallbackSrc={skillCoverImageFallbackUrl(skill)}
                   className="sd-hero-image"
                 />
               </div>

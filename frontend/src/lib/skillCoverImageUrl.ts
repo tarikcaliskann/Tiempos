@@ -14,3 +14,9 @@ export function skillCoverProxyUrl(skillId: string): string {
 export function resolveSkillCoverImageUrl(skill: SkillDto): string {
   return skillCoverProxyUrl(skill.id);
 }
+
+/** Proxy 503 veya hata olduğunda tarayıcıda tek seferlik yedek (API’deki kayıtlı Pollinations URL’si). */
+export function skillCoverImageFallbackUrl(skill: SkillDto): string | undefined {
+  const u = skill.coverImageUrl?.trim();
+  return u || undefined;
+}

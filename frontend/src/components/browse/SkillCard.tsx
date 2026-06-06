@@ -24,6 +24,8 @@ interface SkillCardProps {
   availability: string;
   location: string | null;
   image: string;
+  /** Kayıtlı kapak URL’si — proxy hata verirse ImageWithFallback dener */
+  coverFallbackUrl?: string;
   isOnline: boolean;
   isInPerson: boolean;
   tags: string[];
@@ -40,6 +42,7 @@ export function SkillCard({
   availability,
   location,
   image,
+  coverFallbackUrl,
   isOnline,
   isInPerson,
   tags,
@@ -69,6 +72,7 @@ export function SkillCard({
             src={image}
             alt={title}
             loading="lazy"
+            fallbackSrc={coverFallbackUrl}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         ) : (
