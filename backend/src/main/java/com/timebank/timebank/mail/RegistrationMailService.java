@@ -142,7 +142,15 @@ public class RegistrationMailService {
                 maskFromForLog(fromAddress()),
                 brevoTransactionalContactSender.isConfigured() ? "yes" : "no");
         if (isMailDeliveryEnabled() && !isLocalCaptureSmtp()) {
-            probeSmtpConnection();
+            if (brevoTransactionalContactSender.isConfigured()) {
+                log.info(
+                        "SMTP TCP bağlantı testi atlandı — Brevo Transactional API (HTTPS) tanımlı; "
+                                + "doğrulama ve şifre e-postaları öncelikle api.brevo.com üzerinden gider. "
+                                + "Render ortamında smtp-relay.brevo.com:587 çıkışı sık engellenir; bu atlama normaldir."
+                );
+            } else {
+                probeSmtpConnection();
+            }
         }
     }
 
